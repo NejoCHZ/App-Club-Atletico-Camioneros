@@ -1,0 +1,267 @@
+<div class="cacc-layout">
+  <!-- Left Sidebar (Verde Institucional CACC) -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrapper">
+        <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
+      </div>
+      <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
+      <p class="club-subtitle">Sistema de Gestión Integral</p>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems" 
+         class="nav-item" 
+         [class.active]="item.active"
+         (click)="selectNav(item.label)">
+        <span class="nav-icon" [ngSwitch]="item.icon">
+          <!-- Plantel Icon -->
+          <svg *ngSwitchCase="'plantel'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <!-- Estadísticas Icon -->
+          <svg *ngSwitchCase="'estadisticas'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <!-- Configuración Icon -->
+          <svg *ngSwitchCase="'configuracion'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <!-- Logout at Bottom -->
+    <div class="sidebar-footer">
+      <a class="logout-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <!-- Header Superior -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="hamburger-btn" aria-label="Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <h1 class="header-title">Panel de categorias</h1>
+      </div>
+
+      <div class="header-right">
+        <div class="admin-profile">
+          <div class="profile-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">Profesor</span>
+            <span class="profile-email">profesor@camioneros.com</span>
+          </div>
+          <span class="chevron-down">❯</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main View Body (3 Column Layout matching Screenshot) -->
+    <main class="content-body">
+      <div class="ficha-3cols-layout">
+
+        <!-- COLUMN 1: Profile & Datos Personales -->
+        <section class="card-col col-personal">
+          <div class="profile-avatar-banner">
+            <div class="big-avatar-circle">
+              <svg width="92" height="92" viewBox="0 0 24 24" fill="#007A3D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            </div>
+          </div>
+
+          <div class="personal-info-body">
+            <h2 class="player-full-name">{{ player.nombreCompleto }}</h2>
+            <h3 class="player-position-subtitle">{{ player.posicion }}</h3>
+
+            <div class="divider-line"></div>
+
+            <h4 class="section-subtitle">DATOS PERSONALES</h4>
+
+            <div class="personal-grid">
+              <!-- Fecha de Nacimiento -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- Birthday Cake Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path><path d="M4 16h16"></path><path d="M12 11V7"></path><path d="M8 11V8.5"></path><path d="M16 11V8.5"></path><circle cx="12" cy="5" r="1" fill="#007A3D"></circle></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Fecha de nacimiento</span>
+                  <span class="item-val">{{ player.fechaNacimiento }}</span>
+                </div>
+              </div>
+
+              <!-- Edad -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- Calendar Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Edad</span>
+                  <span class="item-val">{{ player.edad }}</span>
+                </div>
+              </div>
+
+              <!-- Peso -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- Weight Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Peso</span>
+                  <span class="item-val">{{ player.peso }}</span>
+                </div>
+              </div>
+
+              <!-- Altura -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- Height Arrows Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M12 3v18"></path><path d="m8 7 4-4 4 4"></path><path d="m8 17 4 4 4-4"></path></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Altura</span>
+                  <span class="item-val">{{ player.altura }}</span>
+                </div>
+              </div>
+
+              <!-- Pie habil -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- Shoe / Foot Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M4 16l3-8 5 2 4-3 4 3v6H4z"></path></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Pie habil</span>
+                  <span class="item-val">{{ player.pieHabil }}</span>
+                </div>
+              </div>
+
+              <!-- Grupo sanguíneo -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- Water Drop / Blood Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Grupo sanguíneo</span>
+                  <span class="item-val">{{ player.grupoSanguineo }}</span>
+                </div>
+              </div>
+
+              <!-- Tutor -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- People / Tutor Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Tutor</span>
+                  <span class="item-val">{{ player.tutor }}</span>
+                </div>
+              </div>
+
+              <!-- Telefono tutor -->
+              <div class="grid-item">
+                <div class="item-icon-box">
+                  <!-- Phone Icon -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </div>
+                <div class="item-content">
+                  <span class="item-label">Telefono tutor</span>
+                  <span class="item-val">{{ player.telefonoTutor }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Domicilio Full Width -->
+            <div class="domicilio-box">
+              <div class="item-icon-box">
+                <!-- Location Pin Icon -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#007A3D"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              </div>
+              <div class="item-content">
+                <span class="item-label">Domicilio</span>
+                <span class="item-val">{{ player.domicilio }}</span>
+              </div>
+            </div>
+
+            <div class="volver-btn-wrapper">
+              <button class="btn-back-dt" (click)="volverAlPlantel()">← Volver al Plantel</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- COLUMN 2: Historial de Partidos -->
+        <section class="card-col col-partidos">
+          <h2 class="card-title-centered">HISTORIAL DE PARTIDOS</h2>
+
+          <div class="table-responsive-partidos">
+            <table class="partidos-table">
+              <thead>
+                <tr>
+                  <th>DIA</th>
+                  <th>FECHA</th>
+                  <th>RIVAL</th>
+                  <th>RESULTADO</th>
+                  <th>MINUTOS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of player.historialPartidos; let i = index" [class.even-row]="i % 2 === 1">
+                  <td>{{ m.dia }}</td>
+                  <td>{{ m.fecha }}</td>
+                  <td class="col-rival">{{ m.rival }}</td>
+                  <td>{{ m.resultado }}</td>
+                  <td>{{ m.minutos }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer-summary">
+            <span>TOTAL MINUTOS JUGADOS: <strong>{{ player.totalMinutosJugados }}</strong></span>
+          </div>
+        </section>
+
+        <!-- COLUMN 3: Ficha Médica -->
+        <section class="card-col col-medica">
+          <h2 class="card-title-centered">FICHA MEDICA</h2>
+          <div class="title-divider-line"></div>
+
+          <div class="medica-body">
+            <!-- Patologias -->
+            <div class="medica-block">
+              <h3 class="medica-block-label">Patologias</h3>
+              <div class="medica-text-box">
+                <p>{{ player.patologias }}</p>
+              </div>
+            </div>
+
+            <!-- Historial de lesiones -->
+            <div class="medica-block">
+              <h3 class="medica-block-label">Historial de lesiones</h3>
+              <ul class="lesiones-list">
+                <li *ngFor="let les of player.lesiones">• {{ les }}</li>
+              </ul>
+            </div>
+
+            <!-- Observaciones medicas -->
+            <div class="medica-block">
+              <h3 class="medica-block-label">Observaciones medicas</h3>
+              <div class="medica-text-box">
+                <p>{{ player.observacionesMedicas }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
