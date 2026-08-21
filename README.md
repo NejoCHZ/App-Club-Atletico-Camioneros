@@ -1,25 +1,59 @@
-**Sistema de Gestión y Control QR - Club Atlético Camioneros**
+# ProyectoCamioneros
 
-## Descripción del proyecto
-Plataforma web cliente-servidor desarrollada como Trabajo Final Integrador para digitalizar el núcleo operativo del club. El sistema centraliza el padrón de jugadores, vincula tutores y agiliza el ingreso al predio evaluando el estado de deuda en tiempo real.
-* **Stack Tecnológico:** Frontend en Angular, Backend en ASP.NET Core (C#) y persistencia en SQL Server mediante Entity Framework Core.
-* **Módulos:** Panel de administración con control de acceso (RBAC), generador de credenciales físicas PDF con código QR y sistema tipo "semáforo" para escaneo en puerta.
-* **Equipo Scrum:** Lucas Cornejo (PO), Facundo Zabala (SM), Lisandro Siraveña (Back), Lucas González (Front), Samuel Peinado Martínez (QA).
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.8.
 
-## Cómo instalar y ejecutar
-Asegúrate de tener instalados Node.js, el SDK de .NET y SQL Server antes de comenzar.
-* **Repositorio:** Clona el proyecto localmente y navega a las carpetas correspondientes.
-* **Base de Datos:** Aplica las migraciones de Entity Framework Core ejecutando el comando de actualización para generar la estructura relacional.
-* **Backend:** Configura la cadena de conexión en el entorno de C# y ejecuta la API REST.
-* **Frontend:** Instala las dependencias mediante el gestor de paquetes de Node y levanta el servidor de desarrollo local de Angular.
+## Development server
 
-## Cómo contribuir
-El flujo de trabajo colaborativo está regido por metodologías ágiles para asegurar la integridad del código.
-* **Asignación:** Revisa el tablero de Jira para identificar tu tarea activa correspondiente al sprint actual.
-* **Desarrollo:** Crea una rama independiente para programar tu funcionalidad evitando impactar la rama principal.
-* **Integración:** Realiza registros de cambios descriptivos y abre una solicitud de integración para que un compañero valide el código.
+To start a local development server, run:
 
-## Ejemplos de uso
-El sistema adapta su interfaz dependiendo del rol autorizado por el token JWT.
-* **Control de Accesos (Portería):** Al habilitar la cámara desde un dispositivo móvil, se escanea el carnet físico del jugador y la pantalla devuelve una señal visual (Verde, Amarillo o Rojo) confirmando el ingreso.
-* **Gestión Institucional (Administración):** Permite registrar a un deportista menor de edad, asociar obligatoriamente sus datos con los de su tutor y exportar la credencial en tamaño estándar lista para imprimir.
+```bash
+ng serve
+```
+
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Code scaffolding
+
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+
+```bash
+ng generate component component-name
+```
+
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+
+```bash
+ng generate --help
+```
+
+## Building
+
+To build the project run:
+
+```bash
+ng build
+```
+
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+
+## Running unit tests
+
+To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
