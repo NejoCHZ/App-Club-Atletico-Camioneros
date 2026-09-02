@@ -1,26 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-
-interface KpiData {
-  title: string;
-  value: string | number;
-  icon: string;
-}
-
-interface Registration {
-  name: string;
-  club: string;
-  category: string;
-  date: string;
-  avatarColor?: string;
-}
-
-interface CategoryDistribution {
-  category: string;
-  count: number;
-  percentage: number;
-}
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard-coordinador',
@@ -30,48 +10,32 @@ interface CategoryDistribution {
   styleUrl: './dashboard-coordinador.css'
 })
 export class DashboardCoordinador implements OnInit {
+  userName = 'Rubén del Olmo';
+  userEmail = 'Ejemplo@mailejemplo.com';
+  totalPlayers = '+500';
+  activeCategoriesCount = '+25';
+  activeTab = 'Inicio';
 
-  // Simulated User Data
-  userName = 'Rubén Del Olmo';
-  userRole = 'CACC';
-
-  // Simulated KPI Data
-  kpis: KpiData[] = [
-    { title: 'Total de Jugadores', value: '+500', icon: 'users' },
-    { title: 'Categorías Activas', value: '+16', icon: 'flag' }
+  navItems = [
+    { label: 'Inicio', icon: 'home', active: true, route: '/coordinador' },
+    { label: 'Jugadores', icon: 'group', active: false, route: '/coordinador-seleccion-categorias' },
+    { label: 'Staff', icon: 'badge', active: false, route: '/coordinador/visualizar-staff' }
   ];
 
-  // Simulated Registrations Data
-  recentRegistrations: Registration[] = [
-    { name: 'Juan Pérez', club: 'CACC', category: 'Categoría 2009', date: '23/07/2023' },
-    { name: 'Juan Padela', club: 'CACC', category: 'Categoría 2004', date: '23/07/2023' },
-    { name: 'Laura González', club: 'CACC', category: 'Categoría 2012', date: '24/07/2023' },
-    { name: 'Pedro Sánchez', club: 'CACC', category: 'Categoría 2010', date: '24/07/2023' },
-    { name: 'Tomas Degani', club: 'CACC', category: 'Categoría 2009', date: '24/07/2023' },
-    { name: 'Landro Parcelas', club: 'CACC', category: 'Categoría 2009', date: '24/07/2023' },
-    { name: 'Luciana Santillán', club: 'CACC', category: 'Categoría 2009', date: '24/07/2023' }
-  ];
+  constructor(private router: Router) {}
 
-  // Simulated Distribution Data
-  maxDistributionCount = 20;
-  categoryDistributions: CategoryDistribution[] = [
-    { category: 'Categoría 2009', count: 19, percentage: 0 },
-    { category: 'Categoría 2008', count: 10, percentage: 0 },
-    { category: 'Categoría 2004', count: 6, percentage: 0 },
-    { category: 'Categoría 2010', count: 3, percentage: 0 },
-    { category: 'Categoría 2012', count: 2, percentage: 0 },
-    { category: 'Categoría 2006', count: 2, percentage: 0 },
-    { category: 'Categoría 2007', count: 1, percentage: 0 },
-    { category: 'Categoría 2003', count: 6, percentage: 0 }
-  ];
+  ngOnInit(): void {}
 
-  constructor() { }
+  selectNav(item: any) {
+    this.navItems.forEach(n => n.active = (n.label === item.label));
+    this.activeTab = item.label;
+    if (item.route && item.route !== '#') {
+      this.router.navigate([item.route]);
+    }
+  }
 
-  ngOnInit(): void {
-    // Calculamos los porcentajes dinámicos para las barras
-    this.categoryDistributions = this.categoryDistributions.map(dist => ({
-      ...dist,
-      percentage: (dist.count / this.maxDistributionCount) * 100
-    }));
+  logout() {
+    localStorage.removeItem('cacc_jwt_token');
+    this.router.navigate(['/login']);
   }
 }
