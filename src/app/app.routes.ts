@@ -304,5 +304,47 @@ export const routes: Routes = [
       import('./features/dt-editar-historial/dt-editar-historial').then(
         (m) => m.DtEditarHistorialComponent
       )
+  },
+  {
+    path: 'coordinador',
+    loadComponent: () =>
+      import('./features/portal-deportivo/dashboard-coordinador/dashboard-coordinador').then(
+        (m) => m.DashboardCoordinador
+      )
+  },
+  {
+    path: 'coordinador-seleccion-categorias',
+    loadComponent: () =>
+      import('./features/portal-deportivo/coordinador-seleccion-categorias/coordinador-seleccion-categorias').then(
+        (m) => m.CoordinadorSeleccionCategorias
+      )
+  },
+  {
+    path: 'coordinador/visualizar-plantel',
+    loadComponent: () =>
+      import('./features/portal-deportivo/coordinador-visualizar-plantel/coordinador-visualizar-plantel').then(
+        (m) => m.CoordinadorVisualizarPlantel
+      )
+  },
+  {
+  path: 'coordinador/visualizar-staff',
+    loadComponent: () =>
+      import('./features/portal-deportivo/coordinador-visualizar-staff/coordinador-visualizar-staff').then(
+        (m) => m.CoordinadorVisualizarStaff
+      )
+  },
+  {
+    path: 'coordinador/visualizar-perfil',
+    loadComponent: () =>
+      import('./features/portal-deportivo/coordinador-visualizar-perfil/coordinador-visualizar-perfil').then(
+        (m) => m.CoordinadorVisualizarPerfil
+      )
+  },
+  {
+    path: 'coordinador/visualizar-perfil-staff',
+    loadComponent: () =>
+      import('./features/portal-deportivo/coordinador-visualizar-perfil-staff/coordinador-visualizar-perfil-staff').then(
+        (m) => m.CoordinadorVisualizarPerfilStaff
+      )
   }
 ];

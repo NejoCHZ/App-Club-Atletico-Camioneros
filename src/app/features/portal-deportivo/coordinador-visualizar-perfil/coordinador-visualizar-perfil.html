@@ -1,0 +1,236 @@
+<div class="cacc-layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrapper">
+        <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
+      </div>
+      <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
+      <p class="club-subtitle">Sistema de Gestión Integral</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems"
+         class="nav-item"
+         [class.active]="item.active"
+         (click)="selectNav(item)">
+        <span class="nav-icon" [ngSwitch]="item.icon">
+          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="logout-btn" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="header-title">Visualización de Perfil - Ficha del Jugador</h1>
+      </div>
+
+      <div class="header-right">
+        <div class="admin-profile">
+          <div class="profile-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">{{ userName }}</span>
+            <span class="profile-email">{{ userEmail }}</span>
+          </div>
+          <span class="chevron-down">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body profile-content-grid">
+
+      <!-- Columna 1: Tarjeta con Iconos Institucionales en Datos Personales -->
+      <div class="profile-card">
+        <div class="player-avatar-header">
+          <div class="avatar-circle">
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+          </div>
+        </div>
+
+        <div class="player-main-info">
+          <h2>{{ player.name }}</h2>
+          <span class="player-pos-badge">{{ player.position }}</span>
+        </div>
+
+        <div class="personal-data-section">
+          <h3>DATOS PERSONALES</h3>
+          <hr class="divider-line" />
+
+          <div class="data-grid-with-icons">
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Torta / Nacimiento -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1.1 0 2 .9 2 2v1h2c1.1 0 2 .9 2 2v2H6V7c0-1.1.9-2 2-2h2V4c0-1.1.9-2 2-2zm8 9H4v9c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-9z" /></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Fecha de nacimiento</span>
+                <span class="data-value">{{ player.birthdate }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Calendario / Edad -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Edad</span>
+                <span class="data-value">{{ player.age }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Peso / Bolso -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 5h4v2h-4V5zm10 15H4V9h16v11z" /></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Peso</span>
+                <span class="data-value">{{ player.weight }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Altura -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5l-5-3-5 3M17 19l-5 3-5-3" /></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Altura</span>
+                <span class="data-value">{{ player.height }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Botín / Pie hábil -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 16l4.5 4.5c.8.8 2 .8 2.8 0l10.7-10.7c1-1 1-2.6 0-3.6l-2.2-2.2c-1-1-2.6-1-3.6 0L5.3 13.8c-.8.8-.8 2 0 2.8z" /></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Pie hábil</span>
+                <span class="data-value">{{ player.preferredFoot }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Gota / Sangre -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" /></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Grupo sanguíneo</span>
+                <span class="data-value">{{ player.bloodType }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Tutor / Grupo personas -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Tutor</span>
+                <span class="data-value">{{ player.tutor }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item">
+              <div class="data-icon-box text-green">
+                <!-- Icono Teléfono -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" /></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Teléfono tutor</span>
+                <span class="data-value">{{ player.phone }}</span>
+              </div>
+            </div>
+
+            <div class="data-row-item full-width-row">
+              <div class="data-icon-box text-green">
+                <!-- Icono Ubicación -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
+              </div>
+              <div class="data-text">
+                <span class="data-title">Domicilio</span>
+                <span class="data-value">{{ player.address }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna 2: Historial Extendido -->
+      <div class="matches-panel">
+        <div class="panel-header-title">
+          <h2>HISTORIAL DE PARTIDOS</h2>
+        </div>
+
+        <div class="matches-table-wrapper">
+          <div class="matches-header-row">
+            <span>DÍA</span>
+            <span>FECHA</span>
+            <span>RIVAL</span>
+            <span>RESULTADO</span>
+            <span>MINUTOS</span>
+          </div>
+
+          <div class="matches-rows-container">
+            <div class="match-row" *ngFor="let m of matches; let i = index" [class.even-row]="i % 2 === 0">
+              <span>{{ m.day }}</span>
+              <span>{{ m.date }}</span>
+              <span class="rival-name">{{ m.rival }}</span>
+              <span>{{ m.result }}</span>
+              <span class="minutes-col">{{ m.minutes }}</span>
+            </div>
+          </div>
+
+          <div class="matches-footer">
+            <strong>TOTAL MINUTOS JUGADOS: {{ totalMinutes }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna 3: Ficha Médica -->
+      <div class="medical-panel">
+        <div class="panel-header-title">
+          <h2>FICHA MÉDICA</h2>
+        </div>
+
+        <div class="medical-content">
+          <div class="medical-section">
+            <label class="med-label">Patologias</label>
+            <div class="med-box">{{ player.pathologies }}</div>
+          </div>
+
+          <div class="medical-section">
+            <label class="med-label">Historial de lesiones</label>
+            <div class="med-box lesiones-box" style="white-space: pre-line;">{{ player.lesions }}</div>
+          </div>
+
+          <div class="medical-section">
+            <label class="med-label">Observaciones medicas</label>
+            <div class="med-box">{{ player.medicalNotes }}</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
