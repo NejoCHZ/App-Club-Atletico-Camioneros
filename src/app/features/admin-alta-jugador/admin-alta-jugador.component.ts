@@ -3,18 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
+import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
+
 @Component({
   selector: 'app-admin-alta-jugador',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AdminPopupCredencial],
   templateUrl: './admin-alta-jugador.component.html',
   styleUrl: './admin-alta-jugador.component.css'
 })
 export class AdminAltaJugadorComponent {
+  mostrarPopupCredencial = false;
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
     { label: 'Jugadores', icon: 'group', active: true },
-    { label: 'Staff', icon: 'badge', active: false }
+    { label: 'Staff', icon: 'badge', active: false },
+    { label: 'Categorias', icon: 'category', active: false }
   ];
 
   // Datos del Jugador
@@ -40,10 +44,14 @@ export class AdminAltaJugadorComponent {
   constructor(private router: Router) {}
 
   selectNav(label: string) {
-    if (label === 'Inicio' || label === 'Jugadores') {
+    if (label === 'Inicio') {
       this.router.navigate(['/admin']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/admin/lista-jugadores']);
     } else if (label === 'Staff') {
       this.router.navigate(['/admin/staff']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/admin/categorias']);
     }
   }
 
@@ -132,6 +140,14 @@ export class AdminAltaJugadorComponent {
     }
   }
 
+  generarCredencial() {
+    this.mostrarPopupCredencial = true;
+  }
+
+  descargarCredencial() {
+    alert('Descargando credencial...');
+  }
+
   guardarYGenerarQR() {
     if (!this.dni || !this.nombre || !this.apellido || !this.fechaNacimiento) {
       alert('Por favor complete los campos obligatorios (*) del Jugador.');
@@ -145,9 +161,6 @@ export class AdminAltaJugadorComponent {
       }
     }
 
-    this.mensajeExito = true;
-    setTimeout(() => {
-      this.router.navigate(['/admin']);
-    }, 1800);
+    this.mostrarPopupCredencial = true;
   }
 }

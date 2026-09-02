@@ -28,7 +28,8 @@ export class AdminStaffComponent {
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
     { label: 'Jugadores', icon: 'group', active: false },
-    { label: 'Staff', icon: 'badge', active: true }
+    { label: 'Staff', icon: 'badge', active: true },
+    { label: 'Categorias', icon: 'category', active: false }
   ];
 
   trabajadores: StaffMember[] = [
@@ -37,7 +38,7 @@ export class AdminStaffComponent {
       nombreCompleto: 'NOMBRE Y APELLIDO',
       dni: '43.123.456',
       rol: 'DIRECTOR TÉCNICO',
-      edad: '42 AÑOS',
+      edad: '00 AÑOS',
       categoriaAsignada: 'JUVENIL',
       telefono: '351-4455667',
       estado: 'ACTIVO'
@@ -47,7 +48,7 @@ export class AdminStaffComponent {
       nombreCompleto: 'NOMBRE Y APELLIDO',
       dni: '43.123.456',
       rol: 'PREPARADOR FÍSICO',
-      edad: '38 AÑOS',
+      edad: '00 AÑOS',
       categoriaAsignada: 'INFANTIL',
       telefono: '351-9988776',
       estado: 'ACTIVO'
@@ -57,7 +58,7 @@ export class AdminStaffComponent {
       nombreCompleto: 'NOMBRE Y APELLIDO',
       dni: '43.123.456',
       rol: 'DIRECTOR TÉCNICO',
-      edad: '45 AÑOS',
+      edad: '00 AÑOS',
       categoriaAsignada: 'CEBOLLITAS',
       telefono: '351-7766554',
       estado: 'ACTIVO'
@@ -67,7 +68,7 @@ export class AdminStaffComponent {
       nombreCompleto: 'NOMBRE Y APELLIDO',
       dni: '43.123.456',
       rol: 'PREPARADOR FÍSICO',
-      edad: '34 AÑOS',
+      edad: '00 AÑOS',
       categoriaAsignada: 'TODAS',
       telefono: '351-3322110',
       estado: 'ACTIVO'
@@ -77,7 +78,7 @@ export class AdminStaffComponent {
       nombreCompleto: 'NOMBRE Y APELLIDO',
       dni: '43.123.456',
       rol: 'DIRECTOR TÉCNICO',
-      edad: '50 AÑOS',
+      edad: '00 AÑOS',
       categoriaAsignada: 'RESERVA',
       telefono: '351-6655443',
       estado: 'ACTIVO'
@@ -87,7 +88,7 @@ export class AdminStaffComponent {
       nombreCompleto: 'NOMBRE Y APELLIDO',
       dni: '43.123.456',
       rol: 'PREPARADOR FÍSICO',
-      edad: '39 AÑOS',
+      edad: '00 AÑOS',
       categoriaAsignada: 'PRIMERA',
       telefono: '351-1122334',
       estado: 'ACTIVO'
@@ -97,8 +98,14 @@ export class AdminStaffComponent {
   constructor(private router: Router) {}
 
   selectNav(label: string) {
-    if (label === 'Inicio' || label === 'Jugadores') {
+    if (label === 'Inicio') {
       this.router.navigate(['/admin']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/admin/lista-jugadores']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/admin/categorias']);
+    } else if (label === 'Staff') {
+      this.router.navigate(['/admin/staff']);
     }
   }
 
@@ -126,5 +133,13 @@ export class AdminStaffComponent {
 
   darDeAltaTrabajador() {
     this.router.navigate(['/admin/alta-trabajador']);
+  }
+
+  editarTrabajador(id: number) {
+    this.router.navigate(['/admin/staff/editar-ficha', id]);
+  }
+
+  verFicha(id: number) {
+    this.router.navigate(['/admin/staff/ver-ficha', id]);
   }
 }

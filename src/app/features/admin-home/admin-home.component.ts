@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 
 interface Player {
   id: number;
@@ -8,47 +9,48 @@ interface Player {
   dni: string;
   categoria: string;
   fechaNacimiento: string;
-  estadoCuota: 'COMPLETO' | 'PENDIENTE' | 'ADEUDA';
+  estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA';
 }
 
 @Component({
   selector: 'app-admin-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-home.component.html',
   styleUrl: './admin-home.component.css'
 })
 export class AdminHomeComponent {
+  constructor(private router: Router) {}
+
+  irAAltaJugador() {
+    this.router.navigate(['/admin/alta-jugador']);
+  }
+
   searchTerm = '';
   categoriaFiltro = '';
   ordenFiltro = '';
 
-  activeTab = '';
+  activeTab = 'Inicio';
 
   navItems = [
-    { label: 'Inicio', icon: 'home', active: false },
+    { label: 'Inicio', icon: 'home', active: true },
     { label: 'Jugadores', icon: 'group', active: false },
-    { label: 'Staff', icon: 'badge', active: false }
+    { label: 'Staff', icon: 'badge', active: false },
+    { label: 'Categorias', icon: 'category', active: false }
   ];
 
   kpiCards = [
     {
-      title: 'Total de Jugadores',
+      title: 'Jugadores Activos',
       value: '+500',
       type: 'jugadores',
-      icon: 'users'
+      icon: 'group'
     },
     {
       title: 'Categorias Activas',
       value: '+16',
       type: 'categorias',
       icon: 'flag'
-    },
-    {
-      title: 'Cuotas al Día',
-      value: '95%',
-      type: 'cuotas',
-      icon: 'thumbs-up'
     }
   ];
 
@@ -59,50 +61,77 @@ export class AdminHomeComponent {
       dni: '50.123.456',
       categoria: 'CEBOLLITAS',
       fechaNacimiento: '01/01/2019',
-      estadoCuota: 'COMPLETO'
+      estadoCuota: 'AL DÍA'
     },
     {
       id: 2,
-      nombreCompleto: 'NOMBRE COMPLETO',
-      dni: '00.000.000',
-      categoria: 'CATEGORIA',
-      fechaNacimiento: '00/00/0000',
+      nombreCompleto: 'LUIS OSCAR DIAZ',
+      dni: '50.123.456',
+      categoria: 'CEBOLLITAS',
+      fechaNacimiento: '01/01/2019',
       estadoCuota: 'PENDIENTE'
     },
     {
       id: 3,
-      nombreCompleto: 'NOMBRE COMPLETO',
-      dni: '00.000.000',
-      categoria: 'CATEGORIA',
-      fechaNacimiento: '00/00/0000',
+      nombreCompleto: 'LUIS OSCAR DIAZ',
+      dni: '50.123.456',
+      categoria: 'CEBOLLITAS',
+      fechaNacimiento: '01/01/2019',
       estadoCuota: 'ADEUDA'
     },
     {
       id: 4,
-      nombreCompleto: 'CARLOS GUTIERREZ',
-      dni: '48.912.344',
-      categoria: 'INFANTIL',
-      fechaNacimiento: '14/05/2017',
-      estadoCuota: 'COMPLETO'
-    },
-    {
-      id: 5,
-      nombreCompleto: 'MATEO BENITEZ',
-      dni: '52.331.009',
-      categoria: 'JUVENIL',
-      fechaNacimiento: '22/10/2015',
-      estadoCuota: 'PENDIENTE'
+      nombreCompleto: 'LUIS OSCAR DIAZ',
+      dni: '50.123.456',
+      categoria: 'CEBOLLITAS',
+      fechaNacimiento: '01/01/2019',
+      estadoCuota: 'AL DÍA'
     }
   ];
+
+  get filteredPlayers(): Player[] {
+    return this.players
+      .filter(p => {
+        const term = this.searchTerm.trim().toLowerCase();
+        const matchSearch = !term ||
+          p.nombreCompleto.toLowerCase().includes(term) ||
+          p.dni.includes(term);
+        const matchCat = !this.categoriaFiltro || p.categoria.toUpperCase() === this.categoriaFiltro.toUpperCase();
+        return matchSearch && matchCat;
+      })
+      .sort((a, b) => {
+        if (this.ordenFiltro === 'nombre') return a.nombreCompleto.localeCompare(b.nombreCompleto);
+        if (this.ordenFiltro === 'dni') return a.dni.localeCompare(b.dni);
+        if (this.ordenFiltro === 'categoria') return a.categoria.localeCompare(b.categoria);
+        return 0;
+      });
+  }
 
   selectNav(label: string) {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
+    if (label === 'Jugadores') {
+      this.router.navigate(['/admin/lista-jugadores']);
+    } else if (label === 'Inicio') {
+      this.router.navigate(['/admin']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/admin/categorias']);
+    } else if (label === 'Staff') {
+      this.router.navigate(['/admin/staff']);
+    }
+  }
+
+  verFicha(id: number) {
+    this.router.navigate(['/admin/ficha-jugador', id]);
+  }
+
+  editarPerfil(id: number) {
+    this.router.navigate(['/admin/editar-perfil', id]);
   }
 
   getBadgeClass(estado: Player['estadoCuota']): string {
     switch (estado) {
-      case 'COMPLETO': return 'badge-completo';
+      case 'AL DÍA': return 'badge-aldia';
       case 'PENDIENTE': return 'badge-pendiente';
       case 'ADEUDA': return 'badge-adeuda';
       default: return '';

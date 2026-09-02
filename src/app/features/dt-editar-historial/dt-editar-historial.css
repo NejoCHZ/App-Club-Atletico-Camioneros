@@ -1,0 +1,618 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #1e293b;
+  overflow: hidden;
+}
+
+.cacc-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* SIDEBAR LATERAL VERDE CACC (#007A3D) */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: #007A3D;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 1.75rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-wrapper {
+  width: 150px;
+  height: 170px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cacc-shield-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+}
+
+.club-title {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.club-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0.35rem 0 0 0;
+  font-weight: 500;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-item.active {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.925rem;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* MAIN WRAPPER & HEADER */
+.main-wrapper {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.top-header {
+  height: 65px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007A3D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.profile-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.profile-email {
+  font-size: 0.725rem;
+  color: #64748b;
+}
+
+.chevron-down {
+  display: flex;
+  align-items: center;
+  margin-left: 0.25rem;
+}
+
+/* CONTENT BODY (3 COLUMNS GRID) */
+.content-body {
+  padding: 1.25rem 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ficha-3cols-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  gap: 1.25rem;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1300px) {
+  .ficha-3cols-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-col {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* COLUMN 1: PERSONAL & PROFILE */
+.col-personal {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-avatar-banner {
+  height: 170px;
+  background-color: #e8f8ee;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.big-avatar-circle {
+  width: 140px;
+  height: 140px;
+  background-color: #e6f4ea;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.personal-info-body {
+  padding: 1.5rem 1.75rem;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-full-name {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.player-position-subtitle {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0.4rem 0 0 0;
+  text-transform: uppercase;
+}
+
+.divider-line {
+  height: 1px;
+  background-color: #cbd5e1;
+  margin: 1.25rem 0;
+}
+
+.section-subtitle {
+  font-size: 0.925rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 1.25rem 0;
+  text-align: left;
+  letter-spacing: 0.03em;
+}
+
+.personal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.15rem 0.5rem;
+  text-align: left;
+}
+
+.grid-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.item-icon-box {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.item-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.domicilio-box {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.volver-btn-wrapper {
+  margin-top: auto;
+  padding-top: 1.25rem;
+}
+
+.btn-back-dt {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #007A3D;
+  color: #007A3D;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-back-dt:hover {
+  background-color: #007A3D;
+  color: #ffffff;
+}
+
+/* COLUMN 2: EDITABLE PARTIDOS TABLE */
+.col-partidos {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-header-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.card-header-with-icon .card-title-centered {
+  margin: 0;
+}
+
+.card-title-centered {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  text-align: center;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.table-responsive-partidos {
+  overflow-y: auto;
+  flex: 1;
+  height: 100%;
+  max-height: calc(100vh - 220px);
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+}
+
+.partidos-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.partidos-table th {
+  background-color: #007A3D;
+  color: #ffffff;
+  padding: 0.75rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.partidos-table td {
+  padding: 0.6rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.partidos-table tr.even-row td {
+  background-color: #e6f4ea;
+}
+
+.col-rival {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* INPUTS DENTRO DE LA TABLA EDITABLE */
+.table-input {
+  background-color: #ffffff;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  padding: 0.25rem 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.table-input:focus {
+  outline: none;
+  border-color: #007A3D;
+  box-shadow: 0 0 0 2px rgba(0, 122, 61, 0.15);
+}
+
+.input-dia {
+  width: 60px;
+}
+
+.input-fecha {
+  width: 45px;
+}
+
+.input-rival {
+  width: 100%;
+  min-width: 90px;
+}
+
+.resultado-inputs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.input-gol {
+  width: 32px;
+}
+
+.dash {
+  font-weight: 700;
+  color: #475569;
+}
+
+.input-minutos {
+  width: 45px;
+}
+
+.table-footer-summary {
+  text-align: right;
+  margin-top: auto;
+  padding-top: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+}
+
+/* ACTION BUTTONS (CANCELAR / GUARDAR) */
+.actions-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+}
+
+.btn-cancel-red {
+  background-color: #ffffff;
+  border: 1.5px solid #ef4444;
+  border-radius: 10px;
+  padding: 0.5rem 1.35rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ef4444;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel-red:hover {
+  background-color: #fef2f2;
+}
+
+.btn-save-green {
+  background-color: #007A3D;
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 2px 6px rgba(0, 122, 61, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-save-green:hover {
+  background-color: #006331;
+}
+
+/* COLUMN 3: FICHA MÉDICA */
+.col-medica {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-divider-line {
+  height: 2px;
+  background-color: #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+.medica-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.medica-block-label {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+}
+
+.medica-text-box {
+  border: 1.5px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 110px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+.medica-text-box p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #334155;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.lesiones-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #334155;
+  font-weight: 600;
+}

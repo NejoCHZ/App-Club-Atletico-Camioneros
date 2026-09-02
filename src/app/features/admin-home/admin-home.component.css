@@ -4,7 +4,7 @@
   height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #d8dce2;
+  background-color: #dcdcdc;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   color: #1e293b;
   overflow: hidden;
@@ -20,17 +20,17 @@
 }
 
 /* ==========================================================================
-   SIDEBAR LATERAL VERDE CACC (#007A3D) - ESCUDO AGRANDADO
+   SIDEBAR LATERAL VERDE CACC (#007A3D)
    ========================================================================== */
 .sidebar {
-  width: 270px;
+  width: 260px;
   height: 100vh;
   background-color: #007A3D;
   color: #ffffff;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  padding: 2rem 1.25rem;
+  padding: 1.75rem 1.25rem;
   box-sizing: border-box;
 }
 
@@ -39,13 +39,13 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 2.25rem;
+  margin-bottom: 2rem;
 }
 
 .logo-wrapper {
-  width: 175px;
-  height: 195px;
-  margin-bottom: 1.25rem;
+  width: 150px;
+  height: 170px;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,48 +55,43 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
-  transition: transform 0.2s ease;
-}
-
-.cacc-shield-img:hover {
-  transform: scale(1.03);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
 }
 
 .club-title {
-  font-size: 0.99rem;
+  font-size: 0.88rem;
   font-weight: 900;
   color: #ffffff;
   margin: 0;
-  line-height: 1.3;
-  letter-spacing: 0.03em;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
 .club-subtitle {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0.4rem 0 0 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0.35rem 0 0 0;
   font-weight: 500;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.5rem;
   flex: 1;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 1.15rem;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
   color: #ffffff;
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -106,7 +101,7 @@
 }
 
 .nav-item.active {
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.22);
 }
 
 .nav-icon {
@@ -116,19 +111,19 @@
 }
 
 .sidebar-footer {
-  padding-top: 1.25rem;
+  padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .logout-btn {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
   color: #ffffff;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.925rem;
   cursor: pointer;
-  padding: 0.65rem;
+  padding: 0.6rem;
   border-radius: 8px;
   transition: background 0.2s;
 }
@@ -138,7 +133,7 @@
 }
 
 /* ==========================================================================
-   MAIN WRAPPER & HEADER (#007A3D ACCENTS)
+   MAIN WRAPPER & HEADER
    ========================================================================== */
 .main-wrapper {
   flex: 1;
@@ -146,38 +141,27 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background-color: #d8dce2;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .top-header {
-  height: 70px;
+  height: 65px;
   background-color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2.25rem;
-  border-bottom: 1px solid #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 0 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-}
-
-.hamburger-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-  padding: 0;
 }
 
 .header-title {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
@@ -186,13 +170,13 @@
 .admin-profile {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
   cursor: pointer;
 }
 
 .profile-avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-color: #007A3D;
   display: flex;
@@ -205,11 +189,10 @@
   display: flex;
   flex-direction: column;
   text-align: left;
-  align-items: flex-start;
 }
 
 .profile-name {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #1e293b;
 }
@@ -220,30 +203,30 @@
 }
 
 .chevron-down {
-  font-size: 0.75rem;
-  color: #64748b;
-  transform: rotate(90deg);
+  display: flex;
+  align-items: center;
+  margin-left: 0.25rem;
 }
 
 /* ==========================================================================
-   CONTENT BODY & KPI CARDS (#007A3D ACCENTS)
+   CONTENT BODY & KPI CARDS (2 CARDS)
    ========================================================================== */
 .content-body {
-  padding: 2rem 2.25rem;
+  padding: 1.75rem 2rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
   overflow-y: auto;
 }
 
 .kpi-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 900px) {
   .kpi-cards-grid {
     grid-template-columns: 1fr;
   }
@@ -251,47 +234,50 @@
 
 .kpi-card {
   background-color: #ffffff;
-  border-radius: 18px;
-  padding: 1.75rem;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-  height: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 140px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.kpi-card-content {
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   position: relative;
   z-index: 2;
 }
 
 .kpi-icon-box {
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   background-color: #d1fae5;
-  border-radius: 12px;
-  display: inline-flex;
+  border-radius: 10px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  vertical-align: middle;
-  margin-right: 0.85rem;
+  flex-shrink: 0;
 }
 
 .kpi-title {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1e293b;
-  vertical-align: middle;
 }
 
 .kpi-value {
   font-size: 2.8rem;
   font-weight: 800;
-  color: #0f172a;
-  margin-top: 0.6rem;
+  color: #000000;
+  margin-top: 0.25rem;
+  position: relative;
+  z-index: 2;
   letter-spacing: -0.02em;
 }
 
@@ -300,41 +286,41 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 160px;
-  height: 105px;
+  width: 120px;
+  height: 80px;
   background-color: #a7f3d0;
-  border-top-left-radius: 100px;
+  border-top-left-radius: 90px;
   z-index: 1;
 }
 
 /* ==========================================================================
-   TABLE CARD & CONTROLS (#007A3D ACCENTS)
+   TABLE CARD & CONTROLS
    ========================================================================== */
 .table-card {
   background-color: #ffffff;
-  border-radius: 18px;
-  padding: 2rem;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   flex: 1;
 }
 
 .table-controls {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  margin-bottom: 1.75rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
 .search-box {
   position: relative;
   flex: 1;
-  min-width: 280px;
+  min-width: 250px;
 }
 
 .search-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
 }
@@ -342,9 +328,9 @@
 .search-input {
   width: 100%;
   box-sizing: border-box;
-  padding: 0.75rem 1.25rem 0.75rem 2.6rem;
-  border: 1px solid #475569;
-  border-radius: 10px;
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
   font-size: 0.95rem;
   color: #1e293b;
   background-color: #ffffff;
@@ -362,10 +348,10 @@
 .select-box select {
   appearance: none;
   background-color: #ffffff;
-  border: 1px solid #475569;
-  border-radius: 10px;
-  padding: 0.75rem 2.5rem 0.75rem 1.25rem;
-  font-size: 0.95rem;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  padding: 0.65rem 2.2rem 0.65rem 1rem;
+  font-size: 0.925rem;
   font-weight: 500;
   color: #334155;
   cursor: pointer;
@@ -378,42 +364,41 @@
 
 .select-arrow {
   position: absolute;
-  right: 14px;
+  right: 12px;
   top: 50%;
-  transform: translateY(-50%) rotate(90deg);
-  font-size: 0.8rem;
-  color: #475569;
+  transform: translateY(-50%);
   pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
 .btn-add-player {
   background-color: #007A3D;
   color: #ffffff;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.925rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
   margin-left: auto;
 }
 
 .btn-add-player:hover {
   background-color: #006030;
-  transform: translateY(-1px);
 }
 
 .plus-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 800;
 }
 
 /* ==========================================================================
-   DATA TABLE STYLING (#007A3D AVATAR & BADGES)
+   DATA TABLE STYLING
    ========================================================================== */
 .table-responsive {
   overflow-x: auto;
@@ -428,14 +413,14 @@
 .cacc-table th {
   background-color: #e5e7eb;
   color: #0f172a;
-  padding: 0.9rem 1.25rem;
-  font-size: 0.925rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   border-bottom: 2px solid #cbd5e1;
 }
 
 .cacc-table td {
-  padding: 1rem 1.25rem;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid #e2e8f0;
   font-size: 0.9rem;
   color: #1e293b;
@@ -448,12 +433,12 @@
 }
 
 .col-dni, .col-categoria, .col-nacimiento {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .user-avatar-circle {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   background-color: #007A3D;
   border-radius: 50%;
   display: inline-flex;
@@ -461,33 +446,35 @@
   justify-content: center;
 }
 
+/* Badges matching screenshot exactly */
 .badge-status {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0.4rem 1rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  padding: 0.4rem 1.1rem;
+  border-radius: 20px;
+  font-size: 0.775rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  width: 100px;
+  min-width: 105px;
   box-sizing: border-box;
+  text-transform: uppercase;
 }
 
-.badge-completo {
-  background-color: rgba(52, 199, 89, 0.5);
-  color: #0c4217;
+.badge-aldia {
+  background-color: #a7f3d0;
+  color: #166534;
 }
 
 .badge-pendiente {
-  background-color: rgba(255, 204, 0, 0.5);
-  color: #594500;
+  background-color: #fef08a;
+  color: #854d0e;
 }
 
 .badge-adeuda {
-  background-color: rgba(255, 56, 60, 0.5);
-  color: #5c0709;
+  background-color: #fca5a5;
+  color: #991b1b;
 }
 
 .col-acciones {
@@ -498,14 +485,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .action-btn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.35rem;
+  padding: 0.3rem;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
@@ -519,5 +506,6 @@
 }
 
 .empty-row td {
-  height: 44px;
+  height: 42px;
 }
+

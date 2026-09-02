@@ -7,8 +7,9 @@ export interface PlayerDT {
   id: number;
   nombreCompleto: string;
   dni: string;
-  posicion: 'Arqueros' | 'Defensores' | 'Volantes' | 'Delanteros';
-  edad: string;
+  categoria: string;
+  fechaNacimiento: string;
+  foto?: string;
 }
 
 @Component({
@@ -21,84 +22,85 @@ export interface PlayerDT {
 export class DtHomeComponent {
   constructor(private router: Router) {}
 
-  verFicha(player: PlayerDT) {
-    this.router.navigate(['/dt/jugador', player.id]);
-  }
+  cantidadJugadores = 20;
+  categoriaAsignada = 'Sub 15';
+
   searchTerm = '';
-  posicionFiltro = ''; // '' means all positions
+  filtroCategoria = '';
+  ordenarPor = '';
 
   navItems = [
-    { label: 'Plantel', icon: 'plantel', active: false },
-    { label: 'Estadísticas', icon: 'estadisticas', active: false },
-    { label: 'Configuración', icon: 'configuracion', active: false }
+    { label: 'Inicio', icon: 'home', active: true },
+    { label: 'Jugadores', icon: 'jugadores', active: false },
+    { label: 'Categorias', icon: 'categorias', active: false }
   ];
+
+  categoriasDisponibles = ['CEBOLLITAS', 'SUB 13', 'SUB 15', 'SUB 17', 'RESERVA', 'PRIMERA'];
 
   players: PlayerDT[] = [
     {
       id: 1,
       nombreCompleto: 'LUIS OSCAR DIAZ',
-      dni: '43.123.456',
-      posicion: 'Delanteros',
-      edad: '14 AÑOS'
+      dni: '50.123.456',
+      categoria: 'CEBOLLITAS',
+      fechaNacimiento: '01/01/2019'
     },
     {
       id: 2,
-      nombreCompleto: 'CARLOS GUTIERREZ',
-      dni: '43.123.456',
-      posicion: 'Defensores',
-      edad: '15 AÑOS'
+      nombreCompleto: 'LUIS OSCAR DIAZ',
+      dni: '50.123.456',
+      categoria: 'CEBOLLITAS',
+      fechaNacimiento: '01/01/2019'
     },
     {
       id: 3,
-      nombreCompleto: 'EMILIANO MARTINEZ',
-      dni: '43.123.456',
-      posicion: 'Arqueros',
-      edad: '14 AÑOS'
+      nombreCompleto: 'LUIS OSCAR DIAZ',
+      dni: '50.123.456',
+      categoria: 'CEBOLLITAS',
+      fechaNacimiento: '01/01/2019'
     },
     {
       id: 4,
-      nombreCompleto: 'MATEO BENITEZ',
-      dni: '43.123.456',
-      posicion: 'Volantes',
-      edad: '16 AÑOS'
-    },
-    {
-      id: 5,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'Defensores',
-      edad: '00 AÑOS'
-    },
-    {
-      id: 6,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'Volantes',
-      edad: '00 AÑOS'
+      nombreCompleto: 'LUIS OSCAR DIAZ',
+      dni: '50.123.456',
+      categoria: 'CEBOLLITAS',
+      fechaNacimiento: '01/01/2019'
     }
   ];
 
   get filteredPlayers(): PlayerDT[] {
-    return this.players.filter(p => {
+    let result = this.players.filter(p => {
       const matchSearch = !this.searchTerm ||
         p.nombreCompleto.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         p.dni.includes(this.searchTerm);
 
-      const matchPos = !this.posicionFiltro || p.posicion === this.posicionFiltro;
+      const matchCat = !this.filtroCategoria || p.categoria === this.filtroCategoria;
 
-      return matchSearch && matchPos;
+      return matchSearch && matchCat;
     });
+
+    if (this.ordenarPor === 'nombre') {
+      result.sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto));
+    } else if (this.ordenarPor === 'dni') {
+      result.sort((a, b) => a.dni.localeCompare(b.dni));
+    }
+
+    return result;
   }
 
-  setPosicionFiltro(posicion: string) {
-    if (this.posicionFiltro === posicion) {
-      this.posicionFiltro = ''; // Toggle off
-    } else {
-      this.posicionFiltro = posicion;
-    }
+  verFicha(player: PlayerDT) {
+    this.router.navigate(['/dt/jugador', player.id]);
   }
 
   selectNav(label: string) {
     this.navItems.forEach(item => item.active = (item.label === label));
+    if (label === 'Categorias') {
+      this.router.navigate(['/dt/categorias']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/dt-categoria-jugadores']);
+    } else if (label === 'Inicio') {
+      this.router.navigate(['/dt']);
+    }
   }
 }
+

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 /* Global Reset & Edge-to-Edge Setup */
 html, body {
   margin: 0;
@@ -6,10 +8,18 @@ html, body {
   height: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #d8dce2;
 }
 
 *, *::before, *::after {
   box-sizing: inherit;
+}
+
+/* Main Content Area Font Override (Excluding Left Sidebar) */
+.main-wrapper, 
+.main-wrapper *,
+.content-body,
+.content-body * {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
