@@ -1,0 +1,511 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #1e293b;
+  overflow: hidden;
+}
+
+.cacc-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   SIDEBAR LATERAL VERDE CACC (#007A3D)
+   ========================================================================== */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: #007A3D;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 1.75rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-wrapper {
+  width: 150px;
+  height: 170px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cacc-shield-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+}
+
+.club-title {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.club-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0.35rem 0 0 0;
+  font-weight: 500;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-item.active {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.925rem;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================================================
+   MAIN WRAPPER & HEADER
+   ========================================================================== */
+.main-wrapper {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.top-header {
+  height: 65px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007A3D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.profile-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.profile-email {
+  font-size: 0.725rem;
+  color: #64748b;
+}
+
+.chevron-down {
+  display: flex;
+  align-items: center;
+  margin-left: 0.25rem;
+}
+
+/* ==========================================================================
+   CONTENT BODY & KPI CARDS (2 CARDS)
+   ========================================================================== */
+.content-body {
+  padding: 1.75rem 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+.kpi-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .kpi-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 140px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 2;
+}
+
+.kpi-icon-box {
+  width: 38px;
+  height: 38px;
+  background-color: #d1fae5;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.kpi-value {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #000000;
+  margin-top: 0.25rem;
+  position: relative;
+  z-index: 2;
+  letter-spacing: -0.02em;
+}
+
+/* Decor Mint Slope Triangle in bottom-right corner */
+.kpi-decor-shape {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 120px;
+  height: 80px;
+  background-color: #a7f3d0;
+  border-top-left-radius: 90px;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   TABLE CARD & CONTROLS
+   ========================================================================== */
+.table-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  flex: 1;
+}
+
+.table-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  background-color: #ffffff;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #007A3D;
+}
+
+.select-box {
+  position: relative;
+}
+
+.select-box select {
+  appearance: none;
+  background-color: #ffffff;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  padding: 0.65rem 2.2rem 0.65rem 1rem;
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+}
+
+.select-box select:focus {
+  outline: none;
+  border-color: #007A3D;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.btn-add-player {
+  background-color: #007A3D;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.925rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+  margin-left: auto;
+}
+
+.btn-add-player:hover {
+  background-color: #006030;
+}
+
+.plus-icon {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   DATA TABLE STYLING
+   ========================================================================== */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.cacc-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.cacc-table th {
+  background-color: #e5e7eb;
+  color: #0f172a;
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.cacc-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.col-nombre {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.col-dni, .col-categoria, .col-nacimiento {
+  font-weight: 600;
+}
+
+.user-avatar-circle {
+  width: 36px;
+  height: 36px;
+  background-color: #007A3D;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Badges matching screenshot exactly */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.4rem 1.1rem;
+  border-radius: 20px;
+  font-size: 0.775rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  min-width: 105px;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.badge-aldia {
+  background-color: #a7f3d0;
+  color: #166534;
+}
+
+.badge-pendiente {
+  background-color: #fef08a;
+  color: #854d0e;
+}
+
+.badge-adeuda {
+  background-color: #fca5a5;
+  color: #991b1b;
+}
+
+.col-acciones {
+  vertical-align: middle;
+}
+
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.action-btn:hover {
+  opacity: 0.75;
+  background-color: #f1f5f9;
+}
+
+.empty-row td {
+  height: 42px;
+}
+

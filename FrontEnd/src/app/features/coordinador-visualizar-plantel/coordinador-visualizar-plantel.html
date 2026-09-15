@@ -1,0 +1,124 @@
+<div class="cacc-layout">
+  <!-- Left Sidebar Unificado -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrapper">
+        <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
+      </div>
+      <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
+      <p class="club-subtitle">Sistema de Gestión Integral</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems"
+         class="nav-item"
+         [class.active]="item.active"
+         (click)="selectNav(item)">
+        <span class="nav-icon" [ngSwitch]="item.icon">
+          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="logout-btn" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="header-title">Visualización de Plantel - {{ categoryName }}</h1>
+      </div>
+
+      <div class="header-right">
+        <div class="admin-profile">
+          <div class="profile-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">{{ userName }}</span>
+            <span class="profile-email">{{ userEmail }}</span>
+          </div>
+          <span class="chevron-down">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body">
+      <h1 class="page-section-title">PLANTEL {{ categoryName }}</h1>
+
+      <!-- Filter Controls Bar Card -->
+      <section class="filter-bar-card">
+        <div class="filter-left-group">
+          <span class="filter-label">Filtrar por posición:</span>
+          <div class="filter-pills-row">
+            <button class="filter-pill-btn" [class.active]="selectedPosition === 'ARQUERO'" (click)="filterByPosition('ARQUERO')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 0 1 2 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.8-5.6-2.4l-3.1-4.7c-.5-.7-.4-1.7.3-2.2.6-.5 1.5-.4 2.1.2L6 11"></path></svg>
+              <span>Arqueros</span>
+            </button>
+            <button class="filter-pill-btn" [class.active]="selectedPosition === 'DEFENSOR'" (click)="filterByPosition('DEFENSOR')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Defensores</span>
+            </button>
+            <button class="filter-pill-btn" [class.active]="selectedPosition === 'VOLANTE'" (click)="filterByPosition('VOLANTE')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>
+              <span>Volantes</span>
+            </button>
+            <button class="filter-pill-btn" [class.active]="selectedPosition === 'DELANTERO'" (click)="filterByPosition('DELANTERO')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+              <span>Delanteros</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="search-input-box">
+          <input type="text" placeholder="Buscar por nombre" [(ngModel)]="searchTerm" class="search-input" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5" class="search-icon-green"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+      </section>
+
+      <!-- Player List Main Container Card -->
+      <section class="list-card">
+        <h2 class="list-card-title">LISTA DE JUGADORES</h2>
+
+        <div class="players-list-wrapper">
+          <div class="player-item-row" *ngFor="let p of filteredPlayers">
+            <!-- Left Avatar Ring -->
+            <div class="player-avatar-ring">
+              <div class="player-avatar-circle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+              </div>
+            </div>
+
+            <!-- Player Info Columns -->
+            <div class="col-info col-name">{{ p.name }}</div>
+            <div class="col-info col-dni">DNI: {{ p.dni }}</div>
+            <div class="col-info col-pos">{{ p.position }}</div>
+            <div class="col-info col-edad">{{ p.age }}</div>
+
+            <!-- Action Button -->
+            <div class="col-info col-actions">
+              <button class="btn-action-outline" (click)="verFicha(p.name)">Ver ficha</button>
+            </div>
+          </div>
+
+          <div *ngIf="filteredPlayers.length === 0" class="no-results">
+            No se encontraron jugadores con los criterios seleccionados.
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
