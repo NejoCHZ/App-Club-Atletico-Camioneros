@@ -1,0 +1,199 @@
+<div class="cacc-layout">
+  <!-- Left Sidebar (Verde Institucional CACC) -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <!-- CACC Logo Shield Emblem -->
+      <div class="logo-wrapper">
+        <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
+      </div>
+      <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
+      <p class="club-subtitle">Sistema de Gestión Integral</p>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems" 
+         class="nav-item" 
+         [class.active]="item.active"
+         (click)="selectNav(item.label)">
+        <span class="nav-icon" [ngSwitch]="item.icon">
+          <!-- Home Icon -->
+          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <!-- Jugadores Icon -->
+          <svg *ngSwitchCase="'jugadores'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <!-- Categorias Icon -->
+          <svg *ngSwitchCase="'categorias'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <!-- Logout at Bottom -->
+    <div class="sidebar-footer">
+      <a class="logout-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <!-- Header Superior -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="header-title">Panel Director Tecnico</h1>
+      </div>
+
+      <div class="header-right">
+        <div class="admin-profile">
+          <div class="profile-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">Nombre Usuario</span>
+            <span class="profile-email">Ejemplo@myejemplo.com</span>
+          </div>
+          <span class="chevron-down">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main View Body -->
+    <main class="content-body">
+      <!-- KPI Row (2 Cards) -->
+      <section class="kpi-row">
+        <!-- KPI Card 1: Cantidad de Jugadores -->
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <div class="kpi-icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <span class="kpi-label">Cantidad de Jugadores</span>
+          </div>
+          <div class="kpi-card-body">
+            <span class="kpi-value">{{ cantidadJugadores }}</span>
+          </div>
+          <!-- Decorative Graphic Wave -->
+          <div class="kpi-graphic">
+            <svg viewBox="0 0 160 90" preserveAspectRatio="none">
+              <polygon points="0,90 160,90 160,20 110,0 0,90" fill="#a7f3d0" opacity="0.75" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI Card 2: Categoria Asignada -->
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <div class="kpi-icon-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+            </div>
+            <span class="kpi-label">Categoria Asignada</span>
+          </div>
+          <div class="kpi-card-body">
+            <span class="kpi-value">{{ categoriaAsignada }}</span>
+          </div>
+          <!-- Decorative Graphic Wave -->
+          <div class="kpi-graphic">
+            <svg viewBox="0 0 160 90" preserveAspectRatio="none">
+              <polygon points="0,90 160,90 160,20 110,0 0,90" fill="#a7f3d0" opacity="0.75" />
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Table Main Card Container -->
+      <section class="table-container-card">
+        <!-- Controls Filter Row -->
+        <div class="table-controls-row">
+          <!-- Search Box -->
+          <div class="search-input-pill">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Buscar por DNI o Nombre" [(ngModel)]="searchTerm" class="search-input-field" />
+          </div>
+
+          <!-- Dropdowns -->
+          <div class="dropdown-group">
+            <div class="select-wrapper">
+              <select [(ngModel)]="filtroCategoria" class="control-select">
+                <option value="">Filtro de Categoria</option>
+                <option *ngFor="let cat of categoriasDisponibles" [value]="cat">{{ cat }}</option>
+              </select>
+              <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+
+            <div class="select-wrapper">
+              <select [(ngModel)]="ordenarPor" class="control-select">
+                <option value="">Ordenar por</option>
+                <option value="nombre">Nombre Completo</option>
+                <option value="dni">DNI</option>
+              </select>
+              <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="players-table-wrapper">
+          <div class="table-header-banner">
+            <div class="col-th col-foto">[Foto]</div>
+            <div class="col-th col-nombre">[Nombre Completo]</div>
+            <div class="col-th col-dni">[DNI]</div>
+            <div class="col-th col-categoria">[Categoria]</div>
+            <div class="col-th col-fnac">[F. Nacimiento]</div>
+            <div class="col-th col-acciones">[Acciones]</div>
+          </div>
+
+          <div class="table-body-rows">
+            <div class="table-data-row" *ngFor="let p of filteredPlayers">
+              <!-- Foto -->
+              <div class="col-td col-foto">
+                <div class="avatar-green-circle">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+                </div>
+              </div>
+
+              <!-- Nombre Completo -->
+              <div class="col-td col-nombre text-bold">
+                {{ p.nombre }} {{ p.apellido }}
+              </div>
+
+              <!-- DNI -->
+              <div class="col-td col-dni">
+                {{ p.dni }}
+              </div>
+
+              <!-- Categoria -->
+              <div class="col-td col-categoria">
+                {{ p.nombreCategoria }}
+              </div>
+
+              <!-- F. Nacimiento -->
+              <div class="col-td col-fnac">
+                {{ p.fechaNacimiento }}
+              </div>
+
+              <!-- Acciones -->
+              <div class="col-td col-acciones">
+                <button class="action-btn view-btn" (click)="verFicha(p)" title="Ver Ficha Jugador">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Placeholders for empty rows visually matching mockup lines -->
+            <div class="table-empty-row" *ngIf="filteredPlayers.length < 5">
+              <div class="empty-line-placeholder"></div>
+            </div>
+            <div class="table-empty-row" *ngIf="filteredPlayers.length < 5">
+              <div class="empty-line-placeholder"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+

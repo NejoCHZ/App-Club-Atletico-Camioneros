@@ -1,8 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { DashboardService } from '../../../core/services/dashboard.service';
-import { RecentRegistration, CategoryDistribution } from '../../../core/models/dashboard.model';
+import { DashboardService } from '../../core/services/dashboard.service';
+import { RecentRegistration, CategoryDistribution } from '../../core/models/dashboard.model';
 
 @Component({
   selector: 'app-dashboard-coordinador',
@@ -17,30 +17,19 @@ export class DashboardCoordinador implements OnInit {
 
   userName = 'Rubén del Olmo';
   userEmail = 'Ejemplo@mailejemplo.com';
-  totalPlayers = '+500';
-  activeCategoriesCount = '+25';
+  totalPlayers = '0';
+  activeCategoriesCount = '0';
   activeTab = 'Inicio';
-
-<<<<<<< Updated upstream
-  recentRegistrations = [
-    { name: 'Mateo Messi', club: 'CACC', category: '2015', date: 'Hoy' },
-    { name: 'Ciro Messi', club: 'CACC', category: '2018', date: 'Ayer' }
-  ];
-
-  categoryDistributions = [
-    { name: '2015', count: 120, percentage: 80 },
-    { name: '2016', count: 90, percentage: 60 }
-  ];
-=======
-  recentRegistrations: RecentRegistration[] = [];
-  categoryDistributions: CategoryDistribution[] = [];
->>>>>>> Stashed changes
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: true, route: '/coordinador' },
-    { label: 'Jugadores', icon: 'group', active: false, route: '/coordinador-seleccion-categorias' },
-    { label: 'Staff', icon: 'badge', active: false, route: '/coordinador/visualizar-staff' }
+    { label: 'Jugadores', icon: 'group', active: false, route: '/coordinador-lista-jugadores' },
+    { label: 'Staff', icon: 'badge', active: false, route: '/coordinador/visualizar-staff' },
+    { label: 'Categorias', icon: 'category', active: false, route: '/coordinador-seleccion-categorias' }
   ];
+
+  recentRegistrations: RecentRegistration[] = [];
+  categoryDistributions: CategoryDistribution[] = [];
 
   ngOnInit(): void {
     this.cargarEstadisticas();
@@ -56,7 +45,6 @@ export class DashboardCoordinador implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar stats de la API', err);
-        // Si no hay conexión a la API, dejamos los arreglos vacíos o con datos por defecto nulos
         this.totalPlayers = '0';
         this.activeCategoriesCount = '0';
         this.recentRegistrations = [];

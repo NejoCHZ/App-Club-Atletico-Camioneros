@@ -2,8 +2,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { JugadorService } from '../../../core/services/jugador.service';
-import { Jugador } from '../../../core/models/jugador.model';
+import { JugadorService } from '../../core/services/jugador.service';
+import { Jugador } from '../../core/models/jugador.model';
 
 @Component({
   selector: 'app-coordinador-visualizar-plantel',
@@ -21,25 +21,18 @@ export class CoordinadorVisualizarPlantel implements OnInit {
   userEmail = 'Ejemplo@mailejemplo.com';
   categoryName = 'CATEGORÍA 2009';
   activeTab = 'Jugadores';
-  selectedPosition = 'TODOS';
-  searchTerm = '';
-
-<<<<<<< Updated upstream
-  players = [
-    { name: 'Juan Perez', dni: '12345678', position: 'ARQUERO', age: '14 años' },
-    { name: 'Luis Gomez', dni: '87654321', position: 'DEFENSOR', age: '15 años' },
-    { name: 'Carlos Ruiz', dni: '11223344', position: 'VOLANTE', age: '14 años' },
-    { name: 'Mario Diaz', dni: '44332211', position: 'DELANTERO', age: '15 años' }
-  ];
-=======
-  players: Jugador[] = [];
->>>>>>> Stashed changes
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: false, route: '/coordinador' },
-    { label: 'Jugadores', icon: 'group', active: true, route: '/coordinador-seleccion-categorias' },
-    { label: 'Staff', icon: 'badge', active: false, route: '/coordinador/visualizar-staff' }
+    { label: 'Jugadores', icon: 'group', active: true, route: '/coordinador-lista-jugadores' },
+    { label: 'Staff', icon: 'badge', active: false, route: '/coordinador/visualizar-staff' },
+    { label: 'Categorias', icon: 'category', active: false, route: '/coordinador-seleccion-categorias' }
   ];
+
+  selectedPosition = '';
+  searchTerm = '';
+
+  players: Jugador[] = [];
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -57,9 +50,27 @@ export class CoordinadorVisualizarPlantel implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar jugadores de la API', err);
-        // Si no hay conexión a la API, dejamos la lista vacía
         this.players = [];
       }
+    });
+  }
+
+  get filteredPlayers() {
+    return this.players.filter(p => {
+      const matchPos = !this.selectedPosition || p.posicionCancha === this.selectedPosition;
+      const nombreCompleto = `${p.nombre} ${p.apellido}`.toLowerCase();
+      const matchSearch = !this.searchTerm || nombreCompleto.includes(this.searchTerm.toLowerCase());
+      return matchPos && matchSearch;
+    });
+  }
+
+  filterByPosition(pos: string) {
+    this.selectedPosition = this.selectedPosition === pos ? '' : pos;
+  }
+
+  verFicha(jugador: Jugador) {
+    this.router.navigate(['/coordinador/visualizar-perfil'], {
+      queryParams: { player: `${jugador.nombre} ${jugador.apellido}` }
     });
   }
 
@@ -76,36 +87,6 @@ export class CoordinadorVisualizarPlantel implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  get filteredPlayers() {
-    return this.players.filter(p => {
-<<<<<<< Updated upstream
-      const matchPos = this.selectedPosition === 'TODOS' || p.position === this.selectedPosition;
-      const matchSearch = p.name.toLowerCase().includes(this.searchTerm.toLowerCase());
-=======
-      const matchPos = this.selectedPosition === 'TODOS' || p.posicionCancha === this.selectedPosition;
-      const nombreCompleto = `${p.nombre} ${p.apellido}`.toLowerCase();
-      const matchSearch = nombreCompleto.includes(this.searchTerm.toLowerCase());
->>>>>>> Stashed changes
-      return matchPos && matchSearch;
-    });
-  }
-
-  filterByPosition(pos: string) {
-    if (this.selectedPosition === pos) {
-      this.selectedPosition = 'TODOS';
-    } else {
-      this.selectedPosition = pos;
-    }
-  }
-
-<<<<<<< Updated upstream
-  verFicha(name: string) {
-    console.log('Ver ficha de', name);
-=======
-  verFicha(jugador: Jugador) {
-    console.log('Ver ficha de', jugador.nombre, jugador.apellido);
-  }
-
   calcularEdad(fecha: string): string {
     if (!fecha) return '';
     const hoy = new Date();
@@ -116,6 +97,5 @@ export class CoordinadorVisualizarPlantel implements OnInit {
       edad--;
     }
     return edad + ' años';
->>>>>>> Stashed changes
   }
 }
