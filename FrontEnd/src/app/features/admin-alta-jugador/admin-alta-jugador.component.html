@@ -1,0 +1,228 @@
+<div class="cacc-layout">
+  <!-- Left Sidebar (Verde Institucional CACC) -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrapper">
+        <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
+      </div>
+      <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
+      <p class="club-subtitle">Sistema de Gestión Integral</p>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems" 
+         class="nav-item" 
+         [class.active]="item.active"
+         (click)="selectNav(item.label)">
+        <span class="nav-icon" [ngSwitch]="item.icon">
+          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <!-- Logout at Bottom -->
+    <div class="sidebar-footer">
+      <a class="logout-btn" (click)="volver()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <!-- Header Superior -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="header-title">Panel de categorias</h1>
+      </div>
+
+      <div class="header-right">
+        <div class="admin-profile">
+          <div class="profile-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">Administrador</span>
+            <span class="profile-email">admin@camioneros.com</span>
+          </div>
+          <span class="chevron-down">❯</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main View Body -->
+    <main class="content-body">
+      <!-- Success Toast -->
+      <div *ngIf="mensajeExito" class="toast-success">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>¡Jugador registrado y Código QR generado con éxito! Redirigiendo...</span>
+      </div>
+
+      <!-- 2 Columns Grid Layout -->
+      <div class="grid-2-cards">
+        <!-- CARD 1: Datos del Jugador -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="icon-badge">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><circle cx="8" cy="16" r="1"></circle></svg>
+            </div>
+            <h2 class="card-title">Datos del Jugador</h2>
+          </div>
+
+          <div class="card-body">
+            <!-- DNI Field -->
+            <div class="form-group">
+              <label>DNI / Documento nacional de identidad <span class="required-asterisk">*</span></label>
+              <input type="text" [(ngModel)]="dni" placeholder="Ej: 43.123.456" class="form-input" />
+            </div>
+
+            <!-- Nombre & Apellido Row -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Nombre <span class="required-asterisk">*</span></label>
+                <input type="text" [(ngModel)]="nombre" placeholder="Nombre" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Apellido <span class="required-asterisk">*</span></label>
+                <input type="text" [(ngModel)]="apellido" placeholder="Apellido" class="form-input" />
+              </div>
+            </div>
+
+            <!-- Fecha Nacimiento & Categoria Row -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Fecha de nacimiento <span class="required-asterisk">*</span></label>
+                <input type="text" 
+                       [ngModel]="fechaNacimiento" 
+                       (input)="onFechaNacimientoInput($event)" 
+                       placeholder="dd/mm/aaa" 
+                       maxlength="10" 
+                       class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Categoria <span class="required-asterisk">*</span></label>
+                <div class="select-wrapper">
+                  <select [(ngModel)]="categoria" class="form-select">
+                    <option value="" disabled selected>Seleccionar o escribir categoria</option>
+                    <option value="CEBOLLITAS">Cebollitas</option>
+                    <option value="INFANTIL">Infantil</option>
+                    <option value="JUVENIL">Juvenil</option>
+                    <option value="RESERVA">Reserva</option>
+                    <option value="PRIMERA">Primera</option>
+                  </select>
+                  <span class="select-arrow">❯</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Club de Origen -->
+            <div class="form-group">
+              <label>Club de Origen</label>
+              <input type="text" [(ngModel)]="clubOrigen" placeholder="Ej: Club Atletico Platense" class="form-input" />
+            </div>
+
+            <!-- Bottom Checkbox: Apto Fisico -->
+            <div class="apto-fisico-row">
+              <span class="apto-label">Apto fisico (Liga Cordobesa)</span>
+              <input type="checkbox" [(ngModel)]="aptoFisico" class="cacc-checkbox" />
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: Datos del Tutor / Responsable -->
+        <div class="form-card" [class.card-disabled]="!esMenorDeEdad">
+          <div class="card-header">
+            <div class="icon-badge" [class.icon-badge-disabled]="!esMenorDeEdad">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <h2 class="card-title">
+              Datos del Tutor / Responsable
+              <span *ngIf="!esMenorDeEdad" class="tag-disabled">(Deshabilitado - Mayor de edad)</span>
+            </h2>
+          </div>
+
+          <div class="card-body">
+            <!-- Info Banner -->
+            <div class="info-banner" [class.banner-disabled]="!esMenorDeEdad">
+              <div class="banner-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              </div>
+              <span class="banner-text" *ngIf="esMenorDeEdad">Ingresá la fecha de nacimiento para activar esta seccion si el jugador es menor de 18 años</span>
+              <span class="banner-text" *ngIf="!esMenorDeEdad">Jugador mayor de 18 años ({{ edadCalculada }} años). Esta sección se deshabilita automáticamente.</span>
+            </div>
+
+            <!-- Buscar Tutor por DNI -->
+            <div class="form-group">
+              <label>Buscar tutor existente por DNI</label>
+              <div class="search-input-group">
+                <input type="text" [(ngModel)]="buscarTutorDni" [disabled]="!esMenorDeEdad" placeholder="" class="form-input search-input-field" (keyup.enter)="buscarTutor()" />
+                <button type="button" class="btn-search-tutor" [disabled]="!esMenorDeEdad" (click)="buscarTutor()" title="Buscar">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Nombre & Apellido Tutor Row -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Nombre <span class="required-asterisk" *ngIf="esMenorDeEdad">*</span></label>
+                <input type="text" [(ngModel)]="tutorNombre" [disabled]="!esMenorDeEdad" placeholder="Nombre" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Apellido <span class="required-asterisk" *ngIf="esMenorDeEdad">*</span></label>
+                <input type="text" [(ngModel)]="tutorApellido" [disabled]="!esMenorDeEdad" placeholder="Apellido" class="form-input" />
+              </div>
+            </div>
+
+            <!-- Teléfono & Email Tutor Row -->
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Teléfono <span class="required-asterisk" *ngIf="esMenorDeEdad">*</span></label>
+                <input type="text" [(ngModel)]="tutorTelefono" [disabled]="!esMenorDeEdad" placeholder="Ej: 11 6072-3341" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" [(ngModel)]="tutorEmail" [disabled]="!esMenorDeEdad" placeholder="correo@ejemplo.com" class="form-input" />
+              </div>
+            </div>
+
+            <!-- Dashed Line & Subtext -->
+            <hr class="dashed-divider" />
+            <p class="tutor-subtext">
+              El tutor recibirá una notificacion por email al completar el registro. Datos requeridos hasta que el jugador cumpla 18 años.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <footer class="page-footer-actions">
+        <div class="left-note">
+          <span class="required-asterisk">*</span>Campos obligatorios
+        </div>
+
+        <div class="right-buttons">
+          <button type="button" class="btn-cancel-white" (click)="volver()">Cancelar</button>
+          <button type="button" class="btn-save-qr" (click)="guardarYGenerarQR()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Guardar y Generar QR
+          </button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <app-admin-popup-credencial 
+    [isVisible]="mostrarPopupCredencial" 
+    [nombre]="(nombre + ' ' + apellido) || 'Nombre y apellido'" 
+    [documento]="dni ? ('DNI: ' + dni) : 'Documento Nro'" 
+    (close)="mostrarPopupCredencial = false"
+    (descargar)="descargarCredencial()">
+  </app-admin-popup-credencial>
+</div>

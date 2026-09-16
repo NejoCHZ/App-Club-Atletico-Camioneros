@@ -1,25 +1,59 @@
-# Sistema de Gestión Deportiva – Club Atlético Camioneros (CACC)
+# ProyectoCamioneros
 
-**Institución:** Club Atlético Camioneros de Córdoba (CACC)[cite: 2].
-**Estado actual:** Base de datos creada; en desarrollo la landing page inicial[cite: 2].
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.8.
 
-## Acerca del Proyecto
-Esta plataforma busca facilitar las gestiones diarias del personal deportivo y administrativo del club[cite: 2]. El sistema se divide en un **Portal Administrativo** y un **Portal Deportivo**, con acceso exclusivo para el staff (los jugadores no tienen acceso)[cite: 2]. 
-Sus funciones principales incluyen:
-* Registro de asistencia diaria mediante el escaneo de un código QR físico o ingreso manual del DNI[cite: 2].
-* Verificación automática del estado de la cuota mensual para admitir o denegar el acceso en puerta[cite: 2].
-* Gestión económica, pagos, generación de cuotas y aplicación de descuentos[cite: 2].
-* Seguimiento individual del jugador, incluyendo ficha médica, datos deportivos, generación de QR y contacto de tutores[cite: 2].
+## Development server
 
-## Roles y Accesos
-El sistema utiliza Control de Accesos Basado en Roles (RBAC)[cite: 2]. Dependiendo del rol detectado al validar las credenciales (JWT), el usuario es redirigido a su entorno correspondiente[cite: 2]:
-* **Tesorero (Súper Admin):** Acceso completo al Portal Administrativo para gestionar usuarios, pagos y estado de deudas[cite: 2].
-* **Coordinador:** Acceso total al Portal Deportivo (todas las categorías y jugadores)[cite: 2].
-* **Director Técnico (DT):** Acceso al Portal Deportivo restringido únicamente al plantel de su categoría asignada[cite: 2].
-* **Médico:** Acceso de visualización a todos los perfiles, con permiso exclusivo para editar la información médica[cite: 2].
-* **"Don QR":** Acceso a la WebApp (Semáforo QR) para registrar ingresos del personal y jugadores[cite: 2].
+To start a local development server, run:
 
-## Stack Tecnológico
-* **Frontend:** Angular v22 (TypeScript, CSS) y la librería `angular-qrcode`[cite: 2].
-* **Backend y Base de Datos:** C# 13 / .NET 9.0 (Arquitectura en capas) y SQL Server 2025[cite: 2].
-* **Seguridad y Herramientas:** Autenticación JWT, Figma, Jira y GitHub[cite: 2].
+```bash
+ng serve
+```
+
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Code scaffolding
+
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+
+```bash
+ng generate component component-name
+```
+
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+
+```bash
+ng generate --help
+```
+
+## Building
+
+To build the project run:
+
+```bash
+ng build
+```
+
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+
+## Running unit tests
+
+To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

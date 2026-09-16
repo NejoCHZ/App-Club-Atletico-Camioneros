@@ -1,0 +1,832 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\lucas\\source\\repos\\backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\cacc-requests.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\cacc-requests.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\LoginRequestDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\DTOs\\LoginRequestDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\UsuarioDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\UsuarioDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\AsistenciasController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Controllers\\AsistenciasController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\CredencialesController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Controllers\\CredencialesController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Services\\QrService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Services\\QrService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\AsistenciaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\AsistenciaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\AsistenciaRequestDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\DTOs\\AsistenciaRequestDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IAsistenciaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\IAsistenciaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\FichaMedicaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\FichaMedicaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\FichasMedicasController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Controllers\\FichasMedicasController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IFichaMedicaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\IFichaMedicaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\JugadoresController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Controllers\\JugadoresController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\JugadorDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\JugadorDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IJugadorDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\IJugadorDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\JugadorResponseDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\DTOs\\JugadorResponseDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\StaffController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Controllers\\StaffController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\CategoriasController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Controllers\\CategoriasController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\StaffDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\StaffDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\CategoriaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\CategoriaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IStaffDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\IStaffDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\ICategoriaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\ICategoriaDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\AuthController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\Controllers\\AuthController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\EstadoDeuda.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\EstadoDeuda.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IUsuarioDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.DAO\\IUsuarioDao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\AuthResponseDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\DTOs\\AuthResponseDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\UsuarioAuthData.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\UsuarioAuthData.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.API\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorPartido.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\JugadorPartido.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\HistorialPartido.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\HistorialPartido.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorDescuento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\JugadorDescuento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\TipoDescuento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\TipoDescuento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\StaffCategoria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\StaffCategoria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Staff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Staff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\FichaMedica.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\FichaMedica.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorResponsable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\JugadorResponsable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Responsable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Responsable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Categoria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Categoria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Rol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Rol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Asistencia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Asistencia.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Jugador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Jugador.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Usuario.cs||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Usuario.cs||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Persona.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CACC.Entities\\Persona.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 16,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e506b91c-c606-466a-90a9-123d1d1e12b3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1217066271:0:{83107a3e-496a-485e-b455-16ddb978e55e}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "cacc-requests.http",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\cacc-requests.http",
+              "RelativeDocumentMoniker": "CACC.API\\cacc-requests.http",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\cacc-requests.http",
+              "RelativeToolTip": "CACC.API\\cacc-requests.http",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAowBcAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-09-16T01:30:11.384Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "CredencialesController.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\CredencialesController.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Controllers\\CredencialesController.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\CredencialesController.cs",
+              "RelativeToolTip": "CACC.API\\Controllers\\CredencialesController.cs",
+              "ViewState": "AgIAAEMAAAAAAAAAAAAAAFEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T01:17:46.715Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "QrService.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Services\\QrService.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Services\\QrService.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Services\\QrService.cs",
+              "RelativeToolTip": "CACC.API\\Services\\QrService.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAcwBYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T01:14:15.937Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AsistenciasController.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\AsistenciasController.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Controllers\\AsistenciasController.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\AsistenciasController.cs",
+              "RelativeToolTip": "CACC.API\\Controllers\\AsistenciasController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:58:05.582Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Program.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Program.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Program.cs",
+              "RelativeToolTip": "CACC.API\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:25:37.15Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UsuarioDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\UsuarioDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\UsuarioDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\UsuarioDao.cs",
+              "RelativeToolTip": "CACC.DAO\\UsuarioDao.cs",
+              "ViewState": "AgIAACUAAAAAAAAAAADwv0gAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:02:18.366Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "LoginRequestDto.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\LoginRequestDto.cs",
+              "RelativeDocumentMoniker": "CACC.API\\DTOs\\LoginRequestDto.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\LoginRequestDto.cs",
+              "RelativeToolTip": "CACC.API\\DTOs\\LoginRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:59:36.153Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AsistenciaDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\AsistenciaDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\AsistenciaDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\AsistenciaDao.cs",
+              "RelativeToolTip": "CACC.DAO\\AsistenciaDao.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAAAC8AAABfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:56:38.645Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "AsistenciaRequestDto.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\AsistenciaRequestDto.cs",
+              "RelativeDocumentMoniker": "CACC.API\\DTOs\\AsistenciaRequestDto.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\AsistenciaRequestDto.cs",
+              "RelativeToolTip": "CACC.API\\DTOs\\AsistenciaRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:57:34.232Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IAsistenciaDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IAsistenciaDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\IAsistenciaDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IAsistenciaDao.cs",
+              "RelativeToolTip": "CACC.DAO\\IAsistenciaDao.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:56:23.736Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "FichasMedicasController.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\FichasMedicasController.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Controllers\\FichasMedicasController.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\FichasMedicasController.cs",
+              "RelativeToolTip": "CACC.API\\Controllers\\FichasMedicasController.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAcwDEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:52:11.432Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "FichaMedicaDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\FichaMedicaDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\FichaMedicaDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\FichaMedicaDao.cs",
+              "RelativeToolTip": "CACC.DAO\\FichaMedicaDao.cs",
+              "ViewState": "AgIAAHEAAAAAAAAAAAAcwHwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:51:22.745Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "IFichaMedicaDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IFichaMedicaDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\IFichaMedicaDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IFichaMedicaDao.cs",
+              "RelativeToolTip": "CACC.DAO\\IFichaMedicaDao.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:51:01.374Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "JugadoresController.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\JugadoresController.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Controllers\\JugadoresController.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\JugadoresController.cs",
+              "RelativeToolTip": "CACC.API\\Controllers\\JugadoresController.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAcwDEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:48:19.836Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "JugadorDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\JugadorDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\JugadorDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\JugadorDao.cs",
+              "RelativeToolTip": "CACC.DAO\\JugadorDao.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAIwFYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:47:13.075Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "IJugadorDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IJugadorDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\IJugadorDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IJugadorDao.cs",
+              "RelativeToolTip": "CACC.DAO\\IJugadorDao.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:46:54.244Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "JugadorResponseDto.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\JugadorResponseDto.cs",
+              "RelativeDocumentMoniker": "CACC.API\\DTOs\\JugadorResponseDto.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\JugadorResponseDto.cs",
+              "RelativeToolTip": "CACC.API\\DTOs\\JugadorResponseDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:46:17.414Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "StaffController.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\StaffController.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Controllers\\StaffController.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\StaffController.cs",
+              "RelativeToolTip": "CACC.API\\Controllers\\StaffController.cs",
+              "ViewState": "AgIAABcAAAAAAAAAAAAkwBkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:39:51.121Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "CategoriasController.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\CategoriasController.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Controllers\\CategoriasController.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\CategoriasController.cs",
+              "RelativeToolTip": "CACC.API\\Controllers\\CategoriasController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:39:29.815Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "StaffDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\StaffDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\StaffDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\StaffDao.cs",
+              "RelativeToolTip": "CACC.DAO\\StaffDao.cs",
+              "ViewState": "AgIAACUAAAAAAAAAAADwvy8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:37:13.63Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "CategoriaDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\CategoriaDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\CategoriaDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\CategoriaDao.cs",
+              "RelativeToolTip": "CACC.DAO\\CategoriaDao.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAADwvyYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:36:45.216Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "IStaffDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IStaffDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\IStaffDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IStaffDao.cs",
+              "RelativeToolTip": "CACC.DAO\\IStaffDao.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:36:16.165Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "ICategoriaDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\ICategoriaDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\ICategoriaDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\ICategoriaDao.cs",
+              "RelativeToolTip": "CACC.DAO\\ICategoriaDao.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:35:51.746Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "CACC.API\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "CACC.API\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAkwEgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:22:15.756Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "IUsuarioDao.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IUsuarioDao.cs",
+              "RelativeDocumentMoniker": "CACC.DAO\\IUsuarioDao.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\IUsuarioDao.cs",
+              "RelativeToolTip": "CACC.DAO\\IUsuarioDao.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-16T00:01:18.297Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "AuthResponseDto.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\AuthResponseDto.cs",
+              "RelativeDocumentMoniker": "CACC.API\\DTOs\\AuthResponseDto.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\DTOs\\AuthResponseDto.cs",
+              "RelativeToolTip": "CACC.API\\DTOs\\AuthResponseDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:59:55.563Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "UsuarioAuthData.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\UsuarioAuthData.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\UsuarioAuthData.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\UsuarioAuthData.cs",
+              "RelativeToolTip": "CACC.Entities\\UsuarioAuthData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:56:09.439Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\appsettings.json",
+              "RelativeDocumentMoniker": "CACC.API\\appsettings.json",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\appsettings.json",
+              "RelativeToolTip": "CACC.API\\appsettings.json",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-09-15T23:47:09.746Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "EstadoDeuda.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\EstadoDeuda.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\EstadoDeuda.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\EstadoDeuda.cs",
+              "RelativeToolTip": "CACC.Entities\\EstadoDeuda.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAwwAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:39:04.466Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "JugadorPartido.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorPartido.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\JugadorPartido.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorPartido.cs",
+              "RelativeToolTip": "CACC.Entities\\JugadorPartido.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:44:50.726Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "HistorialPartido.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\HistorialPartido.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\HistorialPartido.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\HistorialPartido.cs",
+              "RelativeToolTip": "CACC.Entities\\HistorialPartido.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:44:21.929Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "JugadorDescuento.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorDescuento.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\JugadorDescuento.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorDescuento.cs",
+              "RelativeToolTip": "CACC.Entities\\JugadorDescuento.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:43:46.879Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "TipoDescuento.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\TipoDescuento.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\TipoDescuento.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\TipoDescuento.cs",
+              "RelativeToolTip": "CACC.Entities\\TipoDescuento.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:43:31.585Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "StaffCategoria.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\StaffCategoria.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\StaffCategoria.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\StaffCategoria.cs",
+              "RelativeToolTip": "CACC.Entities\\StaffCategoria.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:43:15.143Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "Staff.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Staff.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Staff.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Staff.cs",
+              "RelativeToolTip": "CACC.Entities\\Staff.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:42:58.988Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "FichaMedica.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\FichaMedica.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\FichaMedica.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\FichaMedica.cs",
+              "RelativeToolTip": "CACC.Entities\\FichaMedica.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:42:42.86Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "JugadorResponsable.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorResponsable.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\JugadorResponsable.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\JugadorResponsable.cs",
+              "RelativeToolTip": "CACC.Entities\\JugadorResponsable.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:42:21.967Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "Responsable.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Responsable.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Responsable.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Responsable.cs",
+              "RelativeToolTip": "CACC.Entities\\Responsable.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:42:07.234Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "Categoria.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Categoria.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Categoria.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Categoria.cs",
+              "RelativeToolTip": "CACC.Entities\\Categoria.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:41:48.994Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "Rol.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Rol.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Rol.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Rol.cs",
+              "RelativeToolTip": "CACC.Entities\\Rol.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:41:32.476Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "Asistencia.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Asistencia.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Asistencia.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Asistencia.cs",
+              "RelativeToolTip": "CACC.Entities\\Asistencia.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:39:25.427Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "Jugador.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Jugador.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Jugador.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Jugador.cs",
+              "RelativeToolTip": "CACC.Entities\\Jugador.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:38:37.477Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Usuario.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Usuario.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Usuario.cs",
+              "RelativeToolTip": "CACC.Entities\\Usuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:38:06.076Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "Persona.cs",
+              "DocumentMoniker": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Persona.cs",
+              "RelativeDocumentMoniker": "CACC.Entities\\Persona.cs",
+              "ToolTip": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\Persona.cs",
+              "RelativeToolTip": "CACC.Entities\\Persona.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-15T23:37:40.216Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,579 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #1e293b;
+  overflow: hidden;
+}
+
+.cacc-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   SIDEBAR LATERAL VERDE CACC (#007A3D) - EXACTO A ADMIN-HOME
+   ========================================================================== */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: #007A3D;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 1.75rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-wrapper {
+  width: 150px;
+  height: 170px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cacc-shield-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+  transition: transform 0.2s ease;
+}
+
+.cacc-shield-img:hover {
+  transform: scale(1.03);
+}
+
+.club-title {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.club-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0.35rem 0 0 0;
+  font-weight: 500;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-item.active {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.925rem;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================================================
+   MAIN WRAPPER & HEADER - EXACTO A ADMIN-HOME
+   ========================================================================== */
+.main-wrapper {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.main-wrapper * {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.top-header {
+  height: 65px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.header-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0;
+  color: #0f172a;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #007A3D;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.profile-email {
+  font-size: 0.725rem;
+  color: #64748b;
+}
+
+.chevron-down {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-left: 0.25rem;
+  transform: rotate(90deg);
+}
+
+/* ==========================================================================
+   CONTENT BODY & GRID CARDS (EXACT MATCH IMAGE)
+   ========================================================================== */
+.content-body {
+  padding: 2.5rem 3rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.toast-success {
+  background-color: #10b981;
+  color: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.grid-2-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.form-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 1.5rem;
+}
+
+.icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #e6f4ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007A3D;
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.form-group label {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.required-asterisk {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background-color: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: #007A3D;
+  box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.12);
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-wrapper select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 2.25rem;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  font-size: 0.8rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* Checkbox Apto Fisico */
+.apto-fisico-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.apto-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.cacc-checkbox {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  cursor: pointer;
+  accent-color: #007A3D;
+}
+
+/* Info Banner in Card 2 */
+.info-banner {
+  background-color: #e8f5e9;
+  border: 1.5px solid #81c784;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+
+}
+
+.banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.banner-text {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #1b5e20;
+  line-height: 1.35;
+}
+
+/* Search input with button */
+.search-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.search-input-field {
+  flex: 1;
+}
+
+.btn-search-tutor {
+  width: 44px;
+  height: 42px;
+  background-color: #007A3D;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.btn-search-tutor:hover {
+  background-color: #006331;
+}
+
+/* Dashed divider and subtext */
+.dashed-divider {
+  border: none;
+  border-top: 1.5px dashed #cbd5e1;
+  margin: 1.25rem 0 0.75rem 0;
+}
+
+.tutor-subtext {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Footer Actions Bar */
+.page-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 3.5rem;
+  padding-top: 1rem;
+}
+
+.left-note {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.right-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.btn-cancel-white {
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  padding: 0.75rem 2.25rem;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.btn-cancel-white:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.btn-save-qr {
+  background-color: #007A3D;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 2.25rem;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 14px rgba(0, 122, 61, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-save-qr:hover {
+  background-color: #006331;
+  box-shadow: 0 6px 18px rgba(0, 122, 61, 0.45);
+}
+
+/* ==========================================================================
+   DISABLED STATE FOR TUTOR CARD (AGE >= 18)
+   ========================================================================== */
+.card-disabled {
+  opacity: 0.7;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  transition: all 0.3s ease;
+}
+
+.tag-disabled {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-left: 0.5rem;
+}
+
+.banner-disabled {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.banner-disabled .banner-text {
+  color: #475569 !important;
+}
+
+.icon-badge-disabled {
+  background-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+.form-input:disabled,
+.form-select:disabled {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.btn-search-tutor:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
