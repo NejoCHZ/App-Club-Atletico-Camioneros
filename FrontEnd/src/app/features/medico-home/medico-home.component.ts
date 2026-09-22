@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 
 export interface FichaMedica {
   obraSocial: string;
@@ -28,11 +29,12 @@ export interface Player {
 @Component({
   selector: 'app-medico-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './medico-home.component.html',
   styleUrl: './medico-home.component.css'
 })
 export class MedicoHomeComponent {
+  constructor(private router: Router) {}
   searchTerm = '';
   categoriaFiltro = '';
   ordenFiltro = '';
@@ -139,12 +141,18 @@ export class MedicoHomeComponent {
   selectNav(label: string) {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
+
+    if (label === 'Inicio') {
+      this.router.navigate(['/medico']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/medico/lista-jugadores']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/medico/categorias']);
+    }
   }
 
   viewFicha(player: Player) {
-    this.selectedPlayer = player;
-    this.editableFicha = JSON.parse(JSON.stringify(player.ficha));
-    this.isModalOpen = true;
+    this.router.navigate(['/medico/ficha-jugador', player.id]);
   }
 
   closeModal() {

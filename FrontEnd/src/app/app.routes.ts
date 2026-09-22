@@ -1,11 +1,20 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './features/login/login.component';
 
 export const routes: Routes = [
+  // 1. Redirección inicial: Si entran a la raíz, los mandamos al login
   {
     path: '',
-    redirectTo: 'admin',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
+  // 2. Ruta del componente Login
+  {
+    path: 'login',
+    component: LoginComponent
+  },
+
+  // --- RESTO DE TUS RUTAS INTACTAS ---
   {
     path: 'admin',
     loadComponent: () =>
@@ -231,6 +240,76 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'medico/ficha-jugador/:id',
+    loadComponent: () =>
+      import('./features/medico-ficha-jugador/medico-ficha-jugador.component').then(
+        (m) => m.MedicoFichaJugadorComponent
+      )
+  },
+  {
+    path: 'medico/ficha-jugador',
+    loadComponent: () =>
+      import('./features/medico-ficha-jugador/medico-ficha-jugador.component').then(
+        (m) => m.MedicoFichaJugadorComponent
+      )
+  },
+  {
+    path: 'medico-ficha-jugador/:id',
+    loadComponent: () =>
+      import('./features/medico-ficha-jugador/medico-ficha-jugador.component').then(
+        (m) => m.MedicoFichaJugadorComponent
+      )
+  },
+  {
+    path: 'medico-ficha-jugador',
+    loadComponent: () =>
+      import('./features/medico-ficha-jugador/medico-ficha-jugador.component').then(
+        (m) => m.MedicoFichaJugadorComponent
+      )
+  },
+  {
+    path: 'medico/editar-ficha/:id',
+    loadComponent: () =>
+      import('./features/medico-editar-ficha/medico-editar-ficha.component').then(
+        (m) => m.MedicoEditarFichaComponent
+      )
+  },
+  {
+    path: 'medico-editar-ficha/:id',
+    loadComponent: () =>
+      import('./features/medico-editar-ficha/medico-editar-ficha.component').then(
+        (m) => m.MedicoEditarFichaComponent
+      )
+  },
+  {
+    path: 'medico/lista-jugadores',
+    loadComponent: () =>
+      import('./features/medico-lista-jugadores/medico-lista-jugadores.component').then(
+        (m) => m.MedicoListaJugadoresComponent
+      )
+  },
+  {
+    path: 'medico-lista-jugadores',
+    loadComponent: () =>
+      import('./features/medico-lista-jugadores/medico-lista-jugadores.component').then(
+        (m) => m.MedicoListaJugadoresComponent
+      )
+  },
+  {
+    path: 'medico/categorias',
+    loadComponent: () =>
+      import('./features/medico-seleccion-categorias/medico-seleccion-categorias.component').then(
+        (m) => m.MedicoSeleccionCategoriasComponent
+      )
+  },
+  {
+    path: 'medico/categoria-jugadores',
+    loadComponent: () =>
+      import('./features/medico-categoria-jugadores/medico-categoria-jugadores.component').then(
+        (m) => m.MedicoCategoriaJugadoresComponent
+      )
+  },
+  {
     path: 'dt',
     loadComponent: () =>
       import('./features/dt-home/dt-home.component').then(
@@ -308,43 +387,64 @@ export const routes: Routes = [
   {
     path: 'coordinador',
     loadComponent: () =>
-      import('./features/portal-deportivo/dashboard-coordinador/dashboard-coordinador').then(
+      import('./features/dashboard-coordinador/dashboard-coordinador').then(
         (m) => m.DashboardCoordinador
       )
   },
   {
     path: 'coordinador-seleccion-categorias',
     loadComponent: () =>
-      import('./features/portal-deportivo/coordinador-seleccion-categorias/coordinador-seleccion-categorias').then(
+      import('./features/coordinador-seleccion-categorias/coordinador-seleccion-categorias').then(
         (m) => m.CoordinadorSeleccionCategorias
       )
   },
   {
     path: 'coordinador/visualizar-plantel',
     loadComponent: () =>
-      import('./features/portal-deportivo/coordinador-visualizar-plantel/coordinador-visualizar-plantel').then(
+      import('./features/coordinador-visualizar-plantel/coordinador-visualizar-plantel').then(
         (m) => m.CoordinadorVisualizarPlantel
       )
   },
   {
-  path: 'coordinador/visualizar-staff',
+    path: 'coordinador/visualizar-staff',
     loadComponent: () =>
-      import('./features/portal-deportivo/coordinador-visualizar-staff/coordinador-visualizar-staff').then(
+      import('./features/coordinador-visualizar-staff/coordinador-visualizar-staff').then(
         (m) => m.CoordinadorVisualizarStaff
       )
   },
   {
     path: 'coordinador/visualizar-perfil',
     loadComponent: () =>
-      import('./features/portal-deportivo/coordinador-visualizar-perfil/coordinador-visualizar-perfil').then(
+      import('./features/coordinador-visualizar-perfil/coordinador-visualizar-perfil').then(
         (m) => m.CoordinadorVisualizarPerfil
       )
   },
   {
     path: 'coordinador/visualizar-perfil-staff',
     loadComponent: () =>
-      import('./features/portal-deportivo/coordinador-visualizar-perfil-staff/coordinador-visualizar-perfil-staff').then(
+      import('./features/coordinador-visualizar-perfil-staff/coordinador-visualizar-perfil-staff').then(
         (m) => m.CoordinadorVisualizarPerfilStaff
-      )dotnet --list - sdks
+      )
+  },
+  {
+    path: 'coordinador/editar-staff',
+    loadComponent: () =>
+      import('./features/coordinador-editar-staff/coordinador-editar-staff').then(
+        (m) => m.CoordinadorEditarStaff
+      )
+  },
+  {
+    path: 'coordinador/editar-historial',
+    loadComponent: () =>
+      import('./features/coordinador-editar-historial/coordinador-editar-historial').then(
+        (m) => m.CoordinadorEditarHistorial
+      )
+  },
+  {
+    path: 'coordinador-lista-jugadores',
+    loadComponent: () =>
+      import('./features/coordinador-lista-jugadores/coordinador-lista-jugadores').then(
+        (m) => m.CoordinadorListaJugadores
+      )
   }
 ];

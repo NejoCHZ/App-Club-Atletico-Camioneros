@@ -22,6 +22,13 @@ namespace CACC.API.Controllers
             _configuration = configuration;
         }
 
+        [HttpGet("generar-hash")]
+        public IActionResult GenerarHash()
+        {
+            // Esto te va a devolver un Hash 100% válido para C#
+            return Ok(new { hash = BCrypt.Net.BCrypt.HashPassword("password123") });
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {

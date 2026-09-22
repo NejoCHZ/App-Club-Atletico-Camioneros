@@ -1,8 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
+import { PosicionJugador } from '../../shared/models/jugador.model';
+import { JugadorService } from '../../shared/services/jugador.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
 
 @Component({
@@ -27,6 +30,7 @@ export class AdminAltaJugadorComponent {
   apellido = '';
   fechaNacimiento = '';
   categoria = '';
+  posicion: PosicionJugador | '' = '';
   clubOrigen = '';
   aptoFisico = false;
 
@@ -40,8 +44,14 @@ export class AdminAltaJugadorComponent {
   edadCalculada: number | null = null;
   esMenorDeEdad = true;
   mensajeExito = false;
+  formularioEnviado = false;
+  guardando = false;
+  errorGuardado = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly jugadorService: JugadorService
+  ) {}
 
   selectNav(label: string) {
     if (label === 'Inicio') {
@@ -141,7 +151,7 @@ export class AdminAltaJugadorComponent {
   }
 
   generarCredencial() {
-    this.mostrarPopupCredencial = true;
+    this.guardarYGenerarQR();
   }
 
   descargarCredencial() {
@@ -149,18 +159,81 @@ export class AdminAltaJugadorComponent {
   }
 
   guardarYGenerarQR() {
-    if (!this.dni || !this.nombre || !this.apellido || !this.fechaNacimiento) {
+    if (this.guardando) {
+      return;
+    }
+
+    this.formularioEnviado = true;
+    this.errorGuardado = '';
+
+    if (!this.dni || !this.nombre || !this.apellido || !this.fechaNacimiento || !this.categoria || !this.posicion) {
       alert('Por favor complete los campos obligatorios (*) del Jugador.');
       return;
     }
 
+    const fechaNacimiento = this.convertirFechaAFormatoApi(this.fechaNacimiento);
+    if (!fechaNacimiento) {
+      this.errorGuardado = 'Ingresá una fecha de nacimiento válida en formato dd/mm/aaaa.';
+      return;
+    }
+
     if (this.esMenorDeEdad) {
-      if (!this.tutorNombre || !this.tutorApellido || !this.tutorTelefono) {
+      if (!this.buscarTutorDni || !this.tutorNombre || !this.tutorApellido || !this.tutorTelefono || !this.tutorEmail) {
         alert('Por ser menor de 18 años, debe completar los campos obligatorios (*) del Tutor.');
         return;
       }
     }
 
-    this.mostrarPopupCredencial = true;
+    const nuevoJugador = {
+      dni: this.dni,
+      nombre: this.nombre,
+      apellido: this.apellido,
+      fechaNacimiento,
+      categoria: this.categoria,
+      posicion: this.posicion,
+      clubOrigen: this.clubOrigen || null,
+      aptoFisico: this.aptoFisico,
+      tutor: this.esMenorDeEdad ? {
+        dni: this.buscarTutorDni,
+        nombre: this.tutorNombre,
+        apellido: this.tutorApellido,
+        telefono: this.tutorTelefono,
+        email: this.tutorEmail
+      } : null
+    };
+
+    this.guardando = true;
+    this.jugadorService.crear(nuevoJugador).subscribe({
+      next: (jugador) => {
+        this.dni = jugador.dni;
+        this.nombre = jugador.nombre;
+        this.apellido = jugador.apellido;
+        this.mensajeExito = true;
+        this.mostrarPopupCredencial = true;
+        this.guardando = false;
+      },
+      error: (error: unknown) => {
+        this.errorGuardado = error instanceof HttpErrorResponse && error.status === 409
+          ? 'Ya existe un jugador con ese DNI.'
+          : 'No se pudo registrar el jugador. Verificá los datos y que la API esté en ejecución.';
+        this.guardando = false;
+      }
+    });
+  }
+
+  private convertirFechaAFormatoApi(fecha: string): string | null {
+    const coincidencia = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fecha);
+    if (!coincidencia) {
+      return null;
+    }
+
+    const [, dia, mes, anio] = coincidencia;
+    const fechaValidada = new Date(Number(anio), Number(mes) - 1, Number(dia));
+    const esValida = fechaValidada.getFullYear() === Number(anio) &&
+      fechaValidada.getMonth() === Number(mes) - 1 &&
+      fechaValidada.getDate() === Number(dia) &&
+      fechaValidada <= new Date();
+
+    return esValida ? `${anio}-${mes}-${dia}` : null;
   }
 }

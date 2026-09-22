@@ -54,13 +54,6 @@
     <!-- Header Superior -->
     <header class="top-header">
       <div class="header-left">
-        <button class="hamburger-btn" aria-label="Menu">
-          <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
         <h1 class="header-title">Panel Médico - Fichas Clínicas</h1>
       </div>
 
@@ -141,10 +134,6 @@
             </select>
             <span class="select-arrow">❯</span>
           </div>
-
-          <button class="btn-add-player">
-            <span class="plus-icon">+</span> Cargar Ficha Médica
-          </button>
         </div>
 
         <!-- Data Table -->
@@ -176,9 +165,7 @@
                 <td class="col-nacimiento">{{ p.fechaNacimiento }}</td>
                 <td class="col-acciones">
                   <div class="actions-wrapper">
-                    <!-- FUNCION PARA VER LA FICHA MEDICA QUE ME GUSTO Y HAY QUE CHARLAR PARA VER SI SE LA PUEDE AGREGAR -->
-                    <!-- <button class="action-btn view-btn" title="Ver / Editar Ficha Médica" (click)="viewFicha(p)"> -->
-                    <button class="action-btn view-btn" title="Ver / Editar Ficha Médica">
+                    <button class="action-btn view-btn" title="Ver Ficha / Perfil Jugador" (click)="viewFicha(p)">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
