@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-
 import { PosicionJugador } from '../../shared/models/jugador.model';
 import { JugadorService } from '../../shared/services/jugador.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
@@ -24,12 +23,21 @@ export class AdminAltaJugadorComponent {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
+  // Mapeo exacto de las categorías con sus IDs de la base de datos
+  categoriasList = [
+    { id: '1', nombre: 'Primera' },
+    { id: '2', nombre: 'Reserva' },
+    { id: '3', nombre: 'Juvenil' },
+    { id: '4', nombre: 'Infantil' },
+    { id: '5', nombre: 'Cebollitas' }
+  ];
+
   // Datos del Jugador
   dni = '';
   nombre = '';
   apellido = '';
   fechaNacimiento = '';
-  categoria = '';
+  categoria = ''; // Ahora guardará el ID (ej: "1") en lugar del texto
   posicion: PosicionJugador | '' = '';
   clubOrigen = '';
   aptoFisico = false;
@@ -51,7 +59,7 @@ export class AdminAltaJugadorComponent {
   constructor(
     private readonly router: Router,
     private readonly jugadorService: JugadorService
-  ) {}
+  ) { }
 
   selectNav(label: string) {
     if (label === 'Inicio') {
@@ -72,7 +80,7 @@ export class AdminAltaJugadorComponent {
   onFechaNacimientoInput(event: Event) {
     const input = event.target as HTMLInputElement;
     const inputEvent = event as InputEvent;
-    
+
     let raw = input.value.replace(/\D/g, '');
     if (raw.length > 8) {
       raw = raw.substring(0, 8);
@@ -122,7 +130,7 @@ export class AdminAltaJugadorComponent {
         this.esMenorDeEdad = age < 18;
 
         if (!this.esMenorDeEdad) {
-          // Clear tutor fields if player is 18 or older
+          // Limpiar campos del tutor si es mayor de edad
           this.buscarTutorDni = '';
           this.tutorNombre = '';
           this.tutorApellido = '';
@@ -139,7 +147,7 @@ export class AdminAltaJugadorComponent {
 
   buscarTutor() {
     if (!this.esMenorDeEdad || !this.buscarTutorDni) return;
-    
+
     if (this.buscarTutorDni === '30123456') {
       this.tutorNombre = 'Carlos';
       this.tutorApellido = 'Gómez';
@@ -189,7 +197,7 @@ export class AdminAltaJugadorComponent {
       nombre: this.nombre,
       apellido: this.apellido,
       fechaNacimiento,
-      categoria: this.categoria,
+      categoria: this.categoria, // Acá ahora viaja el ID numérico en formato string (ej: "1")
       posicion: this.posicion,
       clubOrigen: this.clubOrigen || null,
       aptoFisico: this.aptoFisico,

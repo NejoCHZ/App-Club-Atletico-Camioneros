@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
+
 namespace CACC.DAO
 {
     public class JugadorDao : IJugadorDao
@@ -262,6 +263,130 @@ namespace CACC.DAO
 
                 await transaction.CommitAsync();
                 return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+        public async Task<int> CrearAsync(JugadorAlta dto)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                // 1. Insertar PERSONA del Jugador
+                var queryPersona = @"
+                    INSERT INTO PERSONAS (nombre, apellido, dni, fecha_de_nacimiento)
+                    OUTPUT INSERTED.PK_id_persona
+                    VALUES (@Nombre, @Apellido, @Dni, @FechaNacimiento);";
+
+                using var cmdPersona = new SqlCommand(queryPersona, connection, transaction);
+                cmdPersona.Parameters.AddWithValue("@Nombre", dto.Nombre);
+                cmdPersona.Parameters.AddWithValue("@Apellido", dto.Apellido);
+                cmdPersona.Parameters.AddWithValue("@Dni", dto.Dni);
+                cmdPersona.Parameters.AddWithValue("@FechaNacimiento", dto.FechaNacimiento ?? (object)DBNull.Value);
+
+                // Convert.ToInt32 elimina el warning CS8605
+                int idPersona = Convert.ToInt32(await cmdPersona.ExecuteScalarAsync());
+
+                // 2. Insertar JUGADOR
+                int idCategoria = 0;
+                if (!string.IsNullOrEmpty(dto.Categoria)) int.TryParse(dto.Categoria, out idCategoria);
+
+                var queryJugador = @"
+                    INSERT INTO JUGADORES (FK_id_persona, FK_id_categoria, posicion_cancha, club_origen, ficha_medica_liga)
+                    OUTPUT INSERTED.PK_id_jugador
+                    VALUES (@IdPersona, @IdCategoria, @Posicion, @ClubOrigen, @AptoFisico);";
+
+                using var cmdJugador = new SqlCommand(queryJugador, connection, transaction);
+                cmdJugador.Parameters.AddWithValue("@IdPersona", idPersona);
+                cmdJugador.Parameters.AddWithValue("@IdCategoria", idCategoria);
+                cmdJugador.Parameters.AddWithValue("@Posicion", dto.Posicion ?? (object)DBNull.Value);
+                cmdJugador.Parameters.AddWithValue("@ClubOrigen", dto.ClubOrigen ?? (object)DBNull.Value);
+                cmdJugador.Parameters.AddWithValue("@AptoFisico", dto.AptoFisico);
+
+                int idJugador = Convert.ToInt32(await cmdJugador.ExecuteScalarAsync());
+
+                // 3. Crear FICHA_MEDICA vacía
+                var queryFicha = @"
+                    INSERT INTO FICHAS_MEDICAS (FK_id_jugador)
+                    VALUES (@IdJugador);";
+
+                using var cmdFicha = new SqlCommand(queryFicha, connection, transaction);
+                cmdFicha.Parameters.AddWithValue("@IdJugador", idJugador);
+                await cmdFicha.ExecuteNonQueryAsync();
+
+                // 4. Insertar/Vincular RESPONSABLE (Tutor)
+                if (dto.Tutor != null && !string.IsNullOrWhiteSpace(dto.Tutor.Dni))
+                {
+                    // 4a. Verificar si la PERSONA del tutor ya existe por DNI
+                    var queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @TutorDni;";
+                    using var cmdCheckPersona = new SqlCommand(queryCheckPersona, connection, transaction);
+                    cmdCheckPersona.Parameters.AddWithValue("@TutorDni", dto.Tutor.Dni);
+                    var resultPersona = await cmdCheckPersona.ExecuteScalarAsync();
+
+                    int idPersonaTutor;
+                    if (resultPersona != null)
+                    {
+                        // La persona ya existe, reutilizamos su ID
+                        idPersonaTutor = Convert.ToInt32(resultPersona);
+                    }
+                    else
+                    {
+                        // No existe, la creamos
+                        var queryInsertPersonaTutor = @"
+                            INSERT INTO PERSONAS (nombre, apellido, dni)
+                            OUTPUT INSERTED.PK_id_persona
+                            VALUES (@TutorNombre, @TutorApellido, @TutorDni);";
+                        using var cmdInsertPersonaTutor = new SqlCommand(queryInsertPersonaTutor, connection, transaction);
+                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorNombre", dto.Tutor.Nombre);
+                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorApellido", dto.Tutor.Apellido);
+                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorDni", dto.Tutor.Dni);
+                        idPersonaTutor = Convert.ToInt32(await cmdInsertPersonaTutor.ExecuteScalarAsync());
+                    }
+
+                    // 4b. Verificar si ya está en la tabla RESPONSABLES
+                    var queryCheckResp = "SELECT PK_id_responsable FROM RESPONSABLES WHERE FK_id_persona = @IdPersonaTutor;";
+                    using var cmdCheckResp = new SqlCommand(queryCheckResp, connection, transaction);
+                    cmdCheckResp.Parameters.AddWithValue("@IdPersonaTutor", idPersonaTutor);
+                    var resultResp = await cmdCheckResp.ExecuteScalarAsync();
+
+                    int idResponsable;
+                    if (resultResp != null)
+                    {
+                        // Ya es responsable, reutilizamos su ID
+                        idResponsable = Convert.ToInt32(resultResp);
+                    }
+                    else
+                    {
+                        // Lo agregamos a RESPONSABLES
+                        var queryInsertResp = @"
+                            INSERT INTO RESPONSABLES (FK_id_persona, email, telefono)
+                            OUTPUT INSERTED.PK_id_responsable
+                            VALUES (@IdPersonaTutor, @Email, @Telefono);";
+                        using var cmdInsertResp = new SqlCommand(queryInsertResp, connection, transaction);
+                        cmdInsertResp.Parameters.AddWithValue("@IdPersonaTutor", idPersonaTutor);
+                        cmdInsertResp.Parameters.AddWithValue("@Email", dto.Tutor.Email ?? (object)DBNull.Value);
+                        cmdInsertResp.Parameters.AddWithValue("@Telefono", dto.Tutor.Telefono ?? (object)DBNull.Value);
+                        idResponsable = Convert.ToInt32(await cmdInsertResp.ExecuteScalarAsync());
+                    }
+
+                    // 4c. Vincular en JUGADORES_RESPONSABLES
+                    var queryInsertVinculo = @"
+                        INSERT INTO JUGADORES_RESPONSABLES (FK_id_jugador, FK_id_responsable)
+                        VALUES (@IdJugador, @IdResponsable);";
+                    using var cmdInsertVinculo = new SqlCommand(queryInsertVinculo, connection, transaction);
+                    cmdInsertVinculo.Parameters.AddWithValue("@IdJugador", idJugador);
+                    cmdInsertVinculo.Parameters.AddWithValue("@IdResponsable", idResponsable);
+                    await cmdInsertVinculo.ExecuteNonQueryAsync();
+                }
+
+                await transaction.CommitAsync();
+                return idJugador;
             }
             catch
             {

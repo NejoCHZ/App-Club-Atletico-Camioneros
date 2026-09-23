@@ -3,6 +3,7 @@ using CACC.DAO;
 using CACC.API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient; 
 
 namespace CACC.API.Controllers
 {
@@ -93,6 +94,59 @@ namespace CACC.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error interno del servidor.", details = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CrearJugador([FromBody] JugadorCreateDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Dni))
+            {
+                return BadRequest(new { message = "El nombre y el DNI son obligatorios." });
+            }
+
+            try
+            {
+                // Mapeo del DTO de la API hacia la Entidad del DAO
+                var jugadorAlta = new JugadorAlta
+                {
+                    Dni = dto.Dni,
+                    Nombre = dto.Nombre,
+                    Apellido = dto.Apellido,
+                    FechaNacimiento = dto.FechaNacimiento,
+                    Categoria = dto.Categoria,
+                    Posicion = dto.Posicion,
+                    ClubOrigen = dto.ClubOrigen,
+                    AptoFisico = dto.AptoFisico,
+                    Tutor = dto.Tutor == null ? null : new TutorAlta
+                    {
+                        Dni = dto.Tutor.Dni,
+                        Nombre = dto.Tutor.Nombre,
+                        Apellido = dto.Tutor.Apellido,
+                        Telefono = dto.Tutor.Telefono,
+                        Email = dto.Tutor.Email
+                    }
+                };
+
+                // Le enviamos la entidad mapeada al DAO
+                int nuevoId = await _jugadorDao.CrearAsync(jugadorAlta);
+
+                return StatusCode(201, new
+                {
+                    message = "Jugador creado con éxito.",
+                    idJugador = nuevoId,
+                    dni = dto.Dni,
+                    nombre = dto.Nombre,
+                    apellido = dto.Apellido
+                });
+            }
+            catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+            {
+                return StatusCode(409, new { message = "Ya existe un jugador con ese DNI." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno al crear el jugador.", details = ex.Message });
             }
         }
     }
