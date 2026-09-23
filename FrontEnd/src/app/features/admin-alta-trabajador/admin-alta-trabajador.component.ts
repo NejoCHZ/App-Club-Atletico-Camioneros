@@ -104,7 +104,7 @@ export class AdminAltaTrabajadorComponent {
   }
 
   generarCredencial() {
-    this.mostrarPopupCredencial = true;
+    this.guardarYGenerarQR();
   }
 
   descargarCredencial() {
@@ -127,6 +127,34 @@ export class AdminAltaTrabajadorComponent {
       return;
     }
 
+    const nuevoStaff = {
+      id: Date.now(),
+      dni: this.dni,
+      nombre: this.nombre,
+      apellido: this.apellido,
+      nombreCompleto: `${this.nombre.toUpperCase()} ${this.apellido.toUpperCase()}`,
+      fechaNacimiento: this.fechaNacimiento,
+      rol: this.rol,
+      telefono: this.telefono,
+      email: this.email,
+      domicilio: this.domicilio,
+      contactoEmergencia: this.contactoEmergencia,
+      patologias: this.patologias,
+      observacionesMedicas: this.observacionesMedicas,
+      fotoNombre: this.fotoNombre,
+      estado: 'ACTIVO',
+      fechaAlta: new Date().toISOString()
+    };
+
+    try {
+      const staffGuardados = JSON.parse(localStorage.getItem('cacc_staff') || '[]');
+      staffGuardados.push(nuevoStaff);
+      localStorage.setItem('cacc_staff', JSON.stringify(staffGuardados));
+    } catch (e) {
+      console.error('Error al guardar staff en localStorage', e);
+    }
+
+    this.mensajeExito = true;
     this.mostrarPopupCredencial = true;
   }
 }

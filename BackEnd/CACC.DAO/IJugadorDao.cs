@@ -4,8 +4,10 @@ namespace CACC.DAO
 {
     public interface IJugadorDao
     {
-        Task<IEnumerable<Jugador>> ObtenerTodosAsync();
-        Task<Jugador?> ObtenerPorIdAsync(int id);
-        Task<IEnumerable<Jugador>> ObtenerPorCategoriaAsync(int idCategoria);
+        Task<IEnumerable<JugadorDetalle>> ObtenerTodosAsync();
+        Task<JugadorDetalle?> ObtenerPorIdAsync(int id);
+        Task<IEnumerable<JugadorDetalle>> ObtenerPorCategoriaAsync(int idCategoria);
+        Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador);
+
     }
 }

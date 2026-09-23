@@ -1628,11 +1628,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\CACC.API.csproj",
+      "projectUniqueName": "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.API\\CACC.API.csproj",
       "projectName": "CACC.API",
-      "projectPath": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\CACC.API.csproj",
+      "projectPath": "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.API\\CACC.API.csproj",
       "packagesPath": "C:\\Users\\lucas\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.API\\obj\\",
+      "outputPath": "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1654,11 +1654,11 @@
           "framework": "net9.0",
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\CACC.DAO.csproj": {
-              "projectPath": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\CACC.DAO.csproj"
+            "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.DAO\\CACC.DAO.csproj": {
+              "projectPath": "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.DAO\\CACC.DAO.csproj"
             },
-            "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\CACC.Entities.csproj": {
-              "projectPath": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.Entities\\CACC.Entities.csproj"
+            "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.Entities\\CACC.Entities.csproj": {
+              "projectPath": "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.Entities\\CACC.Entities.csproj"
             }
           }
         }
@@ -1712,24 +1712,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[9.0.19, 9.0.19]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[9.0.19, 9.0.19]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[9.0.19, 9.0.19]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[9.0.19, 9.0.19]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -1738,7 +1720,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

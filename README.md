@@ -1,59 +1,67 @@
-# ProyectoCamioneros
+# Sistema de Gestión Deportiva — Club Atlético Camioneros de Córdoba (CACC)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.8.
+Sistema integral desarrollado para optimizar las gestiones diarias del personal deportivo, administrativo y médico del **Club Atlético Camioneros de Córdoba (CACC)**.
 
-## Development server
+---
 
-To start a local development server, run:
+## 🛠️ Stack Tecnológico
 
-```bash
-ng serve
-```
+### Frontend
+- **Angular v22** (TypeScript, CSS)
+- **angular-qrcode** — Generación de códigos QR al vuelo
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Backend
+- **C# 13 / .NET 9.0**
+- **API REST** organizada en arquitectura por capas (*Entities*, *DAO / Repository*, *API / Controllers*)
+- **Seguridad e Integraciones:** Autenticación mediante **JWT** y control de accesos basado en roles (**RBAC**)
+- **Librerías clave:** `QRCoder` (para la generación dinámica de códigos QR en formatos permitidos como `PngByteQRCode` o `SvgQRCode`) y `QuestPDF` (para la exportación de credenciales físicas en PDF).
 
-## Code scaffolding
+### Base de Datos
+- **SQL Server 2025**
+- **SQL Server Management Studio (SSMS) 2022**
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+---
 
-```bash
-ng generate component component-name
-```
+## 👥 Módulos y Roles de Staff (RBAC)
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+El acceso al sistema está restringido exclusivamente al staff del club. Los permisos se configuran de manera automática al iniciar sesión según el rol asignado
 
-```bash
-ng generate --help
-```
+1. **Tesorero (Súper Admin):** Único rol con acceso a la pantalla de selección de portales. Posee control total del sistema, gestión de altas de staff, pagos, cuotas, tipos de descuentos y supervisión de deudas.
+2. **Coordinador:** Acceso directo al **Portal Deportivo**, con visibilidad global sobre todas las categorías y planteles de jugadores.
+3. **Director Técnico (DT):** Acceso directo al **Portal Deportivo**, limitado estrictamente a los jugadores de la categoría asignada a su cargo.
+4. **Médico:** Acceso directo al **Portal Deportivo**. Permite la visualización general de perfiles de jugadores y la edición exclusiva de la información médica y patológica.
+5. **"Don QR":** Acceso directo a la WebApp de **Semáforo QR** para el registro diario de asistencias mediante escaneo de tarjetas o ingreso manual de DNI.
 
-## Building
+*Nota institucional:* Los jugadores **no** poseen acceso al sistema.
 
-To build the project run:
 
-```bash
-ng build
-```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## 📂 Estructura del Proyecto
 
-## Running unit tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+App-Club-Atletico-Camioneros/
+├── BackEnd/
+│   ├── CACC.sln
+│   ├── CACC.API/         # Controladores, Endpoints y Middleware de Autenticación
+│   ├── CACC.DAO/         # Capa de Acceso a Datos (Consultas SQL parametrizadas)
+│   └── CACC.Entities/    # Modelos y Entidades de dominio
+├── FrontEnd/             # Aplicación Angular v22
+└── cacc_database_init.sql # Script SQL de respaldo (Estructura y Datos iniciales)
 
-```bash
-ng test
-```
 
-## Running end-to-end tests
+Guía de Instalación y Puesta en Marcha Local1. Base de Datos (SQL Server 2025)Abrir SQL Server Management Studio (SSMS).
+1. Ejecutar el script consolidado ubicado en la raíz del repositorio (cacc_database_init.sql) para generar el esquema completo de tablas bajo nomenclatura estándar (UPPER_SNAKE_CASE y snake_case) junto con los datos iniciales.
+2. Backend (.NET 9.0)Posicionarse en la carpeta del backend:Bashcd BackEnd
+Restaurar dependencias y compilar la solución:Bashdotnet restore
+dotnet build
+Verificar los parámetros de conexión (Connection Strings) en los archivos de configuración de la API.Ejecutar el proyecto API:Bashcd CACC.API
+dotnet run
+3. Frontend (Angular v22)Desde una nueva terminal, ubicarse en la carpeta del frontend:Bashcd FrontEnd
+Instalar los paquetes necesarios de Node.js:Bashnpm install
+Levantar el entorno de desarrollo local:Bashnpm start
+Abrir el navegador en http://localhost:4200.
 
-For end-to-end (e2e) testing, run:
+📄 Normativa y ConvencionesBase de datos: Tablas en plural con mayúsculas sostenidas (UPPER_SNAKE_CASE), columnas en minúsculas separadas por guiones bajos (snake_case), claves primarias prefijadas con PK_id_ y foráneas con FK_id_.   QR y Credenciales: El código QR se genera dinámicamente al vuelo a partir del DNI (sin persistencia en base de datos) para la impresión de tarjetas físicas y procesamiento en el semáforo de asistencias. Las credenciales se exportan en formato PDF mediante QuestPDF con diseño optimizado (formato CR80, sin fotografía).
 
-```bash
-ng e2e
-```
+🛡️ LicenciaProyecto institucional desarrollado de manera exclusiva para el Club Atlético Camioneros de Córdoba (CACC). Uso interno y reservado.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

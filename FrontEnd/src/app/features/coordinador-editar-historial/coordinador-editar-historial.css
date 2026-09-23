@@ -1,0 +1,593 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #1e293b;
+  overflow: hidden;
+}
+
+.cacc-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: #007A3D;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 1.75rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-wrapper {
+  width: 150px;
+  height: 170px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cacc-shield-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+}
+
+.club-title {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.club-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0.35rem 0 0 0;
+  font-weight: 500;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.nav-item:hover, .nav-item.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.925rem;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* MAIN WRAPPER & HEADER */
+.main-wrapper {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.top-header {
+  height: 65px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007A3D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.profile-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.profile-email {
+  font-size: 0.725rem;
+  color: #64748b;
+}
+
+.chevron-down {
+  display: flex;
+  align-items: center;
+  margin-left: 0.25rem;
+}
+
+/* CONTENT BODY (3 COLUMNS GRID) */
+.content-body {
+  padding: 1.25rem 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ficha-3cols-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  gap: 1.25rem;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.card-col {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* COLUMN 1: PERSONAL & PROFILE */
+.col-personal {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-avatar-banner {
+  height: 170px;
+  background-color: #e8f8ee;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.big-avatar-circle {
+  width: 140px;
+  height: 140px;
+  background-color: #e6f4ea;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.personal-info-body {
+  padding: 0;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-full-name {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.player-position-subtitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+  margin: 0.2rem 0 0.75rem 0;
+  text-transform: uppercase;
+}
+
+.divider-line {
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 1rem 0;
+  text-align: left;
+}
+
+.personal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.grid-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.item-icon-box {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-label {
+  font-size: 0.725rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.item-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.domicilio-box {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+/* COLUMN 2: EDITABLE PARTIDOS TABLE */
+.col-partidos {
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-title-centered {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  text-align: center;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.table-responsive-partidos {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 12px;
+  border: 2px solid #007A3D;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.partidos-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 0.775rem;
+}
+
+.partidos-table th {
+  background-color: #007A3D;
+  color: #ffffff;
+  padding: 0.6rem 0.4rem;
+  font-weight: 800;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.partidos-table td {
+  padding: 0.4rem 0.3rem;
+  color: #1e293b;
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.partidos-table tr td {
+  background-color: #c5e6d6;
+}
+
+.partidos-table tr.even-row td {
+  background-color: #a4dcb9;
+}
+
+.col-rival {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* INPUTS DENTRO DE LA TABLA EDITABLE */
+.table-input {
+  background-color: #ffffff;
+  border: 1.5px solid #007A3D;
+  border-radius: 6px;
+  padding: 0.2rem 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.table-input:focus {
+  outline: none;
+  border-color: #007A3D;
+  box-shadow: 0 0 0 2px rgba(0, 122, 61, 0.2);
+}
+
+.input-dia {
+  width: 52px;
+}
+
+.input-fecha {
+  width: 38px;
+}
+
+.input-rival {
+  width: 95%;
+}
+
+.resultado-inputs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.input-gol {
+  width: 28px;
+}
+
+.dash {
+  font-weight: 700;
+  color: #475569;
+}
+
+.input-minutos {
+  width: 42px;
+}
+
+.table-footer-summary {
+  text-align: right;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* ACTION BUTTONS (CANCELAR / GUARDAR) */
+.actions-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.btn-cancel-red {
+  background-color: #ffffff;
+  border: 1.5px solid #ef4444;
+  border-radius: 10px;
+  padding: 0.5rem 1.35rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ef4444;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel-red:hover {
+  background-color: #fef2f2;
+}
+
+.btn-save-green {
+  background-color: #007A3D;
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 2px 6px rgba(0, 122, 61, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-save-green:hover {
+  background-color: #006331;
+}
+
+/* COLUMN 3: FICHA MÉDICA */
+.col-medica {
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.title-divider-line {
+  height: 1px;
+  background-color: #cbd5e1;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.medica-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  justify-content: space-between;
+  min-height: 0;
+}
+
+.medica-block {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.medica-block-label {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.4rem 0;
+}
+
+.medica-text-box {
+  border: 1.5px solid #007A3D;
+  border-radius: 12px;
+  flex: 1;
+  min-height: 90px;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+.medica-text-box p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.lesiones-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+.lesiones-list li {
+  margin-bottom: 0.1rem;
+}

@@ -1,140 +1,122 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-
-export interface Player {
-  id: number;
-  nombreCompleto: string;
-  dni: string;
-  posicion: 'ARQUERO' | 'DEFENSOR' | 'VOLANTE' | 'DELANTERO';
-  edad: string;
-  fechaNacimiento?: string;
-  categoria?: string;
-  estadoCuota?: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA';
-}
+import { RouterModule, Router } from '@angular/router';
+import { JugadorService } from '../../shared/services/jugador.service';
+import { JugadorVista } from '../../shared/models/jugador.model';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-admin-lista-jugadores',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-lista-jugadores.html',
-  styleUrl: './admin-lista-jugadores.css',
+  styleUrls: ['./admin-lista-jugadores.css']
 })
-export class AdminListaJugadores {
-  constructor(private router: Router) {}
+export class AdminListaJugadores implements OnInit {
+  private jugadorService = inject(JugadorService);
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
+  cargando = true;
+  errorCarga = '';
   searchTerm = '';
-  posicionFiltro = ''; // '' | 'ARQUERO' | 'DEFENSOR' | 'VOLANTE' | 'DELANTERO'
+  posicionFiltro = '';
 
-  activeTab = 'Jugadores';
+  jugadoresOriginales: JugadorVista[] = [];
+  filteredPlayers: JugadorVista[] = [];
 
   navItems = [
-    { label: 'Inicio', icon: 'home', active: false },
-    { label: 'Jugadores', icon: 'group', active: true },
-    { label: 'Staff', icon: 'badge', active: false },
-    { label: 'Categorias', icon: 'category', active: false }
+    { label: 'Inicio', icon: 'home', route: '/admin', active: false },
+    { label: 'Jugadores', icon: 'group', route: '/admin/lista-jugadores', active: true },
+    { label: 'Categorías', icon: 'category', route: '/admin/categorias', active: false },
+    { label: 'Credenciales', icon: 'badge', route: '/admin-popup-credencial', active: false }
   ];
 
-  players: Player[] = [
-    {
-      id: 1,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'DELANTERO',
-      edad: '00 AÑOS',
-      fechaNacimiento: '01/01/2010',
-      categoria: 'CEBOLLITAS',
-      estadoCuota: 'AL DÍA'
-    },
-    {
-      id: 2,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'VOLANTE',
-      edad: '00 AÑOS',
-      fechaNacimiento: '15/04/2012',
-      categoria: 'CEBOLLITAS',
-      estadoCuota: 'PENDIENTE'
-    },
-    {
-      id: 3,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'DEFENSOR',
-      edad: '00 AÑOS',
-      fechaNacimiento: '20/09/2014',
-      categoria: 'CEBOLLITAS',
-      estadoCuota: 'ADEUDA'
-    },
-    {
-      id: 4,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'ARQUERO',
-      edad: '00 AÑOS',
-      fechaNacimiento: '14/05/2015',
-      categoria: 'INFANTIL',
-      estadoCuota: 'AL DÍA'
-    },
-    {
-      id: 5,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'DELANTERO',
-      edad: '00 AÑOS',
-      fechaNacimiento: '22/10/2013',
-      categoria: 'JUVENIL',
-      estadoCuota: 'PENDIENTE'
-    },
-    {
-      id: 6,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      posicion: 'DEFENSOR',
-      edad: '00 AÑOS',
-      fechaNacimiento: '03/03/2011',
-      categoria: 'JUVENIL',
-      estadoCuota: 'AL DÍA'
-    }
-  ];
-
-  togglePosicion(pos: string) {
-    if (this.posicionFiltro === pos) {
-      this.posicionFiltro = '';
-    } else {
-      this.posicionFiltro = pos;
-    }
+  ngOnInit(): void {
+    this.cargarJugadores();
   }
 
-  get filteredPlayers(): Player[] {
-    return this.players.filter(p => {
-      const term = this.searchTerm.trim().toLowerCase();
-      const matchSearch = !term || p.nombreCompleto.toLowerCase().includes(term) || p.dni.includes(term);
-      const matchPos = !this.posicionFiltro || p.posicion === this.posicionFiltro;
-      return matchSearch && matchPos;
+  cargarJugadores() {
+    this.jugadorService.obtenerTodos().subscribe({
+      next: (data: any[]) => {
+        this.jugadoresOriginales = data.map(j => {
+          const nombre = j.nombre || j.Nombre || '';
+          const apellido = j.apellido || j.Apellido || '';
+          const dni = j.dni || j.Dni || '-';
+
+          // Mapeo exacto de las propiedades que envía el backend C#
+          const fechaNac = j.fechaDeNacimiento || j.FechaDeNacimiento || '';
+          const categoria = j.nombreCategoria || j.NombreCategoria || '-';
+
+          // Homologamos la base de datos con tus botones de filtro
+          let posicion = (j.posicionCancha || j.PosicionCancha || '').toUpperCase();
+          if (posicion === 'MEDIOCAMPISTA') posicion = 'VOLANTE';
+          if (!posicion) posicion = '-';
+
+          const id = j.idJugador || j.IdJugador || 0;
+
+          return {
+            ...j,
+            id: id,
+            nombre: nombre,
+            apellido: apellido,
+            dni: dni,
+            categoria: categoria,
+            posicion: posicion,
+            nombreCompleto: nombre || apellido ? `${nombre} ${apellido}`.trim() : 'SIN DATOS',
+            edad: this.calcularEdad(fechaNac)
+          };
+        });
+
+        this.filteredPlayers = [...this.jugadoresOriginales];
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar jugadores:', err);
+        this.errorCarga = 'Ocurrió un error al cargar los jugadores desde el servidor.';
+        this.cargando = false;
+      }
     });
   }
 
-  selectNav(label: string) {
-    this.navItems.forEach(item => item.active = (item.label === label));
-    this.activeTab = label;
-    if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
-    } else if (label === 'Jugadores') {
-      this.router.navigate(['/admin/lista-jugadores']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
-    } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
+  calcularEdad(fechaNacimiento: string): number {
+    if (!fechaNacimiento) return 0;
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const m = hoy.getMonth() - nacimiento.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
     }
+    return edad;
   }
 
-  verFicha(id: number) {
-    this.router.navigate(['/admin/ficha-jugador', id]);
+  togglePosicion(posicion: string) {
+    this.posicionFiltro = this.posicionFiltro === posicion ? '' : posicion;
+    this.aplicarFiltros();
+  }
+
+  aplicarFiltros() {
+    this.filteredPlayers = this.jugadoresOriginales.filter(p => {
+      const matchPosicion = this.posicionFiltro ? p.posicion === this.posicionFiltro : true;
+      const matchNombre = this.searchTerm
+        ? p.nombreCompleto.toLowerCase().includes(this.searchTerm.toLowerCase())
+        : true;
+      return matchPosicion && matchNombre;
+    });
+  }
+
+  cerrarSesion() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   editarJugador(id: number) {
     this.router.navigate(['/admin/editar-perfil', id]);
+  }
+
+  verFicha(id: number) {
+    this.router.navigate(['/admin/ficha-jugador', id]);
   }
 }

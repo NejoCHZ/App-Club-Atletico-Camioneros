@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:5191
 # Reemplazá este token con el que obtengas al hacer login
-@token = PEGAR_TOKEN_JWT_AQUI
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoibXphcmF0ZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlRlc29yZXJvIiwiY2F0ZWdvcmlhcyI6IltdIiwiZXhwIjoxNzg5OTY2NzI5LCJpc3MiOiJDQUNDX0FQSSIsImF1ZCI6IkNBQ0NfQW5ndWxhciJ9.wWcl_GBjCUJBwm2gEwvItoJe79yhfsehZeGG0KOsYhw
 
 ### ==========================================
 ### 1. AUTENTICACIÓN
@@ -42,7 +42,7 @@ GET {{baseUrl}}/api/jugadores?categoriaId=1
 Authorization: Bearer {{token}}
 
 ### Obtener detalle de un jugador específico por ID
-GET {{baseUrl}}/api/jugadores/1
+GET {{baseUrl}}/api/jugadores/11
 Authorization: Bearer {{token}}
 
 
@@ -75,5 +75,5 @@ Authorization: Bearer {{token}}
 ### ==========================================
 
 ### Descargar credencial en PDF de un jugador (Devuelve archivo binario PDF)
-GET {{baseUrl}}/api/credenciales/jugador/1/pdf
+GET {{baseUrl}}/api/credenciales/jugador/11/pdf
 Authorization: Bearer {{token}}

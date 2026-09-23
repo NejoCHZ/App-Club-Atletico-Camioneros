@@ -1,0 +1,118 @@
+<div class="cacc-layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrapper">
+        <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
+      </div>
+      <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
+      <p class="club-subtitle">Sistema de Gestión Integral</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems"
+         class="nav-item"
+         [class.active]="item.active"
+         (click)="selectNav(item)">
+        <span class="nav-icon" [ngSwitch]="item.icon">
+          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="logout-btn" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="header-title">Visor de Categorías</h1>
+      </div>
+
+      <div class="header-right">
+        <div class="admin-profile">
+          <div class="profile-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">{{ userName }}</span>
+            <span class="profile-email">{{ userEmail }}</span>
+          </div>
+          <span class="chevron-down">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-body">
+      <h1 class="page-section-title">Categorias</h1>
+
+      <!-- Filter Controls Bar Card -->
+      <section class="filter-bar-card">
+        <div class="search-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" placeholder="Buscar por nombre de cat." [(ngModel)]="searchTerm" class="search-input" />
+        </div>
+
+        <div class="select-box">
+          <select [(ngModel)]="asociacionFiltro">
+            <option value="">Filtro de asociación</option>
+            <option value="Liga Cordobesa">Liga Cordobesa</option>
+            <option value="AFA">AFA</option>
+          </select>
+          <span class="select-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
+
+        <div class="select-box">
+          <select [(ngModel)]="ordenFiltro">
+            <option value="">Ordenar por</option>
+            <option value="nombre">Nombre</option>
+          </select>
+          <span class="select-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </div>
+      </section>
+
+      <!-- Category List Main Container Card -->
+      <section class="list-card">
+        <h2 class="list-card-title">LISTA DE CATEGORIAS</h2>
+
+        <div class="category-list-wrapper">
+          <div class="category-item-row" *ngFor="let cat of filteredCategorias">
+            <!-- Left Avatar Ring with Group Icon -->
+            <div class="category-avatar-ring">
+              <div class="category-avatar-circle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+            </div>
+
+            <!-- Category Info Columns -->
+            <div class="col-info col-name">{{ cat.nombre }}</div>
+            <div class="col-info col-count">{{ cat.cantidadJugadores }}</div>
+
+            <!-- Action Button -->
+            <div class="col-info col-actions">
+              <button class="btn-action-outline" (click)="onViewCategory(cat.nombre)">Ver categoria</button>
+            </div>
+          </div>
+
+          <div *ngIf="filteredCategorias.length === 0" class="no-results">
+            No se encontraron categorías con los filtros seleccionados.
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

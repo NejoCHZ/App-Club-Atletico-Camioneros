@@ -5,12 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using QuestPDF.Infrastructure;
 
-// Configuramos la licencia Community de QuestPDF correctamente como sentencia ejecutable
+// Configuramos la licencia Community de QuestPDF 
 QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configurar CORS (Para que Angular no sea bloqueado)
+// Configurar CORS (Para que Angular no sea bloqueado)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -21,7 +21,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 2. Inyección de Dependencias (¡Sin paréntesis en las implementaciones!)
+//Inyección de Dependencias 
 builder.Services.AddScoped<IUsuarioDao, UsuarioDao>();
 builder.Services.AddScoped<ICategoriaDao, CategoriaDao>();
 builder.Services.AddScoped<IStaffDao, StaffDao>();
@@ -30,10 +30,10 @@ builder.Services.AddScoped<IFichaMedicaDao, FichaMedicaDao>();
 builder.Services.AddScoped<IAsistenciaDao, AsistenciaDao>();
 builder.Services.AddScoped<IQrService, QrService>();
 
-// 3. Agregar soporte para los Controllers
+//  Agregar soporte para los Controllers
 builder.Services.AddControllers();
 
-// 4. Configurar el validador de JWT
+//  Configurar el validador de JWT
 var jwtKey = builder.Configuration["JwtSettings:Key"] ?? throw new InvalidOperationException("Falta la clave JWT en appsettings.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -52,7 +52,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// 5. Configurar el Pipeline HTTP
+//  Configurar el Pipeline HTTP
 app.UseCors("AllowAngular");
 
 app.UseAuthentication(); // Primero validamos quién sos

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ncICQ88iCOo=",
+  "dgSpecHash": "Ndr43A4i7ZE=",
   "success": true,
-  "projectFilePath": "C:\\Users\\lucas\\source\\repos\\backend\\CACC.DAO\\CACC.DAO.csproj",
+  "projectFilePath": "C:\\Users\\lucas\\source\\repos\\App-Club-Atletico-Camioneros\\BackEnd\\CACC.DAO\\CACC.DAO.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\lucas\\.nuget\\packages\\microsoft.bcl.cryptography\\9.0.13\\microsoft.bcl.cryptography.9.0.13.nupkg.sha512",
     "C:\\Users\\lucas\\.nuget\\packages\\microsoft.data.sqlclient\\7.0.3\\microsoft.data.sqlclient.7.0.3.nupkg.sha512",
@@ -27,10 +27,7 @@
     "C:\\Users\\lucas\\.nuget\\packages\\system.diagnostics.eventlog\\9.0.13\\system.diagnostics.eventlog.9.0.13.nupkg.sha512",
     "C:\\Users\\lucas\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.16.0\\system.identitymodel.tokens.jwt.8.16.0.nupkg.sha512",
     "C:\\Users\\lucas\\.nuget\\packages\\system.security.cryptography.pkcs\\9.0.13\\system.security.cryptography.pkcs.9.0.13.nupkg.sha512",
-    "C:\\Users\\lucas\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.13\\system.security.cryptography.protecteddata.9.0.13.nupkg.sha512",
-    "C:\\Users\\lucas\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.19\\microsoft.aspnetcore.app.ref.9.0.19.nupkg.sha512",
-    "C:\\Users\\lucas\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.19\\microsoft.netcore.app.ref.9.0.19.nupkg.sha512",
-    "C:\\Users\\lucas\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.19\\microsoft.windowsdesktop.app.ref.9.0.19.nupkg.sha512"
+    "C:\\Users\\lucas\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.13\\system.security.cryptography.protecteddata.9.0.13.nupkg.sha512"
   ],
   "logs": []
 }
