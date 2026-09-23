@@ -1,0 +1,58 @@
+<div class="login-container">
+  <!-- Panel Izquierdo: Branding CACC -->
+  <div class="brand-panel">
+    <img src="cacc-logo.png" alt="Escudo CACC" class="logo" />
+    <h1>CLUB ATLETICO SOCIAL Y<br>DEPORTIVO CAMIONEROS</h1>
+  </div>
+
+  <!-- Panel Derecho: Formulario -->
+  <div class="form-panel">
+    <div class="login-card">
+
+      <div class="header-card">
+        <!-- Ícono de usuario placeholder (puedes cambiarlo por tu SVG) -->
+        <div class="icon-circle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <h2>Iniciar sesión</h2>
+        <p>Accedé al panel de administración</p>
+      </div>
+
+      <!-- Alertas de error -->
+      <div *ngIf="errorMessage" class="error-alert">
+        {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Usuario</label>
+          <div class="input-wrapper">
+            <input type="text" formControlName="email" placeholder="Ingresá tu usuario" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <div class="input-wrapper">
+            <input type="password" formControlName="password" placeholder="Ingresá tu Contraseña" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <label class="remember-me">
+            <input type="checkbox" /> Recordarme
+          </label>
+        </div>
+
+        <button type="submit" [disabled]="loginForm.invalid || isLoading" class="btn-submit">
+          {{ isLoading ? 'Ingresando...' : 'Iniciar sesión' }}
+        </button>
+
+        <div class="forgot-password">
+          <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>

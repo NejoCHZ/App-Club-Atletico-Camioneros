@@ -1,0 +1,97 @@
+@import '../admin-ficha-jugador/admin-ficha-jugador.css';
+
+.edit-form-control {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: white;
+  color: #333;
+}
+
+  .edit-form-control:focus {
+    border-color: #007A3D;
+    box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.1);
+  }
+
+  .edit-form-control:disabled {
+    background-color: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+  }
+
+.edit-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.lesiones-edit-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lesion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.lesion-text {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ef4444;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+  .btn-icon:hover {
+    background-color: #fef2f2;
+  }
+
+.add-lesion-box {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn-outline-green {
+  border: 1px solid #007A3D;
+  color: #007A3D;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+  .btn-outline-green:hover {
+    background: #f0fdf4;
+  }
+
+.w-100 {
+  width: 100%;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
