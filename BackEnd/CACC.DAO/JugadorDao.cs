@@ -363,25 +363,37 @@ namespace CACC.DAO
                     }
                     else
                     {
-                        // Lo agregamos a RESPONSABLES
+                        // GENERAMOS EL ID MANUALMENTE PORQUE SQL SERVER NO TIENE IDENTITY
+                        var queryMaxResp = "SELECT ISNULL(MAX(PK_id_responsable), 0) + 1 FROM RESPONSABLES;";
+                        using var cmdMaxResp = new SqlCommand(queryMaxResp, connection, transaction);
+                        idResponsable = Convert.ToInt32(await cmdMaxResp.ExecuteScalarAsync());
+
+                        // Insertamos mandando explícitamente el nuevo PK_id_responsable
                         var queryInsertResp = @"
-                            INSERT INTO RESPONSABLES (FK_id_persona, email, telefono)
-                            OUTPUT INSERTED.PK_id_responsable
-                            VALUES (@IdPersonaTutor, @Email, @Telefono);";
+                            INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, email, telefono)
+                            VALUES (@IdResponsable, @IdPersonaTutor, @Email, @Telefono);";
                         using var cmdInsertResp = new SqlCommand(queryInsertResp, connection, transaction);
+                        cmdInsertResp.Parameters.AddWithValue("@IdResponsable", idResponsable);
                         cmdInsertResp.Parameters.AddWithValue("@IdPersonaTutor", idPersonaTutor);
                         cmdInsertResp.Parameters.AddWithValue("@Email", dto.Tutor.Email ?? (object)DBNull.Value);
                         cmdInsertResp.Parameters.AddWithValue("@Telefono", dto.Tutor.Telefono ?? (object)DBNull.Value);
-                        idResponsable = Convert.ToInt32(await cmdInsertResp.ExecuteScalarAsync());
+                        await cmdInsertResp.ExecuteNonQueryAsync();
                     }
 
                     // 4c. Vincular en JUGADORES_RESPONSABLES
+                    // GENERAMOS EL ID MANUALMENTE PARA LA TABLA INTERMEDIA
+                    var queryMaxVinculo = "SELECT ISNULL(MAX(PK_id_jugador_responsable), 0) + 1 FROM JUGADORES_RESPONSABLES;";
+                    using var cmdMaxVinculo = new SqlCommand(queryMaxVinculo, connection, transaction);
+                    int idVinculo = Convert.ToInt32(await cmdMaxVinculo.ExecuteScalarAsync());
+
                     var queryInsertVinculo = @"
-                        INSERT INTO JUGADORES_RESPONSABLES (FK_id_jugador, FK_id_responsable)
-                        VALUES (@IdJugador, @IdResponsable);";
+                        INSERT INTO JUGADORES_RESPONSABLES (PK_id_jugador_responsable, FK_id_jugador, FK_id_responsable, parentesco)
+                        VALUES (@IdVinculo, @IdJugador, @IdResponsable, @Parentesco);";
                     using var cmdInsertVinculo = new SqlCommand(queryInsertVinculo, connection, transaction);
+                    cmdInsertVinculo.Parameters.AddWithValue("@IdVinculo", idVinculo);
                     cmdInsertVinculo.Parameters.AddWithValue("@IdJugador", idJugador);
                     cmdInsertVinculo.Parameters.AddWithValue("@IdResponsable", idResponsable);
+                    cmdInsertVinculo.Parameters.AddWithValue("@Parentesco", dto.Tutor.Parentesco ?? (object)DBNull.Value);
                     await cmdInsertVinculo.ExecuteNonQueryAsync();
                 }
 

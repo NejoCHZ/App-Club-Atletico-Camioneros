@@ -124,10 +124,11 @@ namespace CACC.API.Controllers
                         Nombre = dto.Tutor.Nombre,
                         Apellido = dto.Tutor.Apellido,
                         Telefono = dto.Tutor.Telefono,
-                        Email = dto.Tutor.Email
+                        Email = dto.Tutor.Email,
+                        // Mapeo del nuevo campo
+                        Parentesco = dto.Tutor.Parentesco
                     }
                 };
-
                 // Le enviamos la entidad mapeada al DAO
                 int nuevoId = await _jugadorDao.CrearAsync(jugadorAlta);
 

@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { PosicionJugador } from '../../shared/models/jugador.model';
@@ -14,7 +14,9 @@ import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-cred
   templateUrl: './admin-alta-jugador.component.html',
   styleUrl: './admin-alta-jugador.component.css'
 })
-export class AdminAltaJugadorComponent {
+export class AdminAltaJugadorComponent implements OnInit {
+  private http = inject(HttpClient);
+
   mostrarPopupCredencial = false;
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
@@ -23,31 +25,26 @@ export class AdminAltaJugadorComponent {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
-  // Mapeo exacto de las categorías con sus IDs de la base de datos
-  categoriasList = [
-    { id: '1', nombre: 'Primera' },
-    { id: '2', nombre: 'Reserva' },
-    { id: '3', nombre: 'Juvenil' },
-    { id: '4', nombre: 'Infantil' },
-    { id: '5', nombre: 'Cebollitas' }
-  ];
+  categoriasList: any[] = [];
 
   // Datos del Jugador
   dni = '';
   nombre = '';
   apellido = '';
   fechaNacimiento = '';
-  categoria = ''; // Ahora guardará el ID (ej: "1") en lugar del texto
+  categoria: number | '' = '';
   posicion: PosicionJugador | '' = '';
   clubOrigen = '';
   aptoFisico = false;
 
   // Datos del Tutor / Responsable
-  buscarTutorDni = '';
+  tutorDni = ''; // Se usa tanto para buscar como para registrar uno nuevo
   tutorNombre = '';
   tutorApellido = '';
   tutorTelefono = '';
   tutorEmail = '';
+  tutorParentesco = '';
+  tutorParentescoOtro = '';
 
   edadCalculada: number | null = null;
   esMenorDeEdad = true;
@@ -61,16 +58,34 @@ export class AdminAltaJugadorComponent {
     private readonly jugadorService: JugadorService
   ) { }
 
+  ngOnInit() {
+    this.cargarCategoriasDesdeBD();
+  }
+
+  cargarCategoriasDesdeBD() {
+    this.http.get<any[]>('http://localhost:5191/api/categorias').subscribe({
+      next: (data) => {
+        // Esto te imprimirá en la consola de Chrome lo que devuelve C#
+        console.log('Datos recibidos de la BD:', data);
+
+        this.categoriasList = data.map(c => ({
+          // Atajamos todas las formas en las que C# puede serializar el JSON
+          id: c.pK_id_categoria || c.pk_id_categoria || c.pK_Id_Categoria || c.idCategoria || c.id,
+          nombre: c.nombre_categoria || c.nombreCategoria || c.nombre
+        }));
+      },
+      error: (err) => {
+        console.error('Error al cargar categorias desde el Backend:', err);
+        this.categoriasList = [];
+      }
+    });
+  }
+
   selectNav(label: string) {
-    if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
-    } else if (label === 'Jugadores') {
-      this.router.navigate(['/admin/lista-jugadores']);
-    } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
-    }
+    if (label === 'Inicio') this.router.navigate(['/admin']);
+    else if (label === 'Jugadores') this.router.navigate(['/admin/lista-jugadores']);
+    else if (label === 'Staff') this.router.navigate(['/admin/staff']);
+    else if (label === 'Categorias' || label === 'Categorías') this.router.navigate(['/admin/categorias']);
   }
 
   volver() {
@@ -82,30 +97,19 @@ export class AdminAltaJugadorComponent {
     const inputEvent = event as InputEvent;
 
     let raw = input.value.replace(/\D/g, '');
-    if (raw.length > 8) {
-      raw = raw.substring(0, 8);
-    }
+    if (raw.length > 8) raw = raw.substring(0, 8);
 
     let formatted = '';
-    if (raw.length > 0) {
-      formatted = raw.substring(0, 2);
-    }
-    if (raw.length > 2) {
-      formatted += '/' + raw.substring(2, 4);
-    }
-    if (raw.length > 4) {
-      formatted += '/' + raw.substring(4, 8);
-    }
+    if (raw.length > 0) formatted = raw.substring(0, 2);
+    if (raw.length > 2) formatted += '/' + raw.substring(2, 4);
+    if (raw.length > 4) formatted += '/' + raw.substring(4, 8);
 
     if (inputEvent && inputEvent.inputType === 'deleteContentBackward') {
-      if (input.value.endsWith('/')) {
-        formatted = input.value.slice(0, -1);
-      }
+      if (input.value.endsWith('/')) formatted = input.value.slice(0, -1);
     }
 
     this.fechaNacimiento = formatted;
     input.value = formatted;
-
     this.evaluarEdad(formatted);
   }
 
@@ -122,39 +126,43 @@ export class AdminAltaJugadorComponent {
 
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
-        }
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
 
         this.edadCalculada = age;
         this.esMenorDeEdad = age < 18;
 
         if (!this.esMenorDeEdad) {
-          // Limpiar campos del tutor si es mayor de edad
-          this.buscarTutorDni = '';
-          this.tutorNombre = '';
-          this.tutorApellido = '';
-          this.tutorTelefono = '';
-          this.tutorEmail = '';
+          this.limpiarDatosTutor();
         }
         return;
       }
     }
-
     this.edadCalculada = null;
     this.esMenorDeEdad = true;
   }
 
-  buscarTutor() {
-    if (!this.esMenorDeEdad || !this.buscarTutorDni) return;
+  limpiarDatosTutor() {
+    this.tutorDni = '';
+    this.tutorNombre = '';
+    this.tutorApellido = '';
+    this.tutorTelefono = '';
+    this.tutorEmail = '';
+    this.tutorParentesco = '';
+    this.tutorParentescoOtro = '';
+  }
 
-    if (this.buscarTutorDni === '30123456') {
+  buscarTutor() {
+    if (!this.esMenorDeEdad || !this.tutorDni) return;
+
+    // Simulación de búsqueda (luego se conectará a la API)
+    if (this.tutorDni === '30123456') {
       this.tutorNombre = 'Carlos';
       this.tutorApellido = 'Gómez';
       this.tutorTelefono = '11 6072-3341';
       this.tutorEmail = 'carlos.gomez@gmail.com';
+      this.tutorParentesco = 'PADRE';
     } else {
-      alert('No se encontró tutor con el DNI ingresado. Por favor complete los datos.');
+      alert('No se encontró un tutor con ese DNI. Por favor, registre los datos manualmente como un tutor nuevo.');
     }
   }
 
@@ -167,10 +175,7 @@ export class AdminAltaJugadorComponent {
   }
 
   guardarYGenerarQR() {
-    if (this.guardando) {
-      return;
-    }
-
+    if (this.guardando) return;
     this.formularioEnviado = true;
     this.errorGuardado = '';
 
@@ -185,28 +190,36 @@ export class AdminAltaJugadorComponent {
       return;
     }
 
+    // Validación del Tutor
     if (this.esMenorDeEdad) {
-      if (!this.buscarTutorDni || !this.tutorNombre || !this.tutorApellido || !this.tutorTelefono || !this.tutorEmail) {
+      if (!this.tutorDni || !this.tutorNombre || !this.tutorApellido || !this.tutorTelefono || !this.tutorParentesco) {
         alert('Por ser menor de 18 años, debe completar los campos obligatorios (*) del Tutor.');
         return;
       }
+      if (this.tutorParentesco === 'OTRO' && !this.tutorParentescoOtro.trim()) {
+        alert('Por favor, especifique el parentesco del tutor.');
+        return;
+      }
     }
+
+    const parentescoFinal = this.tutorParentesco === 'OTRO' ? this.tutorParentescoOtro : this.tutorParentesco;
 
     const nuevoJugador = {
       dni: this.dni,
       nombre: this.nombre,
       apellido: this.apellido,
       fechaNacimiento,
-      categoria: this.categoria, // Acá ahora viaja el ID numérico en formato string (ej: "1")
+      categoria: this.categoria ? this.categoria.toString() : '',
       posicion: this.posicion,
       clubOrigen: this.clubOrigen || null,
       aptoFisico: this.aptoFisico,
       tutor: this.esMenorDeEdad ? {
-        dni: this.buscarTutorDni,
+        dni: this.tutorDni,
         nombre: this.tutorNombre,
         apellido: this.tutorApellido,
         telefono: this.tutorTelefono,
-        email: this.tutorEmail
+        email: this.tutorEmail,
+        parentesco: parentescoFinal // NOTA: Luego deberemos agregar esta columna en SQL Server
       } : null
     };
 
@@ -231,10 +244,7 @@ export class AdminAltaJugadorComponent {
 
   private convertirFechaAFormatoApi(fecha: string): string | null {
     const coincidencia = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fecha);
-    if (!coincidencia) {
-      return null;
-    }
-
+    if (!coincidencia) return null;
     const [, dia, mes, anio] = coincidencia;
     const fechaValidada = new Date(Number(anio), Number(mes) - 1, Number(dia));
     const esValida = fechaValidada.getFullYear() === Number(anio) &&
@@ -242,6 +252,7 @@ export class AdminAltaJugadorComponent {
       fechaValidada.getDate() === Number(dia) &&
       fechaValidada <= new Date();
 
-    return esValida ? `${anio}-${mes}-${dia}` : null;
+    // Devuelve un ISO 8601 con tiempo para evitar problemas de parseo en el backend
+    return esValida ? `${anio}-${mes}-${dia}T00:00:00` : null;
   }
 }

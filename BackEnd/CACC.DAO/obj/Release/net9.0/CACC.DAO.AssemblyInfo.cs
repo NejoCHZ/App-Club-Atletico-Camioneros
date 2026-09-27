@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CACC.DAO")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f7ea82ca6aaedafeef4a8f73bb2e8fc2b9fb30f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+46b51379f6c3c07618c32ad373deaf9230adbadb")]
 [assembly: System.Reflection.AssemblyProductAttribute("CACC.DAO")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CACC.DAO")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -2,36 +2,33 @@
   display: block;
   width: 100vw;
   height: 100vh;
-  margin: 0;
-  padding: 0;
-  background-color: #dcdcdc;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: #1e293b;
   overflow: hidden;
+  background-color: #dcdcdc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1e293b;
 }
 
 .cacc-layout {
   display: flex;
   width: 100vw;
   height: 100vh;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* ==========================================================================
-   SIDEBAR LATERAL VERDE CACC (#007A3D) - EXACTO A ADMIN-HOME
+   SIDEBAR LATERAL VERDE CACC
    ========================================================================== */
 .sidebar {
+  flex: 0 0 260px; /* CLAVE: Flex-grow 0, Flex-shrink 0, Base 260px. JAMÁS se achicará */
   width: 260px;
   height: 100vh;
   background-color: #007A3D;
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
   padding: 1.75rem 1.25rem;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .sidebar-header {
@@ -56,21 +53,13 @@
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
-  transition: transform 0.2s ease;
-}
-
-.cacc-shield-img:hover {
-  transform: scale(1.03);
 }
 
 .club-title {
   font-size: 0.88rem;
   font-weight: 900;
-  color: #ffffff;
   margin: 0;
   line-height: 1.35;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .club-subtitle {
@@ -98,16 +87,15 @@
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
+  .nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
 
-.nav-item.active {
-  background-color: rgba(255, 255, 255, 0.22);
-}
+  .nav-item.active {
+    background-color: rgba(255, 255, 255, 0.22);
+  }
 
 .nav-icon {
   display: flex;
@@ -130,55 +118,39 @@
   cursor: pointer;
   padding: 0.6rem;
   border-radius: 8px;
-  transition: background 0.2s;
 }
 
-.logout-btn:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
+  .logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
 
 /* ==========================================================================
-   MAIN WRAPPER & HEADER - EXACTO A ADMIN-HOME
+   MAIN WRAPPER & HEADER
    ========================================================================== */
 .main-wrapper {
-  flex: 1;
+  flex: 1 1 auto;
+  width: calc(100vw - 260px); /* CLAVE: Fuerza al contenedor a respetar a la sidebar */
   height: 100vh;
   display: flex;
   flex-direction: column;
-  min-width: 0;
   background-color: #dcdcdc;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.main-wrapper * {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .top-header {
-  height: 65px;
+  flex: 0 0 65px; /* Altura estricta para el header */
   background-color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 2rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  z-index: 10;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-}
-
-.hamburger-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
 }
 
 .header-title {
@@ -235,17 +207,24 @@
 }
 
 /* ==========================================================================
-   CONTENT BODY & GRID CARDS (EXACT MATCH IMAGE)
+   CONTENT BODY & GRID CARDS
    ========================================================================== */
 .content-body {
-  padding: 2.5rem 3rem;
-  max-width: 1300px;
-  margin: 0 auto;
-  width: 100%;
+  flex: 1 1 auto;
+  overflow-y: auto; /* SCROLL SOLO AQUI */
+  overflow-x: hidden;
+  padding: 2rem 3rem;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
 }
+
+  .content-body::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .content-body::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 122, 61, 0.3);
+    border-radius: 4px;
+  }
 
 .toast-success {
   background-color: #10b981;
@@ -257,7 +236,6 @@
   align-items: center;
   gap: 0.75rem;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .grid-2-cards {
@@ -271,7 +249,6 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 1.75rem 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
 }
 
@@ -289,17 +266,16 @@
   height: 40px;
   border-radius: 10px;
   background-color: #e6f4ea;
+  color: #007A3D;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007A3D;
   flex-shrink: 0;
 }
 
 .card-title {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #0f172a;
   margin: 0;
 }
 
@@ -316,40 +292,30 @@
   width: 100%;
 }
 
-.form-group label {
-  font-size: 0.825rem;
-  font-weight: 700;
-  color: #1e293b;
-}
+  .form-group label {
+    font-size: 0.825rem;
+    font-weight: 700;
+  }
 
 .required-asterisk {
   color: #ef4444;
   margin-left: 2px;
 }
 
-.form-input,
-.form-select {
+.form-input, .form-select {
   width: 100%;
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
   padding: 0.7rem 0.9rem;
   font-size: 0.9rem;
-  color: #1e293b;
-  background-color: #ffffff;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-input::placeholder {
-  color: #94a3b8;
-}
-
-.form-input:focus,
-.form-select:focus {
-  border-color: #007A3D;
-  box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.12);
-}
+  .form-input:focus, .form-select:focus {
+    border-color: #007A3D;
+    box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.12);
+  }
 
 .form-row-2 {
   display: grid;
@@ -362,24 +328,20 @@
   width: 100%;
 }
 
-.select-wrapper select {
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  padding-right: 2.25rem;
-}
+  .select-wrapper select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 2.25rem;
+  }
 
 .select-arrow {
   position: absolute;
   right: 1rem;
   top: 50%;
   transform: translateY(-50%) rotate(90deg);
-  font-size: 0.8rem;
-  color: #64748b;
   pointer-events: none;
 }
 
-/* Checkbox Apto Fisico */
 .apto-fisico-row {
   display: flex;
   align-items: center;
@@ -391,7 +353,6 @@
 .apto-label {
   font-size: 0.85rem;
   font-weight: 800;
-  color: #1e293b;
 }
 
 .cacc-checkbox {
@@ -403,23 +364,14 @@
   accent-color: #007A3D;
 }
 
-/* Info Banner in Card 2 */
 .info-banner {
   background-color: #e8f5e9;
   border: 1.5px solid #81c784;
   border-radius: 12px;
   padding: 0.9rem 1.1rem;
   display: flex;
-  align-items: center;
   gap: 0.85rem;
-
-}
-
-.banner-icon {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 .banner-text {
@@ -429,7 +381,6 @@
   line-height: 1.35;
 }
 
-/* Search input with button */
 .search-input-group {
   display: flex;
   gap: 0.5rem;
@@ -451,14 +402,8 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background-color 0.2s ease;
 }
 
-.btn-search-tutor:hover {
-  background-color: #006331;
-}
-
-/* Dashed divider and subtext */
 .dashed-divider {
   border: none;
   border-top: 1.5px dashed #cbd5e1;
@@ -468,17 +413,18 @@
 .tutor-subtext {
   font-size: 0.75rem;
   color: #94a3b8;
-  line-height: 1.45;
   margin: 0;
 }
 
-/* Footer Actions Bar */
+/* ==========================================================================
+   FOOTER ACTIONS
+   ========================================================================== */
 .page-footer-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 3.5rem;
-  padding-top: 1rem;
+  margin-top: 2rem;
+  padding-bottom: 2rem; /* Espacio extra al final del scroll */
 }
 
 .left-note {
@@ -489,7 +435,6 @@
 
 .right-buttons {
   display: flex;
-  align-items: center;
   gap: 1.25rem;
 }
 
@@ -502,13 +447,6 @@
   font-weight: 800;
   font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-}
-
-.btn-cancel-white:hover {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
 }
 
 .btn-save-qr {
@@ -521,32 +459,15 @@
   font-size: 0.95rem;
   cursor: pointer;
   display: flex;
-  align-items: center;
   gap: 0.75rem;
-  box-shadow: 0 4px 14px rgba(0, 122, 61, 0.35);
-  transition: all 0.2s ease;
+  align-items: center;
 }
 
-.btn-save-qr:hover {
-  background-color: #006331;
-  box-shadow: 0 6px 18px rgba(0, 122, 61, 0.45);
-}
-
-/* ==========================================================================
-   DISABLED STATE FOR TUTOR CARD (AGE >= 18)
-   ========================================================================== */
 .card-disabled {
   opacity: 0.7;
   background-color: #f8fafc;
   border-color: #cbd5e1;
-  transition: all 0.3s ease;
-}
-
-.tag-disabled {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-  margin-left: 0.5rem;
+  pointer-events: none;
 }
 
 .banner-disabled {
@@ -554,17 +475,16 @@
   border-color: #cbd5e1 !important;
 }
 
-.banner-disabled .banner-text {
-  color: #475569 !important;
-}
+  .banner-disabled .banner-text {
+    color: #475569 !important;
+  }
 
 .icon-badge-disabled {
   background-color: #e2e8f0 !important;
   color: #64748b !important;
 }
 
-.form-input:disabled,
-.form-select:disabled {
+.form-input:disabled, .form-select:disabled {
   background-color: #f1f5f9;
   color: #64748b;
   border-color: #cbd5e1;
@@ -574,7 +494,6 @@
 .btn-search-tutor:disabled {
   background-color: #94a3b8;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .form-control-invalid {
@@ -594,34 +513,6 @@
   border-radius: 8px;
   background: #fef3f2;
   color: #b42318;
-  font-size: 0.875rem;
   font-weight: 600;
-}
-
-.btn-save-qr:disabled {
-  cursor: wait;
-  opacity: 0.65;
-}
-
-/* Correcciones para el Scroll a Zoom 100% */
-.main-wrapper {
-  height: 100vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.content-body {
-  flex: 1;
-  padding-bottom: 60px; /* Evita que el footer quede escondido abajo */
-}
-
-/* Opcional: Estilizar la barra de scroll para que se vea moderna */
-.main-wrapper::-webkit-scrollbar {
-  width: 8px;
-}
-
-.main-wrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 122, 61, 0.4); /* Verde CACC semitransparente */
-  border-radius: 4px;
+  margin-top: 1rem;
 }
