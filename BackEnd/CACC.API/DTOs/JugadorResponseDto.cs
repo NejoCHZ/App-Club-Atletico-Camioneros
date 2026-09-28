@@ -20,6 +20,9 @@ namespace CACC.API.DTOs
         public string? PieHabil { get; set; }
         public FichaMedicaDto? FichaMedica { get; set; }
         public List<PartidoDto> Partidos { get; set; } = new List<PartidoDto>();
+
+        // Campo para reflejar el estado financiero en el dashboard
+        public string EstadoCuota { get; set; } = "AL DÍA";
     }
 
     // Clases de apoyo exclusivas para el DTO
@@ -28,7 +31,7 @@ namespace CACC.API.DTOs
         public DateTime Fecha { get; set; }
         public string Rival { get; set; } = string.Empty;
         public string Resultado { get; set; } = string.Empty;
-        public string? Condicion { get; set; } // <--- NUEVA LÍNEA
+        public string? Condicion { get; set; }
         public int Minutos { get; set; }
     }
 

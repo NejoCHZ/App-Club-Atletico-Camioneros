@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../shared/services/auth.service';
 
 interface Player {
   id: number;
@@ -9,7 +11,7 @@ interface Player {
   dni: string;
   categoria: string;
   fechaNacimiento: string;
-  estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA';
+  estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | string;
 }
 
 @Component({
@@ -19,12 +21,15 @@ interface Player {
   templateUrl: './admin-home.component.html',
   styleUrl: './admin-home.component.css'
 })
-export class AdminHomeComponent {
-  constructor(private router: Router) {}
+export class AdminHomeComponent implements OnInit {
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
 
-  irAAltaJugador() {
-    this.router.navigate(['/admin/alta-jugador']);
-  }
+  usuarioActual = {
+    nombre: 'Cargando...',
+    email: '...'
+  };
 
   searchTerm = '';
   categoriaFiltro = '';
@@ -42,52 +47,85 @@ export class AdminHomeComponent {
   kpiCards = [
     {
       title: 'Jugadores Activos',
-      value: '+500',
+      value: '...',
       type: 'jugadores',
       icon: 'group'
     },
     {
       title: 'Categorias Activas',
-      value: '+16',
+      value: '...',
       type: 'categorias',
       icon: 'flag'
     }
   ];
 
-  players: Player[] = [
-    {
-      id: 1,
-      nombreCompleto: 'LUIS OSCAR DIAZ',
-      dni: '50.123.456',
-      categoria: 'CEBOLLITAS',
-      fechaNacimiento: '01/01/2019',
-      estadoCuota: 'AL DÍA'
-    },
-    {
-      id: 2,
-      nombreCompleto: 'LUIS OSCAR DIAZ',
-      dni: '50.123.456',
-      categoria: 'CEBOLLITAS',
-      fechaNacimiento: '01/01/2019',
-      estadoCuota: 'PENDIENTE'
-    },
-    {
-      id: 3,
-      nombreCompleto: 'LUIS OSCAR DIAZ',
-      dni: '50.123.456',
-      categoria: 'CEBOLLITAS',
-      fechaNacimiento: '01/01/2019',
-      estadoCuota: 'ADEUDA'
-    },
-    {
-      id: 4,
-      nombreCompleto: 'LUIS OSCAR DIAZ',
-      dni: '50.123.456',
-      categoria: 'CEBOLLITAS',
-      fechaNacimiento: '01/01/2019',
-      estadoCuota: 'AL DÍA'
+  players: Player[] = [];
+
+  ngOnInit(): void {
+    this.cargarUsuario();
+    this.cargarDatos();
+  }
+
+  private cargarUsuario() {
+    const token = this.authService.getToken();
+    const rol = this.authService.getRol() || 'Administrador';
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+
+        this.usuarioActual = {
+          nombre: rol,
+          email: email
+        };
+      } catch (e) {
+        this.usuarioActual = { nombre: rol, email: '' };
+      }
     }
-  ];
+  }
+
+  private cargarDatos() {
+    // 1. Petición GET a la API de Jugadores
+    this.http.get<any[]>('http://localhost:5191/api/jugadores').subscribe({
+      next: (data) => {
+        // Mapeamos los datos del DTO del backend a la interfaz Player del frontend
+        this.players = data.map(j => {
+          let fechaFormateada = 'N/A';
+          if (j.fechaDeNacimiento) {
+            const date = new Date(j.fechaDeNacimiento);
+            fechaFormateada = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          }
+
+          return {
+            id: j.idJugador,
+            nombreCompleto: `${j.nombre} ${j.apellido}`.trim(),
+            dni: j.dni,
+            categoria: j.nombreCategoria || 'Sin categoría',
+            fechaNacimiento: fechaFormateada,
+            estadoCuota: j.estadoCuota || 'AL DÍA' // Fallback si no viene del backend aún
+          };
+        });
+
+        this.kpiCards[0].value = `+${this.players.length}`;
+      },
+      error: (err) => {
+        console.error('Error al cargar jugadores desde la API', err);
+        this.kpiCards[0].value = '0';
+      }
+    });
+
+    // 2. Petición GET a la API de Categorías
+    this.http.get<any[]>('http://localhost:5191/api/categorias').subscribe({
+      next: (data) => {
+        this.kpiCards[1].value = `+${data.length}`;
+      },
+      error: (err) => {
+        console.error('Error al cargar categorías desde la API', err);
+        this.kpiCards[1].value = '0'; // Si el endpoint aún no existe, no rompe la vista
+      }
+    });
+  }
 
   get filteredPlayers(): Player[] {
     return this.players
@@ -105,6 +143,10 @@ export class AdminHomeComponent {
         if (this.ordenFiltro === 'categoria') return a.categoria.localeCompare(b.categoria);
         return 0;
       });
+  }
+
+  irAAltaJugador() {
+    this.router.navigate(['/admin/alta-jugador']);
   }
 
   selectNav(label: string) {
@@ -136,5 +178,10 @@ export class AdminHomeComponent {
       case 'ADEUDA': return 'badge-adeuda';
       default: return '';
     }
+  }
+
+  cerrarSesion() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

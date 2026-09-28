@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
-
 namespace CACC.DAO
 {
     public class JugadorDao : IJugadorDao
@@ -34,10 +33,12 @@ namespace CACC.DAO
                     c.nombre_categoria AS NombreCategoria,
                     j.club_origen AS ClubOrigen,
                     j.ficha_medica_liga AS FichaMedicaLiga,
-                    j.posicion_cancha AS PosicionCancha
+                    j.posicion_cancha AS PosicionCancha,
+                    ISNULL(v.cantidad_cuotas_vencidas, 0) AS CuotasVencidas
                 FROM JUGADORES j
                 INNER JOIN PERSONAS p ON j.FK_id_persona = p.PK_id_persona
-                INNER JOIN CATEGORIAS c ON j.FK_id_categoria = c.PK_id_categoria";
+                INNER JOIN CATEGORIAS c ON j.FK_id_categoria = c.PK_id_categoria
+                LEFT JOIN VISTA_ESTADO_DEUDA v ON j.PK_id_jugador = v.FK_id_jugador";
 
             using var command = new SqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -56,10 +57,26 @@ namespace CACC.DAO
             await connection.OpenAsync();
 
             var query = @"
-                SELECT j.PK_id_jugador AS IdJugador, p.nombre AS Nombre, p.apellido AS Apellido, p.dni AS Dni, p.genero AS Genero, p.fecha_de_nacimiento AS FechaDeNacimiento, j.FK_id_categoria AS IdCategoria, c.nombre_categoria AS NombreCategoria, j.club_origen AS ClubOrigen, j.ficha_medica_liga AS FichaMedicaLiga, j.posicion_cancha AS PosicionCancha, j.peso AS Peso, j.altura AS Altura, j.pie_habil AS PieHabil
+                SELECT 
+                    j.PK_id_jugador AS IdJugador, 
+                    p.nombre AS Nombre, 
+                    p.apellido AS Apellido, 
+                    p.dni AS Dni, 
+                    p.genero AS Genero, 
+                    p.fecha_de_nacimiento AS FechaDeNacimiento, 
+                    j.FK_id_categoria AS IdCategoria, 
+                    c.nombre_categoria AS NombreCategoria, 
+                    j.club_origen AS ClubOrigen, 
+                    j.ficha_medica_liga AS FichaMedicaLiga, 
+                    j.posicion_cancha AS PosicionCancha, 
+                    j.peso AS Peso, 
+                    j.altura AS Altura, 
+                    j.pie_habil AS PieHabil,
+                    ISNULL(v.cantidad_cuotas_vencidas, 0) AS CuotasVencidas
                 FROM JUGADORES j
                 INNER JOIN PERSONAS p ON j.FK_id_persona = p.PK_id_persona
                 INNER JOIN CATEGORIAS c ON j.FK_id_categoria = c.PK_id_categoria
+                LEFT JOIN VISTA_ESTADO_DEUDA v ON j.PK_id_jugador = v.FK_id_jugador
                 WHERE j.PK_id_jugador = @Id;
 
                 SELECT hp.fecha_partido AS Fecha, hp.rival AS Rival, hp.resultado AS Resultado, hp.condicion_localia AS Condicion, jp.minutos_jugados AS Minutos
@@ -141,10 +158,12 @@ namespace CACC.DAO
                     c.nombre_categoria AS NombreCategoria,
                     j.club_origen AS ClubOrigen,
                     j.ficha_medica_liga AS FichaMedicaLiga,
-                    j.posicion_cancha AS PosicionCancha
+                    j.posicion_cancha AS PosicionCancha,
+                    ISNULL(v.cantidad_cuotas_vencidas, 0) AS CuotasVencidas
                 FROM JUGADORES j
                 INNER JOIN PERSONAS p ON j.FK_id_persona = p.PK_id_persona
                 INNER JOIN CATEGORIAS c ON j.FK_id_categoria = c.PK_id_categoria
+                LEFT JOIN VISTA_ESTADO_DEUDA v ON j.PK_id_jugador = v.FK_id_jugador
                 WHERE j.FK_id_categoria = @IdCategoria";
 
             using var command = new SqlCommand(query, connection);
@@ -174,7 +193,10 @@ namespace CACC.DAO
                 NombreCategoria = reader.IsDBNull(reader.GetOrdinal("NombreCategoria")) ? null : reader.GetString(reader.GetOrdinal("NombreCategoria")),
                 ClubOrigen = reader.IsDBNull(reader.GetOrdinal("ClubOrigen")) ? null : reader.GetString(reader.GetOrdinal("ClubOrigen")),
                 FichaMedicaLiga = reader.GetBoolean(reader.GetOrdinal("FichaMedicaLiga")),
-                PosicionCancha = reader.IsDBNull(reader.GetOrdinal("PosicionCancha")) ? null : reader.GetString(reader.GetOrdinal("PosicionCancha"))
+                PosicionCancha = reader.IsDBNull(reader.GetOrdinal("PosicionCancha")) ? null : reader.GetString(reader.GetOrdinal("PosicionCancha")),
+
+                // Mapeo dinámico del estado según la vista de deudas
+                EstadoCuota = reader.GetInt32(reader.GetOrdinal("CuotasVencidas")) > 0 ? "ADEUDA" : "AL DÍA"
             };
         }
 
@@ -186,7 +208,6 @@ namespace CACC.DAO
 
             try
             {
-                // 1. Actualizar PERSONAS
                 var queryPersonas = @"
                     UPDATE p 
                     SET nombre = @Nombre, apellido = @Apellido, dni = @Dni, fecha_de_nacimiento = @FechaNacimiento
@@ -202,7 +223,6 @@ namespace CACC.DAO
                 cmdPersonas.Parameters.AddWithValue("@FechaNacimiento", jugador.FechaDeNacimiento ?? (object)DBNull.Value);
                 await cmdPersonas.ExecuteNonQueryAsync();
 
-                // 2. Actualizar JUGADORES
                 var queryJugadores = @"
                     UPDATE JUGADORES 
                     SET posicion_cancha = @Posicion, peso = @Peso, altura = @Altura, pie_habil = @PieHabil
@@ -216,7 +236,6 @@ namespace CACC.DAO
                 cmdJugadores.Parameters.AddWithValue("@PieHabil", jugador.PieHabil ?? (object)DBNull.Value);
                 await cmdJugadores.ExecuteNonQueryAsync();
 
-                // 3. Actualizar FICHAS_MEDICAS
                 string? grupo = null;
                 string? factor = null;
                 if (!string.IsNullOrEmpty(jugador.FichaMedica?.GrupoSanguineo) && jugador.FichaMedica.GrupoSanguineo.Length >= 2)
@@ -240,7 +259,6 @@ namespace CACC.DAO
                 cmdFicha.Parameters.AddWithValue("@Observaciones", jugador.FichaMedica?.Observaciones ?? (object)DBNull.Value);
                 await cmdFicha.ExecuteNonQueryAsync();
 
-                // 4. Actualizar Minutos de Partidos
                 if (jugador.Partidos != null)
                 {
                     var queryPartidos = @"
@@ -270,6 +288,7 @@ namespace CACC.DAO
                 throw;
             }
         }
+
         public async Task<int> CrearAsync(JugadorAlta dto)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -278,7 +297,6 @@ namespace CACC.DAO
 
             try
             {
-                // 1. Insertar PERSONA del Jugador
                 var queryPersona = @"
                     INSERT INTO PERSONAS (nombre, apellido, dni, fecha_de_nacimiento)
                     OUTPUT INSERTED.PK_id_persona
@@ -290,10 +308,8 @@ namespace CACC.DAO
                 cmdPersona.Parameters.AddWithValue("@Dni", dto.Dni);
                 cmdPersona.Parameters.AddWithValue("@FechaNacimiento", dto.FechaNacimiento ?? (object)DBNull.Value);
 
-                // Convert.ToInt32 elimina el warning CS8605
                 int idPersona = Convert.ToInt32(await cmdPersona.ExecuteScalarAsync());
 
-                // 2. Insertar JUGADOR
                 int idCategoria = 0;
                 if (!string.IsNullOrEmpty(dto.Categoria)) int.TryParse(dto.Categoria, out idCategoria);
 
@@ -311,7 +327,6 @@ namespace CACC.DAO
 
                 int idJugador = Convert.ToInt32(await cmdJugador.ExecuteScalarAsync());
 
-                // 3. Crear FICHA_MEDICA vacía
                 var queryFicha = @"
                     INSERT INTO FICHAS_MEDICAS (FK_id_jugador)
                     VALUES (@IdJugador);";
@@ -320,10 +335,8 @@ namespace CACC.DAO
                 cmdFicha.Parameters.AddWithValue("@IdJugador", idJugador);
                 await cmdFicha.ExecuteNonQueryAsync();
 
-                // 4. Insertar/Vincular RESPONSABLE (Tutor)
                 if (dto.Tutor != null && !string.IsNullOrWhiteSpace(dto.Tutor.Dni))
                 {
-                    // 4a. Verificar si la PERSONA del tutor ya existe por DNI
                     var queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @TutorDni;";
                     using var cmdCheckPersona = new SqlCommand(queryCheckPersona, connection, transaction);
                     cmdCheckPersona.Parameters.AddWithValue("@TutorDni", dto.Tutor.Dni);
@@ -332,12 +345,10 @@ namespace CACC.DAO
                     int idPersonaTutor;
                     if (resultPersona != null)
                     {
-                        // La persona ya existe, reutilizamos su ID
                         idPersonaTutor = Convert.ToInt32(resultPersona);
                     }
                     else
                     {
-                        // No existe, la creamos
                         var queryInsertPersonaTutor = @"
                             INSERT INTO PERSONAS (nombre, apellido, dni)
                             OUTPUT INSERTED.PK_id_persona
@@ -349,7 +360,6 @@ namespace CACC.DAO
                         idPersonaTutor = Convert.ToInt32(await cmdInsertPersonaTutor.ExecuteScalarAsync());
                     }
 
-                    // 4b. Verificar si ya está en la tabla RESPONSABLES
                     var queryCheckResp = "SELECT PK_id_responsable FROM RESPONSABLES WHERE FK_id_persona = @IdPersonaTutor;";
                     using var cmdCheckResp = new SqlCommand(queryCheckResp, connection, transaction);
                     cmdCheckResp.Parameters.AddWithValue("@IdPersonaTutor", idPersonaTutor);
@@ -358,17 +368,14 @@ namespace CACC.DAO
                     int idResponsable;
                     if (resultResp != null)
                     {
-                        // Ya es responsable, reutilizamos su ID
                         idResponsable = Convert.ToInt32(resultResp);
                     }
                     else
                     {
-                        // GENERAMOS EL ID MANUALMENTE PORQUE SQL SERVER NO TIENE IDENTITY
                         var queryMaxResp = "SELECT ISNULL(MAX(PK_id_responsable), 0) + 1 FROM RESPONSABLES;";
                         using var cmdMaxResp = new SqlCommand(queryMaxResp, connection, transaction);
                         idResponsable = Convert.ToInt32(await cmdMaxResp.ExecuteScalarAsync());
 
-                        // Insertamos mandando explícitamente el nuevo PK_id_responsable
                         var queryInsertResp = @"
                             INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, email, telefono)
                             VALUES (@IdResponsable, @IdPersonaTutor, @Email, @Telefono);";
@@ -380,8 +387,6 @@ namespace CACC.DAO
                         await cmdInsertResp.ExecuteNonQueryAsync();
                     }
 
-                    // 4c. Vincular en JUGADORES_RESPONSABLES
-                    // GENERAMOS EL ID MANUALMENTE PARA LA TABLA INTERMEDIA
                     var queryMaxVinculo = "SELECT ISNULL(MAX(PK_id_jugador_responsable), 0) + 1 FROM JUGADORES_RESPONSABLES;";
                     using var cmdMaxVinculo = new SqlCommand(queryMaxVinculo, connection, transaction);
                     int idVinculo = Convert.ToInt32(await cmdMaxVinculo.ExecuteScalarAsync());

@@ -37,4 +37,24 @@ export class AuthService {
   estaAutenticado(): boolean {
     return !!this.getToken();
   }
+
+  obtenerDatosUsuario(): { email: string, rol: string } {
+    const token = this.getToken();
+    const rolLocal = this.getRol() || 'Tesorero';
+
+    if (!token) return { email: 'usuario@cacc.com.ar', rol: rolLocal };
+
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+
+      // .NET serializa los claims con estas URLs estándar por defecto
+      return {
+        email: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || decoded.email || 'usuario@cacc.com.ar',
+        rol: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decoded.rol || rolLocal
+      };
+    } catch (e) {
+      return { email: 'usuario@cacc.com.ar', rol: rolLocal };
+    }
+  }
 }

@@ -3,7 +3,7 @@ using CACC.DAO;
 using CACC.API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient; 
+using Microsoft.Data.SqlClient;
 
 namespace CACC.API.Controllers
 {
@@ -22,30 +22,85 @@ namespace CACC.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetJugadores([FromQuery] int? categoriaId)
         {
-            IEnumerable<JugadorDetalle> jugadores;
+            IEnumerable<JugadorDetalle> jugadoresDb;
 
             if (categoriaId.HasValue)
             {
-                jugadores = await _jugadorDao.ObtenerPorCategoriaAsync(categoriaId.Value);
+                jugadoresDb = await _jugadorDao.ObtenerPorCategoriaAsync(categoriaId.Value);
             }
             else
             {
-                jugadores = await _jugadorDao.ObtenerTodosAsync();
+                jugadoresDb = await _jugadorDao.ObtenerTodosAsync();
             }
 
-            return Ok(jugadores);
+            // Mapeamos las entidades de BD al DTO de respuesta
+            var response = jugadoresDb.Select(j => new JugadorResponseDto
+            {
+                IdJugador = j.IdJugador,
+                Nombre = j.Nombre,
+                Apellido = j.Apellido,
+                Dni = j.Dni,
+                Genero = j.Genero,
+                FechaDeNacimiento = j.FechaDeNacimiento,
+                IdCategoria = j.IdCategoria,
+                NombreCategoria = j.NombreCategoria,
+                ClubOrigen = j.ClubOrigen,
+                FichaMedicaLiga = j.FichaMedicaLiga,
+                PosicionCancha = j.PosicionCancha,
+                Peso = j.Peso,
+                Altura = j.Altura,
+                PieHabil = j.PieHabil,
+                EstadoCuota = j.EstadoCuota
+            });
+
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetJugadorPorId(int id)
         {
-            var jugador = await _jugadorDao.ObtenerPorIdAsync(id);
-            if (jugador == null)
+            var j = await _jugadorDao.ObtenerPorIdAsync(id);
+            if (j == null)
             {
                 return NotFound(new { message = "Jugador no encontrado." });
             }
 
-            return Ok(jugador);
+            // Mapeo profundo incluyendo listas anidadas para el DTO
+            var response = new JugadorResponseDto
+            {
+                IdJugador = j.IdJugador,
+                Nombre = j.Nombre,
+                Apellido = j.Apellido,
+                Dni = j.Dni,
+                Genero = j.Genero,
+                FechaDeNacimiento = j.FechaDeNacimiento,
+                IdCategoria = j.IdCategoria,
+                NombreCategoria = j.NombreCategoria,
+                ClubOrigen = j.ClubOrigen,
+                FichaMedicaLiga = j.FichaMedicaLiga,
+                PosicionCancha = j.PosicionCancha,
+                Peso = j.Peso,
+                Altura = j.Altura,
+                PieHabil = j.PieHabil,
+                EstadoCuota = j.EstadoCuota,
+                FichaMedica = j.FichaMedica == null ? null : new FichaMedicaDto
+                {
+                    GrupoSanguineo = j.FichaMedica.GrupoSanguineo,
+                    Patologias = j.FichaMedica.Patologias,
+                    HistorialLesiones = j.FichaMedica.HistorialLesiones,
+                    Observaciones = j.FichaMedica.Observaciones
+                },
+                Partidos = j.Partidos?.Select(p => new PartidoDto
+                {
+                    Fecha = p.Fecha,
+                    Rival = p.Rival,
+                    Resultado = p.Resultado,
+                    Condicion = p.Condicion,
+                    Minutos = p.Minutos
+                }).ToList() ?? new List<PartidoDto>()
+            };
+
+            return Ok(response);
         }
 
         [HttpPut("{id}")]
@@ -107,7 +162,6 @@ namespace CACC.API.Controllers
 
             try
             {
-                // Mapeo del DTO de la API hacia la Entidad del DAO
                 var jugadorAlta = new JugadorAlta
                 {
                     Dni = dto.Dni,
@@ -125,11 +179,10 @@ namespace CACC.API.Controllers
                         Apellido = dto.Tutor.Apellido,
                         Telefono = dto.Tutor.Telefono,
                         Email = dto.Tutor.Email,
-                        // Mapeo del nuevo campo
                         Parentesco = dto.Tutor.Parentesco
                     }
                 };
-                // Le enviamos la entidad mapeada al DAO
+
                 int nuevoId = await _jugadorDao.CrearAsync(jugadorAlta);
 
                 return StatusCode(201, new
