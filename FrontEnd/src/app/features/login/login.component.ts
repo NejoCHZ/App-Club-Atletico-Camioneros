@@ -37,13 +37,14 @@ export class LoginComponent {
           const rol = this.authService.getRol();
 
           if (rol === 'Tesorero') {
-            this.router.navigate(['/admin']); 
+            
+            this.router.navigate(['/seleccion-portales']);
           } else if (rol === 'Médico') {
-            this.router.navigate(['/medico']); 
+            this.router.navigate(['/medico']);
           } else if (rol === 'Director Técnico') {
-            this.router.navigate(['/dt']); 
+            this.router.navigate(['/dt']);
           } else {
-            this.router.navigate(['/coordinador']); 
+            this.router.navigate(['/coordinador']);
           }
         },
         error: (err) => {
