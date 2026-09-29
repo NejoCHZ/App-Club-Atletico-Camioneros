@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CACC.DAO")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0cf0f3ad1079ea9fac161687474de1307f713f61")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bad4cb9d6db39db5e5465f890c300828641d2818")]
 [assembly: System.Reflection.AssemblyProductAttribute("CACC.DAO")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CACC.DAO")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

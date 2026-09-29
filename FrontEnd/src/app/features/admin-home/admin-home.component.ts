@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -12,6 +12,11 @@ interface Player {
   categoria: string;
   fechaNacimiento: string;
   estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | string;
+}
+
+interface Categoria {
+  idCategoria: number;
+  nombreCategoria: string;
 }
 
 @Component({
@@ -34,8 +39,11 @@ export class AdminHomeComponent implements OnInit {
   searchTerm = '';
   categoriaFiltro = '';
   ordenFiltro = '';
-
   activeTab = 'Inicio';
+
+  // Estados interactivos solicitados
+  menuUsuarioAbierto = false;
+  sidebarOculto = false;
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: true },
@@ -45,30 +53,22 @@ export class AdminHomeComponent implements OnInit {
   ];
 
   kpiCards = [
-    {
-      title: 'Jugadores Activos',
-      value: '...',
-      type: 'jugadores',
-      icon: 'group'
-    },
-    {
-      title: 'Categorias Activas',
-      value: '...',
-      type: 'categorias',
-      icon: 'flag'
-    }
+    { title: 'Jugadores Activos', value: '...', type: 'jugadores', icon: 'group' },
+    { title: 'Categorias Activas', value: '...', type: 'categorias', icon: 'flag' }
   ];
 
   players: Player[] = [];
+  listaCategorias: Categoria[] = [];
 
   ngOnInit(): void {
     this.cargarUsuario();
     this.cargarDatos();
+    this.cargarCategoriasBd();
   }
 
   private cargarUsuario() {
     const token = this.authService.getToken();
-    const rol = this.authService.getRol() || 'Administrador';
+    const rol = this.authService.getRol() || 'Tesorero';
 
     if (token) {
       try {
@@ -86,10 +86,8 @@ export class AdminHomeComponent implements OnInit {
   }
 
   private cargarDatos() {
-    // 1. Petición GET a la API de Jugadores
     this.http.get<any[]>('http://localhost:5191/api/jugadores').subscribe({
       next: (data) => {
-        // Mapeamos los datos del DTO del backend a la interfaz Player del frontend
         this.players = data.map(j => {
           let fechaFormateada = 'N/A';
           if (j.fechaDeNacimiento) {
@@ -103,26 +101,27 @@ export class AdminHomeComponent implements OnInit {
             dni: j.dni,
             categoria: j.nombreCategoria || 'Sin categoría',
             fechaNacimiento: fechaFormateada,
-            estadoCuota: j.estadoCuota || 'AL DÍA' // Fallback si no viene del backend aún
+            estadoCuota: j.estadoCuota || 'AL DÍA'
           };
         });
-
         this.kpiCards[0].value = `+${this.players.length}`;
       },
       error: (err) => {
-        console.error('Error al cargar jugadores desde la API', err);
+        console.error('Error al cargar jugadores', err);
         this.kpiCards[0].value = '0';
       }
     });
+  }
 
-    // 2. Petición GET a la API de Categorías
-    this.http.get<any[]>('http://localhost:5191/api/categorias').subscribe({
+  private cargarCategoriasBd() {
+    this.http.get<Categoria[]>('http://localhost:5191/api/categorias').subscribe({
       next: (data) => {
+        this.listaCategorias = data;
         this.kpiCards[1].value = `+${data.length}`;
       },
       error: (err) => {
-        console.error('Error al cargar categorías desde la API', err);
-        this.kpiCards[1].value = '0'; // Si el endpoint aún no existe, no rompe la vista
+        console.error('Error al cargar categorías', err);
+        this.kpiCards[1].value = '0';
       }
     });
   }
@@ -145,8 +144,33 @@ export class AdminHomeComponent implements OnInit {
       });
   }
 
+  // Interacciones de UI solicitadas
+  toggleMenuUsuario(event: Event) {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  toggleSidebar() {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  // Ocultar menú flotante al hacer clic fuera
+  @HostListener('document:click')
+  cerrarMenus() {
+    this.menuUsuarioAbierto = false;
+  }
+
   irAAltaJugador() {
     this.router.navigate(['/admin/alta-jugador']);
+  }
+
+  irASeleccionPortales() {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion() {
+    // Ajustar ruta de configuración cuando esté creada
+    alert('Módulo de configuración de cuenta en desarrollo.');
   }
 
   selectNav(label: string) {

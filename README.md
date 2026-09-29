@@ -51,14 +51,15 @@ App-Club-Atletico-Camioneros/
 
 Guía de Instalación y Puesta en Marcha Local1. Base de Datos (SQL Server 2025)Abrir SQL Server Management Studio (SSMS).
 1. Ejecutar el script consolidado ubicado en la raíz del repositorio (cacc_database_init.sql) para generar el esquema completo de tablas bajo nomenclatura estándar (UPPER_SNAKE_CASE y snake_case) junto con los datos iniciales.
-2. Backend (.NET 9.0)Posicionarse en la carpeta del backend:Bashcd BackEnd
-Restaurar dependencias y compilar la solución:Bashdotnet restore
+2. Backend (.NET 9.0)Posicionarse en la carpeta del backend:Bash cd BackEnd
+Restaurar dependencias y compilar la solución:Bash dotnet restore
 dotnet build
-Verificar los parámetros de conexión (Connection Strings) en los archivos de configuración de la API.Ejecutar el proyecto API:Bashcd CACC.API
-dotnet run
-3. Frontend (Angular v22)Desde una nueva terminal, ubicarse en la carpeta del frontend:Bashcd FrontEnd
-Instalar los paquetes necesarios de Node.js:Bashnpm install
-Levantar el entorno de desarrollo local:Bashnpm start
+Verificar los parámetros de conexión (Connection Strings) en los archivos de configuración de la API.
+Ejecutar el proyecto API:Bash dotnet run --project CACC.API
+
+3. Frontend (Angular v22)Desde una nueva terminal, ubicarse en la carpeta del frontend:Bash cd FrontEnd
+Instalar los paquetes necesarios de Node.js:Bash npm install
+Levantar el entorno de desarrollo local:Bash ng serve
 Abrir el navegador en http://localhost:4200.
 
 📄 Normativa y ConvencionesBase de datos: Tablas en plural con mayúsculas sostenidas (UPPER_SNAKE_CASE), columnas en minúsculas separadas por guiones bajos (snake_case), claves primarias prefijadas con PK_id_ y foráneas con FK_id_.   QR y Credenciales: El código QR se genera dinámicamente al vuelo a partir del DNI (sin persistencia en base de datos) para la impresión de tarjetas físicas y procesamiento en el semáforo de asistencias. Las credenciales se exportan en formato PDF mediante QuestPDF con diseño optimizado (formato CR80, sin fotografía).
