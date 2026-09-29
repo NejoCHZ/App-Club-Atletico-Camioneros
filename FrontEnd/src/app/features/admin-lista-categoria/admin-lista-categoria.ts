@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../shared/services/auth.service';
 
 export interface CategoriaItem {
   id: number;
@@ -17,14 +19,24 @@ export interface CategoriaItem {
   templateUrl: './admin-lista-categoria.html',
   styleUrl: './admin-lista-categoria.css',
 })
-export class AdminListaCategoria {
-  constructor(private router: Router) {}
+export class AdminListaCategoria implements OnInit {
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
+  usuarioActual = {
+    nombre: 'Cargando...',
+    email: '...'
+  };
 
   searchTerm = '';
   asociacionFiltro = '';
   ordenFiltro = '';
-
   activeTab = 'Categorias';
+
+  // Control interactivo del Layout
+  menuUsuarioAbierto = false;
+  sidebarOculto = false;
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
@@ -33,44 +45,63 @@ export class AdminListaCategoria {
     { label: 'Categorias', icon: 'category', active: true }
   ];
 
-  categorias: CategoriaItem[] = [
-    {
-      id: 1,
-      nombre: 'NOMBRE DE LA CATEGORIA',
-      cantidadJugadores: 'CANTIDAD JUGADORES',
-      asociacion: 'Liga Cordobesa'
-    },
-    {
-      id: 2,
-      nombre: 'NOMBRE DE LA CATEGORIA',
-      cantidadJugadores: 'CANTIDAD JUGADORES',
-      asociacion: 'Liga Cordobesa'
-    },
-    {
-      id: 3,
-      nombre: 'NOMBRE DE LA CATEGORIA',
-      cantidadJugadores: 'CANTIDAD JUGADORES',
-      asociacion: 'Liga Cordobesa'
-    },
-    {
-      id: 4,
-      nombre: 'NOMBRE DE LA CATEGORIA',
-      cantidadJugadores: 'CANTIDAD JUGADORES',
-      asociacion: 'AFA'
-    },
-    {
-      id: 5,
-      nombre: 'NOMBRE DE LA CATEGORIA',
-      cantidadJugadores: 'CANTIDAD JUGADORES',
-      asociacion: 'AFA'
-    },
-    {
-      id: 6,
-      nombre: 'NOMBRE DE LA CATEGORIA',
-      cantidadJugadores: 'CANTIDAD JUGADORES',
-      asociacion: 'Liga Cordobesa'
+  categorias: CategoriaItem[] = [];
+
+  ngOnInit(): void {
+    this.cargarUsuario();
+    this.cargarDatos();
+  }
+
+  private cargarUsuario() {
+    const token = this.authService.getToken();
+    const rol = this.authService.getRol() || 'Tesorero';
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+
+        this.usuarioActual = {
+          nombre: rol,
+          email: email
+        };
+      } catch (e) {
+        this.usuarioActual = { nombre: rol, email: '' };
+      }
     }
-  ];
+  }
+
+  private cargarDatos() {
+    // 1. Obtenemos las categorías reales de la base de datos
+    this.http.get<any[]>('http://localhost:5191/api/categorias').subscribe({
+      next: (cats) => {
+        // 2. Consultamos jugadores para calcular la cantidad real por categoría
+        this.http.get<any[]>('http://localhost:5191/api/jugadores').subscribe({
+          next: (players) => {
+            this.mapearCategorias(cats, players);
+          },
+          error: () => {
+            this.mapearCategorias(cats, []);
+          }
+        });
+      },
+      error: (err) => console.error('Error al cargar categorías desde la API', err)
+    });
+  }
+
+  private mapearCategorias(cats: any[], players: any[]) {
+    this.categorias = cats.map(c => {
+      const count = players.filter(p => p.idCategoria === c.idCategoria).length;
+      const esAfa = (c.nombreCategoria || '').toUpperCase().includes('AFA');
+
+      return {
+        id: c.idCategoria,
+        nombre: c.nombreCategoria,
+        cantidadJugadores: `${count} JUGADORES`,
+        asociacion: esAfa ? 'AFA' : 'Liga Cordobesa'
+      };
+    });
+  }
 
   get filteredCategorias(): CategoriaItem[] {
     return this.categorias
@@ -84,6 +115,34 @@ export class AdminListaCategoria {
         if (this.ordenFiltro === 'nombre') return a.nombre.localeCompare(b.nombre);
         return 0;
       });
+  }
+
+  // Interacción de UI estandarizada
+  toggleMenuUsuario(event: MouseEvent) {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  toggleSidebar() {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  @HostListener('document:click')
+  cerrarMenus() {
+    this.menuUsuarioAbierto = false;
+  }
+
+  irASeleccionPortales() {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion() {
+    alert('Módulo de configuración de cuenta en desarrollo.');
+  }
+
+  cerrarSesion() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   selectNav(label: string) {

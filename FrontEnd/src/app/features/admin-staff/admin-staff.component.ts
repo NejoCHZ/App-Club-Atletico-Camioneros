@@ -1,17 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../shared/services/auth.service';
 
 export interface StaffMember {
   id: number;
   nombreCompleto: string;
   dni: string;
-  rol: 'DIRECTOR TÉCNICO' | 'PREPARADOR FÍSICO' | 'MÉDICO' | 'KINESIÓLOGO' | 'DELEGADO';
+  rol: string;
   edad: string;
   categoriaAsignada: string;
   telefono: string;
-  estado: 'ACTIVO' | 'LICENCIA' | 'INACTIVO';
+  estado: 'ACTIVO' | 'LICENCIA' | 'INACTIVO' | string;
 }
 
 @Component({
@@ -21,9 +23,23 @@ export interface StaffMember {
   templateUrl: './admin-staff.component.html',
   styleUrl: './admin-staff.component.css'
 })
-export class AdminStaffComponent {
+export class AdminStaffComponent implements OnInit {
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
+  usuarioActual = {
+    nombre: 'Cargando...',
+    email: '...'
+  };
+
   searchTerm = '';
-  rolFiltro = ''; // '' = Todos, 'DIRECTOR TÉCNICO', 'PREPARADOR FÍSICO'
+  rolFiltro = '';
+  activeTab = 'Staff';
+
+  // Estados interactivos unificados del Layout
+  menuUsuarioAbierto = false;
+  sidebarOculto = false;
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
@@ -32,85 +48,66 @@ export class AdminStaffComponent {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
-  trabajadores: StaffMember[] = [
-    {
-      id: 1,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      rol: 'DIRECTOR TÉCNICO',
-      edad: '00 AÑOS',
-      categoriaAsignada: 'JUVENIL',
-      telefono: '351-4455667',
-      estado: 'ACTIVO'
-    },
-    {
-      id: 2,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      rol: 'PREPARADOR FÍSICO',
-      edad: '00 AÑOS',
-      categoriaAsignada: 'INFANTIL',
-      telefono: '351-9988776',
-      estado: 'ACTIVO'
-    },
-    {
-      id: 3,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      rol: 'DIRECTOR TÉCNICO',
-      edad: '00 AÑOS',
-      categoriaAsignada: 'CEBOLLITAS',
-      telefono: '351-7766554',
-      estado: 'ACTIVO'
-    },
-    {
-      id: 4,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      rol: 'PREPARADOR FÍSICO',
-      edad: '00 AÑOS',
-      categoriaAsignada: 'TODAS',
-      telefono: '351-3322110',
-      estado: 'ACTIVO'
-    },
-    {
-      id: 5,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      rol: 'DIRECTOR TÉCNICO',
-      edad: '00 AÑOS',
-      categoriaAsignada: 'RESERVA',
-      telefono: '351-6655443',
-      estado: 'ACTIVO'
-    },
-    {
-      id: 6,
-      nombreCompleto: 'NOMBRE Y APELLIDO',
-      dni: '43.123.456',
-      rol: 'PREPARADOR FÍSICO',
-      edad: '00 AÑOS',
-      categoriaAsignada: 'PRIMERA',
-      telefono: '351-1122334',
-      estado: 'ACTIVO'
-    }
-  ];
+  trabajadores: StaffMember[] = [];
 
-  constructor(private router: Router) {}
+  ngOnInit(): void {
+    this.cargarUsuario();
+    this.cargarStaff();
+  }
 
-  selectNav(label: string) {
-    if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
-    } else if (label === 'Jugadores') {
-      this.router.navigate(['/admin/lista-jugadores']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
-    } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
+  private cargarUsuario() {
+    const token = this.authService.getToken();
+    const rol = this.authService.getRol() || 'Tesorero';
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+
+        this.usuarioActual = {
+          nombre: rol,
+          email: email
+        };
+      } catch (e) {
+        this.usuarioActual = { nombre: rol, email: '' };
+      }
     }
   }
 
-  volver() {
-    this.router.navigate(['/admin']);
+  private cargarStaff() {
+    this.http.get<any[]>('http://localhost:5191/api/staff').subscribe({
+      next: (data) => {
+        this.trabajadores = data.map(s => {
+          let edadTexto = 'N/A';
+          if (s.fechaDeNacimiento) {
+            const birthDate = new Date(s.fechaDeNacimiento);
+            const hoy = new Date();
+            let edadCalculada = hoy.getFullYear() - birthDate.getFullYear();
+            const m = hoy.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < birthDate.getDate())) {
+              edadCalculada--;
+            }
+            edadTexto = `${edadCalculada} AÑOS`;
+          } else if (s.edad) {
+            edadTexto = `${s.edad} AÑOS`;
+          }
+
+          return {
+            id: s.idStaff || s.id,
+            nombreCompleto: s.nombreCompleto || `${s.nombre || ''} ${s.apellido || ''}`.trim(),
+            dni: s.dni || '',
+            rol: (s.rol || 'STAFF').toUpperCase(),
+            edad: edadTexto,
+            categoriaAsignada: s.categoriaAsignada || 'TODAS',
+            telefono: s.telefono || '-',
+            estado: s.activo !== undefined ? (s.activo ? 'ACTIVO' : 'INACTIVO') : 'ACTIVO'
+          };
+        });
+      },
+      error: (err) => {
+        console.error('Error al cargar staff desde la API', err);
+      }
+    });
   }
 
   toggleRolFiltro(rol: string) {
@@ -123,12 +120,55 @@ export class AdminStaffComponent {
 
   get filteredStaff(): StaffMember[] {
     return this.trabajadores.filter(t => {
-      const matchSearch = !this.searchTerm || 
-        t.nombreCompleto.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
-        t.dni.includes(this.searchTerm);
-      const matchRol = !this.rolFiltro || t.rol === this.rolFiltro;
+      const term = this.searchTerm.trim().toLowerCase();
+      const matchSearch = !term ||
+        t.nombreCompleto.toLowerCase().includes(term) ||
+        t.dni.includes(term);
+      const matchRol = !this.rolFiltro || t.rol.toUpperCase() === this.rolFiltro.toUpperCase();
       return matchSearch && matchRol;
     });
+  }
+
+  // Interacción de UI estandarizada
+  toggleMenuUsuario(event: MouseEvent) {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  toggleSidebar() {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  @HostListener('document:click')
+  cerrarMenus() {
+    this.menuUsuarioAbierto = false;
+  }
+
+  irASeleccionPortales() {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion() {
+    alert('Módulo de configuración de cuenta en desarrollo.');
+  }
+
+  cerrarSesion() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  selectNav(label: string) {
+    this.navItems.forEach(item => item.active = (item.label === label));
+    this.activeTab = label;
+    if (label === 'Inicio') {
+      this.router.navigate(['/admin']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/admin/lista-jugadores']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/admin/categorias']);
+    } else if (label === 'Staff') {
+      this.router.navigate(['/admin/staff']);
+    }
   }
 
   darDeAltaTrabajador() {

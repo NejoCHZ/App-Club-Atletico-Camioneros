@@ -1,122 +1,201 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
-import { JugadorService } from '../../shared/services/jugador.service';
-import { JugadorVista } from '../../shared/models/jugador.model';
+import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
+
+interface Player {
+  id: number;
+  nombreCompleto: string;
+  dni: string;
+  categoria: string;
+  fechaNacimiento: string;
+  estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | string;
+}
+
+interface Categoria {
+  idCategoria: number;
+  nombreCategoria: string;
+}
 
 @Component({
   selector: 'app-admin-lista-jugadores',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-lista-jugadores.html',
-  styleUrls: ['./admin-lista-jugadores.css']
+  styleUrl: './admin-lista-jugadores.css'
 })
 export class AdminListaJugadores implements OnInit {
-  private jugadorService = inject(JugadorService);
   private router = inject(Router);
+  private http = inject(HttpClient);
   private authService = inject(AuthService);
 
-  cargando = true;
-  errorCarga = '';
-  searchTerm = '';
-  posicionFiltro = '';
+  usuarioActual = {
+    nombre: 'Cargando...',
+    email: '...'
+  };
 
-  jugadoresOriginales: JugadorVista[] = [];
-  filteredPlayers: JugadorVista[] = [];
+  searchTerm = '';
+  categoriaFiltro = '';
+  ordenFiltro = '';
+  activeTab = 'Jugadores';
+
+  // Estados interactivos estandarizados
+  menuUsuarioAbierto = false;
+  sidebarOculto = false;
 
   navItems = [
-    { label: 'Inicio', icon: 'home', route: '/admin', active: false },
-    { label: 'Jugadores', icon: 'group', route: '/admin/lista-jugadores', active: true },
-    { label: 'Categorías', icon: 'category', route: '/admin/categorias', active: false },
-    { label: 'Credenciales', icon: 'badge', route: '/admin-popup-credencial', active: false }
+    { label: 'Inicio', icon: 'home', active: false },
+    { label: 'Jugadores', icon: 'group', active: true },
+    { label: 'Staff', icon: 'badge', active: false },
+    { label: 'Categorias', icon: 'category', active: false }
   ];
 
+  players: Player[] = [];
+  listaCategorias: Categoria[] = [];
+
   ngOnInit(): void {
+    this.cargarUsuario();
     this.cargarJugadores();
+    this.cargarCategorias();
   }
 
-  cargarJugadores() {
-    this.jugadorService.obtenerTodos().subscribe({
-      next: (data: any[]) => {
-        this.jugadoresOriginales = data.map(j => {
-          const nombre = j.nombre || j.Nombre || '';
-          const apellido = j.apellido || j.Apellido || '';
-          const dni = j.dni || j.Dni || '-';
+  private cargarUsuario() {
+    const token = this.authService.getToken();
+    const rol = this.authService.getRol() || 'Tesorero';
 
-          // Mapeo exacto de las propiedades que envía el backend C#
-          const fechaNac = j.fechaDeNacimiento || j.FechaDeNacimiento || '';
-          const categoria = j.nombreCategoria || j.NombreCategoria || '-';
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
 
-          // Homologamos la base de datos con tus botones de filtro
-          let posicion = (j.posicionCancha || j.PosicionCancha || '').toUpperCase();
-          if (posicion === 'MEDIOCAMPISTA') posicion = 'VOLANTE';
-          if (!posicion) posicion = '-';
+        this.usuarioActual = {
+          nombre: rol,
+          email: email
+        };
+      } catch (e) {
+        this.usuarioActual = { nombre: rol, email: '' };
+      }
+    }
+  }
 
-          const id = j.idJugador || j.IdJugador || 0;
+  private cargarJugadores() {
+    this.http.get<any[]>('http://localhost:5191/api/jugadores').subscribe({
+      next: (data) => {
+        this.players = data.map(j => {
+          let fechaFormateada = 'N/A';
+          if (j.fechaDeNacimiento) {
+            const date = new Date(j.fechaDeNacimiento);
+            fechaFormateada = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          }
 
           return {
-            ...j,
-            id: id,
-            nombre: nombre,
-            apellido: apellido,
-            dni: dni,
-            categoria: categoria,
-            posicion: posicion,
-            nombreCompleto: nombre || apellido ? `${nombre} ${apellido}`.trim() : 'SIN DATOS',
-            edad: this.calcularEdad(fechaNac)
+            id: j.idJugador,
+            nombreCompleto: `${j.nombre} ${j.apellido}`.trim(),
+            dni: j.dni,
+            categoria: j.nombreCategoria || 'Sin categoría',
+            fechaNacimiento: fechaFormateada,
+            estadoCuota: j.estadoCuota || 'AL DÍA'
           };
         });
-
-        this.filteredPlayers = [...this.jugadoresOriginales];
-        this.cargando = false;
       },
       error: (err) => {
-        console.error('Error al cargar jugadores:', err);
-        this.errorCarga = 'Ocurrió un error al cargar los jugadores desde el servidor.';
-        this.cargando = false;
+        console.error('Error al cargar la lista de jugadores', err);
       }
     });
   }
 
-  calcularEdad(fechaNacimiento: string): number {
-    if (!fechaNacimiento) return 0;
-    const hoy = new Date();
-    const nacimiento = new Date(fechaNacimiento);
-    let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const m = hoy.getMonth() - nacimiento.getMonth();
-    if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
-      edad--;
-    }
-    return edad;
-  }
-
-  togglePosicion(posicion: string) {
-    this.posicionFiltro = this.posicionFiltro === posicion ? '' : posicion;
-    this.aplicarFiltros();
-  }
-
-  aplicarFiltros() {
-    this.filteredPlayers = this.jugadoresOriginales.filter(p => {
-      const matchPosicion = this.posicionFiltro ? p.posicion === this.posicionFiltro : true;
-      const matchNombre = this.searchTerm
-        ? p.nombreCompleto.toLowerCase().includes(this.searchTerm.toLowerCase())
-        : true;
-      return matchPosicion && matchNombre;
+  private cargarCategorias() {
+    this.http.get<Categoria[]>('http://localhost:5191/api/categorias').subscribe({
+      next: (data) => {
+        this.listaCategorias = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar categorías', err);
+      }
     });
+  }
+
+  get filteredPlayers(): Player[] {
+    return this.players
+      .filter(p => {
+        const term = this.searchTerm.trim().toLowerCase();
+        const matchSearch = !term ||
+          p.nombreCompleto.toLowerCase().includes(term) ||
+          p.dni.includes(term);
+        const matchCat = !this.categoriaFiltro || p.categoria.toUpperCase() === this.categoriaFiltro.toUpperCase();
+        return matchSearch && matchCat;
+      })
+      .sort((a, b) => {
+        if (this.ordenFiltro === 'nombre') return a.nombreCompleto.localeCompare(b.nombreCompleto);
+        if (this.ordenFiltro === 'dni') return a.dni.localeCompare(b.dni);
+        if (this.ordenFiltro === 'categoria') return a.categoria.localeCompare(b.categoria);
+        return 0;
+      });
+  }
+
+  // Control UI: Sidebar y Menú Usuario
+  toggleMenuUsuario(event: MouseEvent) {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  toggleSidebar() {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  @HostListener('document:click')
+  cerrarMenus() {
+    this.menuUsuarioAbierto = false;
+  }
+
+  // Navegación
+  irAAltaJugador() {
+    this.router.navigate(['/admin/alta-jugador']);
+  }
+
+  irASeleccionPortales() {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion() {
+    alert('Módulo de configuración de cuenta en desarrollo.');
+  }
+
+  selectNav(label: string) {
+    this.navItems.forEach(item => item.active = (item.label === label));
+    this.activeTab = label;
+    if (label === 'Inicio') {
+      this.router.navigate(['/admin']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/admin/lista-jugadores']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/admin/categorias']);
+    } else if (label === 'Staff') {
+      this.router.navigate(['/admin/staff']);
+    }
+  }
+
+  verFicha(id: number) {
+    this.router.navigate(['/admin/ficha-jugador', id]);
+  }
+
+  editarPerfil(id: number) {
+    this.router.navigate(['/admin/editar-perfil', id]);
+  }
+
+  getBadgeClass(estado: Player['estadoCuota']): string {
+    switch (estado) {
+      case 'AL DÍA': return 'badge-aldia';
+      case 'PENDIENTE': return 'badge-pendiente';
+      case 'ADEUDA': return 'badge-adeuda';
+      default: return '';
+    }
   }
 
   cerrarSesion() {
     this.authService.logout();
     this.router.navigate(['/login']);
-  }
-
-  editarJugador(id: number) {
-    this.router.navigate(['/admin/editar-perfil', id]);
-  }
-
-  verFicha(id: number) {
-    this.router.navigate(['/admin/ficha-jugador', id]);
   }
 }

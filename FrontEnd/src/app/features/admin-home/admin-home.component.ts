@@ -41,7 +41,7 @@ export class AdminHomeComponent implements OnInit {
   ordenFiltro = '';
   activeTab = 'Inicio';
 
-  // Estados interactivos solicitados
+  // Estados de control de la UI
   menuUsuarioAbierto = false;
   sidebarOculto = false;
 
@@ -144,8 +144,8 @@ export class AdminHomeComponent implements OnInit {
       });
   }
 
-  // Interacciones de UI solicitadas
-  toggleMenuUsuario(event: Event) {
+  // Métodos de interacción visual
+  toggleMenuUsuario(event: MouseEvent) {
     event.stopPropagation();
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
   }
@@ -154,7 +154,6 @@ export class AdminHomeComponent implements OnInit {
     this.sidebarOculto = !this.sidebarOculto;
   }
 
-  // Ocultar menú flotante al hacer clic fuera
   @HostListener('document:click')
   cerrarMenus() {
     this.menuUsuarioAbierto = false;
@@ -169,7 +168,6 @@ export class AdminHomeComponent implements OnInit {
   }
 
   irAConfiguracion() {
-    // Ajustar ruta de configuración cuando esté creada
     alert('Módulo de configuración de cuenta en desarrollo.');
   }
 
