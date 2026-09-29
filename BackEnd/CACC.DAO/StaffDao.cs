@@ -102,5 +102,101 @@ namespace CACC.DAO
 
             return lista;
         }
+
+        public async Task<int> CrearAsync(StaffAlta staff)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                // 1. Verificar si la persona ya existe por DNI o insertarla
+                var queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @Dni;";
+                using var cmdCheckPersona = new SqlCommand(queryCheckPersona, connection, transaction);
+                cmdCheckPersona.Parameters.AddWithValue("@Dni", staff.Dni);
+                var resultPersona = await cmdCheckPersona.ExecuteScalarAsync();
+
+                int idPersona;
+                if (resultPersona != null)
+                {
+                    idPersona = Convert.ToInt32(resultPersona);
+                }
+                else
+                {
+                    var queryPersona = @"
+                        INSERT INTO PERSONAS (nombre, apellido, dni, fecha_de_nacimiento, genero, domicilio)
+                        OUTPUT INSERTED.PK_id_persona
+                        VALUES (@Nombre, @Apellido, @Dni, @FechaNacimiento, @Genero, @Domicilio);";
+
+                    using var cmdPersona = new SqlCommand(queryPersona, connection, transaction);
+                    cmdPersona.Parameters.AddWithValue("@Nombre", staff.Nombre);
+                    cmdPersona.Parameters.AddWithValue("@Apellido", staff.Apellido);
+                    cmdPersona.Parameters.AddWithValue("@Dni", staff.Dni);
+                    cmdPersona.Parameters.AddWithValue("@FechaNacimiento", staff.FechaNacimiento ?? (object)DBNull.Value);
+                    cmdPersona.Parameters.AddWithValue("@Genero", staff.Genero ?? (object)DBNull.Value);
+                    cmdPersona.Parameters.AddWithValue("@Domicilio", staff.Domicilio ?? (object)DBNull.Value);
+
+                    idPersona = Convert.ToInt32(await cmdPersona.ExecuteScalarAsync());
+                }
+
+                // 2. Generar PK_id_usuario manualmente (la tabla no tiene IDENTITY)
+                var queryMaxUsuario = "SELECT ISNULL(MAX(PK_id_usuario), 0) + 1 FROM USUARIOS;";
+                using var cmdMaxUsuario = new SqlCommand(queryMaxUsuario, connection, transaction);
+                int idUsuario = Convert.ToInt32(await cmdMaxUsuario.ExecuteScalarAsync());
+
+                var queryUsuario = @"
+                    INSERT INTO USUARIOS (PK_id_usuario, FK_id_persona, FK_id_rol, email, contrasenia, activo)
+                    VALUES (@IdUsuario, @IdPersona, @IdRol, @Email, @Contrasenia, 1);";
+
+                using var cmdUsuario = new SqlCommand(queryUsuario, connection, transaction);
+                cmdUsuario.Parameters.AddWithValue("@IdUsuario", idUsuario);
+                cmdUsuario.Parameters.AddWithValue("@IdPersona", idPersona);
+                cmdUsuario.Parameters.AddWithValue("@IdRol", staff.IdRol);
+                cmdUsuario.Parameters.AddWithValue("@Email", staff.Email);
+                cmdUsuario.Parameters.AddWithValue("@Contrasenia", staff.ContraseniaHasheada);
+                await cmdUsuario.ExecuteNonQueryAsync();
+
+                // 3. Generar PK_id_staff manualmente e insertar en STAFF
+                var queryMaxStaff = "SELECT ISNULL(MAX(PK_id_staff), 0) + 1 FROM STAFF;";
+                using var cmdMaxStaff = new SqlCommand(queryMaxStaff, connection, transaction);
+                int idStaff = Convert.ToInt32(await cmdMaxStaff.ExecuteScalarAsync());
+
+                var queryStaff = @"
+                    INSERT INTO STAFF (PK_id_staff, FK_id_usuario)
+                    VALUES (@IdStaff, @IdUsuario);";
+
+                using var cmdStaff = new SqlCommand(queryStaff, connection, transaction);
+                cmdStaff.Parameters.AddWithValue("@IdStaff", idStaff);
+                cmdStaff.Parameters.AddWithValue("@IdUsuario", idUsuario);
+                await cmdStaff.ExecuteNonQueryAsync();
+
+                // 4. Asignar categoría en STAFF_CATEGORIAS si fue provista
+                if (staff.IdCategoria.HasValue && staff.IdCategoria.Value > 0)
+                {
+                    var queryMaxStaffCat = "SELECT ISNULL(MAX(PK_id_staff_categoria), 0) + 1 FROM STAFF_CATEGORIAS;";
+                    using var cmdMaxStaffCat = new SqlCommand(queryMaxStaffCat, connection, transaction);
+                    int idStaffCat = Convert.ToInt32(await cmdMaxStaffCat.ExecuteScalarAsync());
+
+                    var queryStaffCat = @"
+                        INSERT INTO STAFF_CATEGORIAS (PK_id_staff_categoria, FK_id_staff, FK_id_categoria)
+                        VALUES (@IdStaffCat, @IdStaff, @IdCategoria);";
+
+                    using var cmdStaffCat = new SqlCommand(queryStaffCat, connection, transaction);
+                    cmdStaffCat.Parameters.AddWithValue("@IdStaffCat", idStaffCat);
+                    cmdStaffCat.Parameters.AddWithValue("@IdStaff", idStaff);
+                    cmdStaffCat.Parameters.AddWithValue("@IdCategoria", staff.IdCategoria.Value);
+                    await cmdStaffCat.ExecuteNonQueryAsync();
+                }
+
+                await transaction.CommitAsync();
+                return idStaff;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
 }

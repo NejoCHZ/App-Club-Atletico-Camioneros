@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
 
 @Component({
@@ -12,8 +13,22 @@ import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-cred
   templateUrl: './admin-alta-trabajador.component.html',
   styleUrl: './admin-alta-trabajador.component.css'
 })
-export class AdminAltaTrabajadorComponent {
+export class AdminAltaTrabajadorComponent implements OnInit {
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
+  usuarioActual = {
+    nombre: 'Cargando...',
+    email: '...'
+  };
+
+  // Control interactivo de UI
+  menuUsuarioAbierto = false;
+  sidebarOculto = false;
   mostrarPopupCredencial = false;
+  mensajeExito = false;
+
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
     { label: 'Jugadores', icon: 'group', active: false },
@@ -30,7 +45,7 @@ export class AdminAltaTrabajadorComponent {
   fotoNombre: string | null = null;
   fotoPreview: string | null = null;
 
-  // Card 2: Datos del empleado / Contacto y Seguridad
+  // Card 2: Contacto y Seguridad
   telefono = '';
   email = '';
   password = '';
@@ -40,9 +55,54 @@ export class AdminAltaTrabajadorComponent {
   patologias = '';
   observacionesMedicas = '';
 
-  mensajeExito = false;
+  ngOnInit(): void {
+    this.cargarUsuario();
+  }
 
-  constructor(private router: Router) {}
+  private cargarUsuario() {
+    const token = this.authService.getToken();
+    const rol = this.authService.getRol() || 'Tesorero';
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+        this.usuarioActual = {
+          nombre: rol,
+          email: email
+        };
+      } catch (e) {
+        this.usuarioActual = { nombre: rol, email: '' };
+      }
+    }
+  }
+
+  toggleSidebar() {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  toggleMenuUsuario(event: MouseEvent) {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  @HostListener('document:click')
+  cerrarMenus() {
+    this.menuUsuarioAbierto = false;
+  }
+
+  irASeleccionPortales() {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion() {
+    alert('Módulo de configuración de cuenta en desarrollo.');
+  }
+
+  cerrarSesion() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 
   selectNav(label: string) {
     if (label === 'Inicio') {
@@ -63,7 +123,7 @@ export class AdminAltaTrabajadorComponent {
   onFechaNacimientoInput(event: Event) {
     const input = event.target as HTMLInputElement;
     const inputEvent = event as InputEvent;
-    
+
     let raw = input.value.replace(/\D/g, '');
     if (raw.length > 8) {
       raw = raw.substring(0, 8);
@@ -127,34 +187,40 @@ export class AdminAltaTrabajadorComponent {
       return;
     }
 
-    const nuevoStaff = {
-      id: Date.now(),
-      dni: this.dni,
-      nombre: this.nombre,
-      apellido: this.apellido,
-      nombreCompleto: `${this.nombre.toUpperCase()} ${this.apellido.toUpperCase()}`,
-      fechaNacimiento: this.fechaNacimiento,
-      rol: this.rol,
-      telefono: this.telefono,
-      email: this.email,
-      domicilio: this.domicilio,
-      contactoEmergencia: this.contactoEmergencia,
-      patologias: this.patologias,
-      observacionesMedicas: this.observacionesMedicas,
-      fotoNombre: this.fotoNombre,
-      estado: 'ACTIVO',
-      fechaAlta: new Date().toISOString()
-    };
-
-    try {
-      const staffGuardados = JSON.parse(localStorage.getItem('cacc_staff') || '[]');
-      staffGuardados.push(nuevoStaff);
-      localStorage.setItem('cacc_staff', JSON.stringify(staffGuardados));
-    } catch (e) {
-      console.error('Error al guardar staff en localStorage', e);
+    // Convertir dd/mm/aaaa a formato ISO yyyy-mm-dd
+    let fechaIso: string | null = null;
+    if (this.fechaNacimiento && this.fechaNacimiento.length === 10) {
+      const parts = this.fechaNacimiento.split('/');
+      if (parts.length === 3) {
+        fechaIso = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
     }
 
-    this.mensajeExito = true;
-    this.mostrarPopupCredencial = true;
+    const payload = {
+      dni: this.dni.replace(/\./g, '').trim(),
+      nombre: this.nombre.trim(),
+      apellido: this.apellido.trim(),
+      fechaNacimiento: fechaIso,
+      genero: 'No especificado',
+      domicilio: this.domicilio.trim(),
+      telefono: this.telefono.trim(),
+      email: this.email.trim(),
+      contrasenia: this.password,
+      rol: this.rol
+    };
+
+    this.http.post<any>('http://localhost:5191/api/staff', payload).subscribe({
+      next: (res) => {
+        this.mensajeExito = true;
+        this.mostrarPopupCredencial = true;
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          alert('Ya existe un empleado o usuario registrado con ese DNI o Email.');
+        } else {
+          alert('Error al registrar el empleado en la base de datos: ' + (err.error?.message || 'Error del servidor'));
+        }
+      }
+    });
   }
 }
