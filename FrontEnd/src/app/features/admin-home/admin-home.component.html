@@ -1,8 +1,7 @@
-<div class="cacc-layout">
-  <!-- Left Sidebar (Verde Institucional CACC) -->
+<div class="cacc-layout" [class.sidebar-collapsed]="sidebarOculto">
+  <!-- Sidebar Lateral Institucional -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <!-- CACC Logo Shield Emblem -->
       <div class="logo-wrapper">
         <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
       </div>
@@ -10,7 +9,7 @@
       <p class="club-subtitle">Sistema de Gestión Integral</p>
     </div>
 
-    <!-- Navigation Menu -->
+    <!-- Navegación Principal -->
     <nav class="sidebar-nav">
       <a *ngFor="let item of navItems"
          class="nav-item"
@@ -26,25 +25,38 @@
       </a>
     </nav>
 
-    <!-- Logout at Bottom -->
+    <!-- Footer del Sidebar: Portales + Cerrar Sesión -->
     <div class="sidebar-footer">
-      <a class="logout-btn" (click)="cerrarSesion()" style="cursor: pointer;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      <a class="footer-action-btn portal-btn" (click)="irASeleccionPortales()" title="Volver a Selección de Portales">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </span>
+        <span>Selección de Portales</span>
+      </a>
+
+      <a class="footer-action-btn logout-btn" (click)="cerrarSesion()" title="Cerrar Sesión">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </span>
         <span>Cerrar Sesión</span>
       </a>
     </div>
   </aside>
 
-  <!-- Main Content Wrapper -->
+  <!-- Contenedor Principal -->
   <div class="main-wrapper">
     <!-- Header Superior -->
     <header class="top-header">
       <div class="header-left">
+        <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
         <h1 class="header-title">Pantalla principal del Administrador</h1>
       </div>
 
       <div class="header-right">
-        <div class="admin-profile">
+        <!-- Perfil con Menú Desplegable Flotante -->
+        <div class="admin-profile" (click)="toggleMenuUsuario($event)">
           <div class="profile-avatar">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
           </div>
@@ -52,16 +64,27 @@
             <span class="profile-name">{{ usuarioActual.nombre }}</span>
             <span class="profile-email">{{ usuarioActual.email }}</span>
           </div>
-          <span class="chevron-down">
+          <span class="chevron-down" [class.rotated]="menuUsuarioAbierto">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </span>
+
+          <!-- Dropdown Flotante -->
+          <div class="user-dropdown-menu" *ngIf="menuUsuarioAbierto" (click)="$event.stopPropagation()">
+            <button type="button" class="dropdown-item" (click)="irAConfiguracion()">
+              <span class="dropdown-icon">⚙️</span> Configuración de cuenta
+            </button>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item text-danger" (click)="cerrarSesion()">
+              <span class="dropdown-icon">↪</span> Cerrar Sesión
+            </button>
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- Main View Body -->
+    <!-- Cuerpo del Dashboard -->
     <main class="content-body">
-      <!-- KPI Stat Cards Container (2 Cards matching image) -->
+      <!-- Tarjetas KPI -->
       <section class="kpi-cards-grid">
         <div class="kpi-card" *ngFor="let card of kpiCards">
           <div class="kpi-card-header">
@@ -72,26 +95,25 @@
             <span class="kpi-title">{{ card.title }}</span>
           </div>
           <div class="kpi-value">{{ card.value }}</div>
-          <!-- Decorative Mint Green Slope Corner -->
           <div class="kpi-decor-shape"></div>
         </div>
       </section>
 
-      <!-- Main Data Table Container -->
+      <!-- Tabla de Datos -->
       <section class="table-card">
-        <!-- Control Bar: Search & Action Filters -->
         <div class="table-controls">
           <div class="search-box">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <input type="text" placeholder="Buscar por DNI o Nombre" [(ngModel)]="searchTerm" class="search-input" />
           </div>
 
+          <!-- Filtro de Categoría conectado a BBDD -->
           <div class="select-box">
             <select [(ngModel)]="categoriaFiltro">
               <option value="">Filtro de Categoria</option>
-              <option value="CEBOLLITAS">Cebollitas</option>
-              <option value="INFANTIL">Infantil</option>
-              <option value="JUVENIL">Juvenil</option>
+              <option *ngFor="let cat of listaCategorias" [value]="cat.nombreCategoria">
+                {{ cat.nombreCategoria }}
+              </option>
             </select>
             <span class="select-arrow">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -115,7 +137,6 @@
           </button>
         </div>
 
-        <!-- Data Table -->
         <div class="table-responsive">
           <table class="cacc-table">
             <thead>
@@ -157,7 +178,6 @@
                 </td>
               </tr>
 
-              <!-- Mensaje si no hay resultados -->
               <tr *ngIf="filteredPlayers.length === 0">
                 <td colspan="7" style="text-align: center; padding: 30px; color: #64748B;">
                   No hay jugadores para mostrar.

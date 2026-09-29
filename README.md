@@ -52,10 +52,10 @@ App-Club-Atletico-Camioneros/
 Guía de Instalación y Puesta en Marcha Local1. Base de Datos (SQL Server 2025)Abrir SQL Server Management Studio (SSMS).
 1. Ejecutar el script consolidado ubicado en la raíz del repositorio (cacc_database_init.sql) para generar el esquema completo de tablas bajo nomenclatura estándar (UPPER_SNAKE_CASE y snake_case) junto con los datos iniciales.
 2. Backend (.NET 9.0)Posicionarse en la carpeta del backend:Bash cd BackEnd
-Restaurar dependencias y compilar la solución:Bash  dotnet restore
+Restaurar dependencias y compilar la solución:Bash dotnet restore
 dotnet build
 Verificar los parámetros de conexión (Connection Strings) en los archivos de configuración de la API.
-Ejecutar el proyecto API:  bash dotnet run --project CACC.API
+Ejecutar el proyecto API:Bash dotnet run --project CACC.API
 
 3. Frontend (Angular v22)Desde una nueva terminal, ubicarse en la carpeta del frontend:Bash cd FrontEnd
 Instalar los paquetes necesarios de Node.js:Bash npm install
