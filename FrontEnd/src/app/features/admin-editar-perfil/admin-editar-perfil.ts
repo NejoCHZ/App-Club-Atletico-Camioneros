@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { JugadorService } from '../../shared/services/jugador.service';
@@ -13,33 +13,40 @@ import { AuthService } from '../../shared/services/auth.service';
   styleUrl: './admin-editar-perfil.css'
 })
 export class AdminEditarPerfil implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly jugadorService = inject(JugadorService);
+  private readonly authService = inject(AuthService);
+
   jugadorId = '';
   cargando = true;
   guardando = false;
   errorCarga = '';
 
-  perfil: any = {};
+  usuarioActual = {
+    nombre: 'Cargando...',
+    email: '...'
+  };
 
-  lesiones: string[] = [];
-  nuevaLesion = '';
-  usarFechaHoy = true; // Variable para controlar el checkbox automático
+  menuUsuarioAbierto = false;
+  sidebarOculto = false;
+  activeTab = 'Jugadores';
 
   navItems = [
-    { label: 'Inicio', icon: 'home', route: '/admin' },
-    { label: 'Jugadores', icon: 'group', route: '/admin/lista-jugadores' },
-    { label: 'Categorías', icon: 'category', route: '/admin/categorias' }
+    { label: 'Inicio', icon: 'home', active: false },
+    { label: 'Jugadores', icon: 'group', active: true },
+    { label: 'Staff', icon: 'badge', active: false },
+    { label: 'Categorias', icon: 'category', active: false }
   ];
+
+  perfil: any = {};
+  lesiones: string[] = [];
+  nuevaLesion = '';
+  usarFechaHoy = true;
 
   posiciones = ['ARQUERO', 'DEFENSOR', 'VOLANTE', 'DELANTERO'];
   pies = ['Derecho', 'Izquierdo', 'Ambidiestro'];
   gruposSanguineos = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
-
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly jugadorService: JugadorService,
-    private readonly authService: AuthService
-  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -48,10 +55,27 @@ export class AdminEditarPerfil implements OnInit {
       return;
     }
     this.jugadorId = id;
+    this.cargarUsuario();
     this.cargarDatos();
   }
 
+  private cargarUsuario(): void {
+    const token = this.authService.getToken();
+    const rol = this.authService.getRol() || 'Tesorero';
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+        this.usuarioActual = { nombre: rol, email: email };
+      } catch {
+        this.usuarioActual = { nombre: rol, email: '' };
+      }
+    }
+  }
+
   cargarDatos(): void {
+    this.cargando = true;
     this.jugadorService.obtenerPorId(this.jugadorId).subscribe({
       next: (data: any) => {
         const fechaRaw = data.fechaDeNacimiento || data.FechaDeNacimiento || '';
@@ -62,13 +86,16 @@ export class AdminEditarPerfil implements OnInit {
           nombre: data.nombre || data.Nombre,
           apellido: data.apellido || data.Apellido,
           dni: data.dni || data.Dni,
+          genero: data.genero || data.Genero || 'Masculino',
           fechaNacimiento: fechaCorta,
           posicion: data.posicionCancha || data.PosicionCancha,
+          idCategoria: data.idCategoria || data.IdCategoria || 0,
           categoria: data.nombreCategoria || data.NombreCategoria,
+          clubOrigen: data.clubOrigen || data.ClubOrigen || 'Club Local',
           peso: data.peso || data.Peso,
           altura: data.altura || data.Altura,
           pieHabil: data.pieHabil || data.PieHabil,
-          domicilio: 'Calle falsa 123',
+          domicilio: data.domicilio || data.Domicilio || '',
           tutor: data.tutor || data.Tutor || { nombre: '', apellido: '', telefono: '', email: '' },
           fichaMedica: data.fichaMedica || data.FichaMedica || { patologias: '', historialLesiones: '', observaciones: '', grupoSanguineo: '' },
           partidos: (data.partidos || data.Partidos || []).map((p: any) => ({
@@ -108,12 +135,10 @@ export class AdminEditarPerfil implements OnInit {
     return `${edad} años`;
   }
 
-  // --- LÓGICA DE LESIONES CON FECHA INTELIGENTE ---
   agregarLesion(): void {
     let textoFinal = this.nuevaLesion.trim();
 
     if (textoFinal) {
-      // Si el checkbox está marcado y el usuario no escribió ya unos paréntesis, inyectamos la fecha
       if (this.usarFechaHoy && !textoFinal.includes('(')) {
         const hoy = new Date();
         const dia = String(hoy.getDate()).padStart(2, '0');
@@ -123,7 +148,7 @@ export class AdminEditarPerfil implements OnInit {
       }
 
       this.lesiones.push(textoFinal);
-      this.nuevaLesion = ''; // Limpiamos el input
+      this.nuevaLesion = '';
       this.sincronizarLesionesSQL();
     }
   }
@@ -140,11 +165,10 @@ export class AdminEditarPerfil implements OnInit {
   guardar(): void {
     this.guardando = true;
 
-    // Llamada real al backend
     this.jugadorService.actualizarPerfil(this.jugadorId, this.perfil).subscribe({
       next: () => {
         alert('¡Cambios guardados exitosamente en la base de datos!');
-        this.volver(); // Te devuelve a la ficha para ver los cambios aplicados
+        this.volver();
       },
       error: (err) => {
         console.error('Error al guardar:', err);
@@ -152,6 +176,42 @@ export class AdminEditarPerfil implements OnInit {
         this.guardando = false;
       }
     });
+  }
+
+  toggleMenuUsuario(event: MouseEvent): void {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  toggleSidebar(): void {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  @HostListener('document:click')
+  cerrarMenus(): void {
+    this.menuUsuarioAbierto = false;
+  }
+
+  irASeleccionPortales(): void {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion(): void {
+    alert('Módulo de configuración de cuenta en desarrollo.');
+  }
+
+  selectNav(label: string): void {
+    this.navItems.forEach(item => item.active = (item.label === label));
+    this.activeTab = label;
+    if (label === 'Inicio') {
+      this.router.navigate(['/admin']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/admin/lista-jugadores']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/admin/categorias']);
+    } else if (label === 'Staff') {
+      this.router.navigate(['/admin/staff']);
+    }
   }
 
   volver(): void {

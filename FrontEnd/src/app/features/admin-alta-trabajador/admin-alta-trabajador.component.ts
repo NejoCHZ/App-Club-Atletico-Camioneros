@@ -36,7 +36,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
-  // Card 1: Datos del empleado
+  // Datos del empleado
   dni = '';
   nombre = '';
   apellido = '';
@@ -45,7 +45,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
   fotoNombre: string | null = null;
   fotoPreview: string | null = null;
 
-  // Card 2: Contacto y Seguridad
+  // Contacto y Seguridad
   telefono = '';
   email = '';
   password = '';
@@ -71,7 +71,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
           nombre: rol,
           email: email
         };
-      } catch (e) {
+      } catch {
         this.usuarioActual = { nombre: rol, email: '' };
       }
     }
@@ -150,19 +150,6 @@ export class AdminAltaTrabajadorComponent implements OnInit {
     input.value = formatted;
   }
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      this.fotoNombre = file.name;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.fotoPreview = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
   generarCredencial() {
     this.guardarYGenerarQR();
   }
@@ -187,7 +174,6 @@ export class AdminAltaTrabajadorComponent implements OnInit {
       return;
     }
 
-    // Convertir dd/mm/aaaa a formato ISO yyyy-mm-dd
     let fechaIso: string | null = null;
     if (this.fechaNacimiento && this.fechaNacimiento.length === 10) {
       const parts = this.fechaNacimiento.split('/');
@@ -210,7 +196,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
     };
 
     this.http.post<any>('http://localhost:5191/api/staff', payload).subscribe({
-      next: (res) => {
+      next: () => {
         this.mensajeExito = true;
         this.mostrarPopupCredencial = true;
       },
@@ -218,7 +204,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
         if (err.status === 409) {
           alert('Ya existe un empleado o usuario registrado con ese DNI o Email.');
         } else {
-          alert('Error al registrar el empleado en la base de datos: ' + (err.error?.message || 'Error del servidor'));
+          alert('Error al registrar el empleado: ' + (err.error?.message || 'Error del servidor'));
         }
       }
     });

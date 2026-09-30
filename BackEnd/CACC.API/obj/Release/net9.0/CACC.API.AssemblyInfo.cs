@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CACC.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+394c995f3895769217b3099f95bfa0b386864d5c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ca7dd996e67bcbb46628d4dfe269f070b88813dd")]
 [assembly: System.Reflection.AssemblyProductAttribute("CACC.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CACC.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

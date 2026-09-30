@@ -25,7 +25,7 @@
       </a>
     </nav>
 
-    <!-- Footer del Sidebar: Portales arriba de Cerrar Sesión -->
+    <!-- Footer del Sidebar: Portales + Cerrar Sesión -->
     <div class="sidebar-footer">
       <a class="footer-action-btn portal-btn" (click)="irASeleccionPortales()" title="Volver a Selección de Portales">
         <span class="footer-icon">
@@ -84,18 +84,18 @@
 
     <!-- Cuerpo de Contenido -->
     <main class="content-body">
-      <!-- Tarjeta Principal de la Tabla (Fija a la altura de pantalla) -->
+      <!-- Tarjeta Principal de la Tabla -->
       <section class="table-card">
         <div class="table-controls">
           <div class="search-box">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" placeholder="Buscar por DNI o Nombre" [(ngModel)]="searchTerm" class="search-input" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Buscar por DNI o Nombre..." [(ngModel)]="searchTerm" class="search-input" />
           </div>
 
-          <!-- Filtro de Categoría conectado a Base de Datos -->
+          <!-- Filtro de Categoría -->
           <div class="select-box">
             <select [(ngModel)]="categoriaFiltro">
-              <option value="">Filtro de Categoría</option>
+              <option value="">Todas las categorías</option>
               <option *ngFor="let cat of listaCategorias" [value]="cat.nombreCategoria">
                 {{ cat.nombreCategoria }}
               </option>
@@ -105,6 +105,7 @@
             </span>
           </div>
 
+          <!-- Ordenar por -->
           <div class="select-box">
             <select [(ngModel)]="ordenFiltro">
               <option value="">Ordenar por</option>
@@ -127,25 +128,27 @@
           <table class="cacc-table">
             <thead>
               <tr>
-                <th>[Foto]</th>
-                <th>[Nombre Completo]</th>
-                <th>[DNI]</th>
-                <th>[Categoría]</th>
-                <th>[F. Nacimiento]</th>
-                <th>[Estado Cuota]</th>
-                <th>[Acciones]</th>
+                <th class="th-avatar"></th>
+                <th class="th-nombre">Nombre Completo</th>
+                <th class="th-dni">DNI</th>
+                <th class="th-categoria">Categoría</th>
+                <th class="th-nacimiento">F. Nacimiento</th>
+                <th class="th-estado">Estado Cuota</th>
+                <th class="th-acciones">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let p of filteredPlayers">
                 <td class="col-foto">
                   <div class="user-avatar-circle">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#007A3D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
                   </div>
                 </td>
-                <td class="col-nombre" style="text-transform: uppercase;">{{ p.nombreCompleto }}</td>
+                <td class="col-nombre">{{ p.nombreCompleto }}</td>
                 <td class="col-dni">{{ p.dni }}</td>
-                <td class="col-categoria" style="text-transform: uppercase;">{{ p.categoria }}</td>
+                <td class="col-categoria">
+                  <span class="category-pill">{{ p.categoria }}</span>
+                </td>
                 <td class="col-nacimiento">{{ p.fechaNacimiento }}</td>
                 <td class="col-estado">
                   <span class="badge-status" [ngClass]="getBadgeClass(p.estadoCuota)">
@@ -154,19 +157,29 @@
                 </td>
                 <td class="col-acciones">
                   <div class="actions-wrapper">
-                    <button type="button" class="action-btn view-btn" (click)="verFicha(p.id)" title="Ver Ficha Jugador">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+                    <!-- Ver Ficha -->
+                    <button type="button" class="action-btn view-btn" (click)="verFicha(p.id)" title="Ver Ficha del Jugador">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </button>
+                    <!-- Editar Perfil -->
                     <button type="button" class="action-btn edit-btn" (click)="editarPerfil(p.id)" title="Editar Perfil">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </button>
+                    <!-- Agregar / Editar Tutor -->
+                    <button type="button" class="action-btn tutor-btn" (click)="abrirModalTutor(p)" [title]="p.tutor ? 'Editar Tutor Responsable' : 'Asignar Tutor Responsable'">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </button>
+                    <!-- Eliminar Jugador -->
+                    <button type="button" class="action-btn delete-btn" (click)="abrirModalEliminar(p)" title="Eliminar Jugador">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                     </button>
                   </div>
                 </td>
               </tr>
 
               <tr *ngIf="filteredPlayers.length === 0">
-                <td colspan="7" style="text-align: center; padding: 30px; color: #64748B;">
-                  No hay jugadores para mostrar.
+                <td colspan="7" class="no-records">
+                  No se encontraron jugadores que coincidan con los criterios de búsqueda.
                 </td>
               </tr>
             </tbody>
@@ -174,5 +187,103 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- POPUP 1: Modal de Confirmación de Eliminación -->
+  <div class="popup-overlay" *ngIf="modalEliminarVisible" (click)="cancelarEliminar()">
+    <div class="popup-card popup-card-small" (click)="$event.stopPropagation()">
+      <div class="popup-card-header header-danger">
+        <div class="popup-header-icon-danger">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h2 class="popup-card-title text-danger-title">Confirmar Eliminación</h2>
+        <button type="button" class="btn-close-popup" (click)="cancelarEliminar()">✕</button>
+      </div>
+
+      <div class="popup-body">
+        <p class="delete-msg">
+          ¿Estás seguro de que deseás eliminar permanentemente al jugador
+          <strong>{{ jugadorAEliminar?.nombreCompleto }}</strong> (DNI: {{ jugadorAEliminar?.dni }})?
+        </p>
+        <p class="delete-warning-note">
+          ⚠️ Esta acción removerá su historial deportivo, ficha médica, asistencias y pagos asociados en la base de datos.
+        </p>
+      </div>
+
+      <div class="popup-footer">
+        <button type="button" class="btn-cancel" (click)="cancelarEliminar()" [disabled]="eliminando">Cancelar</button>
+        <button type="button" class="btn-confirm-delete" (click)="confirmarEliminar()" [disabled]="eliminando">
+          {{ eliminando ? 'Eliminando...' : 'Eliminar Jugador' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP 2: Modal de Agregar / Editar Tutor -->
+  <div class="popup-overlay" *ngIf="modalTutorVisible" (click)="cancelarTutor()">
+    <div class="popup-card" (click)="$event.stopPropagation()">
+      <div class="popup-card-header">
+        <div class="popup-header-title-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <h2 class="popup-card-title">{{ jugadorTutor?.tutor ? 'Editar Tutor Responsable' : 'Asignar Nuevo Tutor' }}</h2>
+        </div>
+        <button type="button" class="btn-close-popup" (click)="cancelarTutor()">✕</button>
+      </div>
+
+      <div class="popup-body">
+        <div class="tutor-player-banner">
+          <span class="tutor-banner-label">Jugador asociado:</span>
+          <strong class="tutor-banner-name">{{ jugadorTutor?.nombreCompleto }} (DNI: {{ jugadorTutor?.dni }})</strong>
+        </div>
+
+        <form (ngSubmit)="guardarTutor()" class="tutor-form-grid">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Nombre del Tutor <span class="req">*</span></label>
+              <input type="text" [(ngModel)]="tutorForm.nombre" name="nombreTutor" required placeholder="Nombre" class="modal-form-control" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apellido del Tutor <span class="req">*</span></label>
+              <input type="text" [(ngModel)]="tutorForm.apellido" name="apellidoTutor" required placeholder="Apellido" class="modal-form-control" />
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Parentesco / Vínculo</label>
+              <select [(ngModel)]="tutorForm.parentesco" name="parentescoTutor" class="modal-form-control">
+                <option value="Padre">Padre</option>
+                <option value="Madre">Madre</option>
+                <option value="Tutor Legal">Tutor Legal</option>
+                <option value="Tío/a">Tío/a</option>
+                <option value="Abuelo/a">Abuelo/a</option>
+                <option value="Hermano/a">Hermano/a</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono de Contacto <span class="req">*</span></label>
+              <input type="text" [(ngModel)]="tutorForm.telefono" name="telTutor" required placeholder="Ej: 3514001122" class="modal-form-control" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Correo Electrónico (Opcional)</label>
+            <input type="email" [(ngModel)]="tutorForm.email" name="emailTutor" placeholder="ejemplo@correo.com" class="modal-form-control" />
+          </div>
+        </form>
+      </div>
+
+      <div class="popup-footer">
+        <button type="button" class="btn-cancel" (click)="cancelarTutor()" [disabled]="guardandoTutor">Cancelar</button>
+        <button type="button" class="btn-solid-green" (click)="guardarTutor()" [disabled]="guardandoTutor">
+          {{ guardandoTutor ? 'Guardando...' : 'Guardar Tutor' }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>
