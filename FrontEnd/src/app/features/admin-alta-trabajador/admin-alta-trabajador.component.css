@@ -300,9 +300,9 @@
     color: #B91C1C !important;
   }
 
-/* Contenido Principal con Scroll Interno */
+/* Área Central de Contenido con Scroll Interno */
 .content-body {
-  padding: 20px 30px;
+  padding: 24px 30px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -329,7 +329,7 @@
       background: #94A3B8;
     }
 
-/* Toast Éxito */
+/* Toast de Éxito */
 .toast-success {
   background-color: #D1FAE5;
   border: 1px solid #007A3D;
@@ -348,8 +348,8 @@
 .single-main-card {
   background: #FFFFFF;
   border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  padding: 24px 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -359,7 +359,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: 1px solid #E2E8F0;
 }
 
@@ -374,25 +374,28 @@
 }
 
 .card-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #0F172A;
   margin: 0;
 }
 
+/* Grilla de 2 Columnas */
 .card-content-grid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 24px;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 32px;
+  align-items: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .card-content-grid {
     grid-template-columns: 1fr;
   }
 }
 
-.column-left, .column-right {
+.column-left,
+.column-right {
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -418,12 +421,14 @@
 
 .form-row-2 {
   display: flex;
-  gap: 16px;
+  gap: 14px;
 }
 
-.form-input, .form-select, .form-textarea {
+/* Inputs, Selects y Textareas */
+.form-input,
+.form-select,
+.form-textarea {
   width: 100%;
-  padding: 9px 12px;
   border: 1px solid #CBD5E1;
   border-radius: 8px;
   font-size: 13.5px;
@@ -431,10 +436,28 @@
   outline: none;
   background-color: #FFFFFF;
   box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-  .form-input:focus, .form-select:focus, .form-textarea:focus {
+.form-input,
+.form-select {
+  height: 40px;
+  padding: 0 14px;
+}
+
+.form-textarea {
+  padding: 10px 14px;
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+  .form-input:focus,
+  .form-select:focus,
+  .form-textarea:focus {
     border-color: #007A3D;
+    box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.12);
   }
 
 .select-wrapper {
@@ -445,7 +468,7 @@
 
   .select-wrapper select {
     appearance: none;
-    padding-right: 32px;
+    padding-right: 36px;
     cursor: pointer;
   }
 
@@ -457,37 +480,34 @@
   align-items: center;
 }
 
-.form-textarea {
-  resize: vertical;
-}
-
-/* Acciones en Pie */
+/* Pie de Acciones */
 .page-footer-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 14px 24px;
   background: #FFFFFF;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-top: auto;
 }
 
 .left-note {
-  font-size: 12.5px;
+  font-size: 13px;
   color: #64748B;
+  font-weight: 500;
 }
 
 .right-buttons {
   display: flex;
-  gap: 14px;
+  gap: 12px;
 }
 
 .btn-cancel-white {
   background: #FFFFFF;
   border: 1.5px solid #CBD5E1;
   color: #475569;
-  padding: 8px 18px;
+  padding: 9px 20px;
   border-radius: 8px;
   font-size: 13.5px;
   font-weight: 600;
@@ -498,13 +518,14 @@
   .btn-cancel-white:hover {
     background-color: #F8FAFC;
     border-color: #94A3B8;
+    color: #1E293B;
   }
 
 .btn-save-qr {
   background-color: #007A3D;
   color: #FFFFFF;
   border: none;
-  padding: 8px 20px;
+  padding: 9px 22px;
   border-radius: 8px;
   font-size: 13.5px;
   font-weight: 600;

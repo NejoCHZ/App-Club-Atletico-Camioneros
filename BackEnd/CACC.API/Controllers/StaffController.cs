@@ -1,7 +1,12 @@
-using CACC.DAO;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using CACC.API.DTOs;
+using CACC.DAO;
+using CACC.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 
 namespace CACC.API.Controllers
 {
@@ -39,8 +44,8 @@ namespace CACC.API.Controllers
 
             return Ok(response);
         }
-    }
-    [HttpPost]
+
+        [HttpPost]
         [Authorize(Roles = "Tesorero")]
         public async Task<IActionResult> CrearStaff([FromBody] StaffCreateDto dto)
         {
@@ -54,17 +59,36 @@ namespace CACC.API.Controllers
                 // Hasheo de contraseña con BCrypt
                 string passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Contrasenia);
 
+                // Resolución de rol por ID o nombre
+                int idRol = dto.IdRol ?? 4;
+                if (!string.IsNullOrWhiteSpace(dto.Rol))
+                {
+                    var r = dto.Rol.ToUpper();
+                    if (r.Contains("TESORERO")) idRol = 1;
+                    else if (r.Contains("COORDINADOR")) idRol = 2;
+                    else if (r.Contains("MÉDICO") || r.Contains("MEDICO")) idRol = 3;
+                    else if (r.Contains("TÉCNICO") || r.Contains("TECNICO") || r.Contains("FÍSICO") || r.Contains("FISICO")) idRol = 4;
+                    else if (r.Contains("QR")) idRol = 5;
+                }
+
+                DateTime? fecha = null;
+                if (!string.IsNullOrWhiteSpace(dto.FechaNacimiento))
+                {
+                    if (DateTime.TryParse(dto.FechaNacimiento, out var f))
+                        fecha = f;
+                }
+
                 var staffAlta = new StaffAlta
                 {
                     Nombre = dto.Nombre.Trim(),
                     Apellido = dto.Apellido.Trim(),
                     Dni = dto.Dni.Trim(),
-                    FechaNacimiento = dto.FechaNacimiento,
+                    FechaNacimiento = fecha,
                     Genero = dto.Genero,
                     Domicilio = dto.Domicilio,
                     Email = dto.Email.Trim(),
                     ContraseniaHasheada = passwordHash,
-                    IdRol = dto.IdRol,
+                    IdRol = idRol,
                     IdCategoria = dto.IdCategoria
                 };
 
@@ -72,7 +96,7 @@ namespace CACC.API.Controllers
 
                 return StatusCode(201, new
                 {
-                    message = "Colaborador de staff dado de alta con éxito.",
+                    message = "Colaborador de staff registrado con éxito.",
                     idStaff = nuevoIdStaff,
                     nombreCompleto = $"{dto.Nombre} {dto.Apellido}".Trim()
                 });
@@ -87,3 +111,4 @@ namespace CACC.API.Controllers
             }
         }
     }
+}

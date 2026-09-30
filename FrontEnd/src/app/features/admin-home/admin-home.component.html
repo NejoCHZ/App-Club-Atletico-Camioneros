@@ -51,7 +51,7 @@
         <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="header-title">Pantalla principal del Administrador</h1>
+        <h1 class="header-title">Panel Principal del Administrador</h1>
       </div>
 
       <div class="header-right">
@@ -91,6 +91,7 @@
             <div class="kpi-icon-box">
               <svg *ngIf="card.type === 'jugadores'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               <svg *ngIf="card.type === 'categorias'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+              <svg *ngIf="card.type === 'cuotas'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
             <span class="kpi-title">{{ card.title }}</span>
           </div>
@@ -103,14 +104,14 @@
       <section class="table-card">
         <div class="table-controls">
           <div class="search-box">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" placeholder="Buscar por DNI o Nombre" [(ngModel)]="searchTerm" class="search-input" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Buscar por DNI o Nombre..." [(ngModel)]="searchTerm" class="search-input" />
           </div>
 
-          <!-- Filtro de Categoría conectado a BBDD -->
+          <!-- Filtro de Categoría -->
           <div class="select-box">
             <select [(ngModel)]="categoriaFiltro">
-              <option value="">Filtro de Categoria</option>
+              <option value="">Todas las categorías</option>
               <option *ngFor="let cat of listaCategorias" [value]="cat.nombreCategoria">
                 {{ cat.nombreCategoria }}
               </option>
@@ -120,9 +121,11 @@
             </span>
           </div>
 
+          <!-- Ordenar por: Incluye Estado de Cuota -->
           <div class="select-box">
             <select [(ngModel)]="ordenFiltro">
               <option value="">Ordenar por</option>
+              <option value="cuota">Estado de cuota (Riesgo / Deuda)</option>
               <option value="nombre">Nombre</option>
               <option value="dni">DNI</option>
               <option value="categoria">Categoría</option>
@@ -131,35 +134,34 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </span>
           </div>
-
-          <button type="button" class="btn-add-player" (click)="irAAltaJugador()">
-            <span class="plus-icon">+</span> Dar de alta Jugador
-          </button>
         </div>
 
+        <!-- Tabla con Scroll Interno -->
         <div class="table-responsive">
           <table class="cacc-table">
             <thead>
               <tr>
-                <th>[Foto]</th>
-                <th>[Nombre Completo]</th>
-                <th>[DNI]</th>
-                <th>[Categoria]</th>
-                <th>[F. Nacimiento]</th>
-                <th>[Estado Cuota]</th>
-                <th>[Acciones]</th>
+                <th class="th-avatar"></th>
+                <th class="th-nombre">Nombre Completo</th>
+                <th class="th-dni">DNI</th>
+                <th class="th-categoria">Categoría</th>
+                <th class="th-nacimiento">F. Nacimiento</th>
+                <th class="th-estado">Estado Cuota</th>
+                <th class="th-acciones">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let p of filteredPlayers">
                 <td class="col-foto">
                   <div class="user-avatar-circle">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#007A3D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
                   </div>
                 </td>
-                <td class="col-nombre" style="text-transform: uppercase;">{{ p.nombreCompleto }}</td>
+                <td class="col-nombre">{{ p.nombreCompleto }}</td>
                 <td class="col-dni">{{ p.dni }}</td>
-                <td class="col-categoria" style="text-transform: uppercase;">{{ p.categoria }}</td>
+                <td class="col-categoria">
+                  <span class="category-pill">{{ p.categoria }}</span>
+                </td>
                 <td class="col-nacimiento">{{ p.fechaNacimiento }}</td>
                 <td class="col-estado">
                   <span class="badge-status" [ngClass]="getBadgeClass(p.estadoCuota)">
@@ -167,20 +169,42 @@
                   </span>
                 </td>
                 <td class="col-acciones">
-                  <div class="actions-wrapper">
-                    <button type="button" class="action-btn view-btn" (click)="verFicha(p.id)" title="Ver Ficha Jugador">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path></svg>
+                  <!-- Con tutor asignado -->
+                  <button *ngIf="tieneTutor(p)"
+                          type="button"
+                          class="btn-action-tutor"
+                          (click)="verTutor(p)"
+                          title="Ver datos del tutor responsable">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Ver tutor</span>
+                  </button>
+
+                  <!-- Sin tutor asignado -->
+                  <div *ngIf="!tieneTutor(p)" class="no-tutor-container">
+                    <button type="button"
+                            class="btn-action-tutor btn-tutor-disabled"
+                            disabled
+                            title="Este jugador no tiene tutor registrado">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <line x1="2" y1="2" x2="22" y2="22"></line>
+                      </svg>
+                      <span>Ver tutor</span>
                     </button>
-                    <button type="button" class="action-btn edit-btn" (click)="editarPerfil(p.id)" title="Editar Perfil">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    </button>
+                    <span class="no-tutor-badge">Sin tutor asignado</span>
                   </div>
                 </td>
               </tr>
 
               <tr *ngIf="filteredPlayers.length === 0">
-                <td colspan="7" style="text-align: center; padding: 30px; color: #64748B;">
-                  No hay jugadores para mostrar.
+                <td colspan="7" class="no-records">
+                  No se encontraron jugadores que coincidan con los criterios de búsqueda.
                 </td>
               </tr>
             </tbody>
@@ -188,5 +212,56 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Modal Emergente de Información del Tutor -->
+  <div class="popup-overlay" *ngIf="tutorModalVisible && jugadorConTutor" (click)="cerrarModalTutor()">
+    <div class="popup-card" (click)="$event.stopPropagation()">
+      <div class="popup-card-header">
+        <div class="popup-header-title-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <h2 class="popup-card-title">Tutor Responsable</h2>
+        </div>
+        <button type="button" class="btn-close-popup" (click)="cerrarModalTutor()">✕</button>
+      </div>
+
+      <div class="popup-body">
+        <div class="tutor-player-banner">
+          <span class="tutor-banner-label">Jugador representado:</span>
+          <strong class="tutor-banner-name">{{ jugadorConTutor.nombreCompleto }} (DNI: {{ jugadorConTutor.dni }})</strong>
+        </div>
+
+        <div class="tutor-info-grid">
+          <div class="tutor-field">
+            <span class="tutor-field-label">Nombre y Apellido</span>
+            <strong class="tutor-field-val">{{ jugadorConTutor.tutor?.nombre }} {{ jugadorConTutor.tutor?.apellido }}</strong>
+          </div>
+
+          <div class="tutor-field" *ngIf="jugadorConTutor.tutor?.parentesco">
+            <span class="tutor-field-label">Parentesco / Vínculo</span>
+            <strong class="tutor-field-val">{{ jugadorConTutor.tutor?.parentesco }}</strong>
+          </div>
+
+          <div class="tutor-field">
+            <span class="tutor-field-label">Teléfono de Contacto</span>
+            <strong class="tutor-field-val">{{ jugadorConTutor.tutor?.telefono || 'Sin registrar' }}</strong>
+          </div>
+
+          <div class="tutor-field">
+            <span class="tutor-field-label">Correo Electrónico</span>
+            <strong class="tutor-field-val">{{ jugadorConTutor.tutor?.email || 'Sin registrar' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup-footer">
+        <button type="button" class="btn-solid-green" (click)="cerrarModalTutor()">Cerrar</button>
+      </div>
+    </div>
   </div>
 </div>

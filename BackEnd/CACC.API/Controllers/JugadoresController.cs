@@ -1,6 +1,6 @@
-using CACC.Entities;
-using CACC.DAO;
 using CACC.API.DTOs;
+using CACC.DAO;
+using CACC.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -24,7 +24,7 @@ namespace CACC.API.Controllers
         {
             IEnumerable<JugadorDetalle> jugadoresDb;
 
-            if (categoriaId.HasValue)
+            if (categoriaId.HasValue && categoriaId.Value > 0)
             {
                 jugadoresDb = await _jugadorDao.ObtenerPorCategoriaAsync(categoriaId.Value);
             }
@@ -33,7 +33,6 @@ namespace CACC.API.Controllers
                 jugadoresDb = await _jugadorDao.ObtenerTodosAsync();
             }
 
-            // Mapeamos las entidades de BD al DTO de respuesta
             var response = jugadoresDb.Select(j => new JugadorResponseDto
             {
                 IdJugador = j.IdJugador,
@@ -42,6 +41,7 @@ namespace CACC.API.Controllers
                 Dni = j.Dni,
                 Genero = j.Genero,
                 FechaDeNacimiento = j.FechaDeNacimiento,
+                Domicilio = j.Domicilio,
                 IdCategoria = j.IdCategoria,
                 NombreCategoria = j.NombreCategoria,
                 ClubOrigen = j.ClubOrigen,
@@ -50,7 +50,15 @@ namespace CACC.API.Controllers
                 Peso = j.Peso,
                 Altura = j.Altura,
                 PieHabil = j.PieHabil,
-                EstadoCuota = j.EstadoCuota
+                EstadoCuota = j.EstadoCuota,
+                Tutor = j.Tutor == null ? null : new TutorDto
+                {
+                    Nombre = j.Tutor.Nombre,
+                    Apellido = j.Tutor.Apellido,
+                    Telefono = j.Tutor.Telefono,
+                    Email = j.Tutor.Email,
+                    Parentesco = j.Tutor.Parentesco
+                }
             });
 
             return Ok(response);
@@ -65,7 +73,6 @@ namespace CACC.API.Controllers
                 return NotFound(new { message = "Jugador no encontrado." });
             }
 
-            // Mapeo profundo incluyendo listas anidadas para el DTO
             var response = new JugadorResponseDto
             {
                 IdJugador = j.IdJugador,
@@ -74,6 +81,7 @@ namespace CACC.API.Controllers
                 Dni = j.Dni,
                 Genero = j.Genero,
                 FechaDeNacimiento = j.FechaDeNacimiento,
+                Domicilio = j.Domicilio,
                 IdCategoria = j.IdCategoria,
                 NombreCategoria = j.NombreCategoria,
                 ClubOrigen = j.ClubOrigen,
@@ -104,6 +112,7 @@ namespace CACC.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Tesorero")]
         public async Task<IActionResult> ActualizarPerfil(int id, [FromBody] JugadorUpdateDto dto)
         {
             if (dto == null)
@@ -118,7 +127,11 @@ namespace CACC.API.Controllers
                     Nombre = dto.Nombre,
                     Apellido = dto.Apellido,
                     Dni = dto.Dni,
+                    Genero = dto.Genero,
                     FechaDeNacimiento = dto.FechaDeNacimiento,
+                    Domicilio = dto.Domicilio,
+                    IdCategoria = dto.IdCategoria,
+                    ClubOrigen = dto.ClubOrigen,
                     PosicionCancha = dto.Posicion,
                     Peso = dto.Peso,
                     Altura = dto.Altura,
@@ -153,6 +166,7 @@ namespace CACC.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Tesorero")]
         public async Task<IActionResult> CrearJugador([FromBody] JugadorCreateDto dto)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Dni))
@@ -201,6 +215,58 @@ namespace CACC.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error interno al crear el jugador.", details = ex.Message });
+            }
+        }
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Tesorero")]
+        public async Task<IActionResult> EliminarJugador(int id)
+        {
+            try
+            {
+                var eliminado = await _jugadorDao.EliminarAsync(id);
+                if (!eliminado)
+                {
+                    return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
+                }
+
+                return Ok(new { message = "Jugador eliminado correctamente del club." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno al eliminar el jugador.", details = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}/tutor")]
+        [Authorize(Roles = "Tesorero")]
+        public async Task<IActionResult> GuardarTutor(int id, [FromBody] TutorDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Telefono))
+            {
+                return BadRequest(new { message = "Nombre y teléfono del tutor son requeridos." });
+            }
+
+            try
+            {
+                var guardado = await _jugadorDao.GuardarTutorAsync(
+                    id,
+                    dto.Nombre,
+                    dto.Apellido,
+                    dto.Parentesco ?? "Padre",
+                    dto.Telefono,
+                    dto.Email
+                );
+
+                if (!guardado)
+                {
+                    return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
+                }
+
+                return Ok(new { message = "Datos del tutor guardados correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno al guardar los datos del tutor.", details = ex.Message });
             }
         }
     }

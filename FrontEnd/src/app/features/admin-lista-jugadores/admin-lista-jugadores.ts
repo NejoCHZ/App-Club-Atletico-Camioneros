@@ -5,16 +5,25 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 
-interface Player {
+export interface TutorInfo {
+  nombre?: string;
+  apellido?: string;
+  telefono?: string;
+  email?: string;
+  parentesco?: string;
+}
+
+export interface Player {
   id: number;
   nombreCompleto: string;
   dni: string;
   categoria: string;
   fechaNacimiento: string;
   estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | string;
+  tutor?: TutorInfo | null;
 }
 
-interface Categoria {
+export interface Categoria {
   idCategoria: number;
   nombreCategoria: string;
 }
@@ -27,9 +36,9 @@ interface Categoria {
   styleUrl: './admin-lista-jugadores.css'
 })
 export class AdminListaJugadores implements OnInit {
-  private router = inject(Router);
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   usuarioActual = {
     nombre: 'Cargando...',
@@ -41,9 +50,24 @@ export class AdminListaJugadores implements OnInit {
   ordenFiltro = '';
   activeTab = 'Jugadores';
 
-  // Estados interactivos estandarizados
   menuUsuarioAbierto = false;
   sidebarOculto = false;
+
+  // Estados de los Modales
+  modalEliminarVisible = false;
+  jugadorAEliminar: Player | null = null;
+  eliminando = false;
+
+  modalTutorVisible = false;
+  jugadorTutor: Player | null = null;
+  tutorForm: TutorInfo = {
+    nombre: '',
+    apellido: '',
+    parentesco: 'Padre',
+    telefono: '',
+    email: ''
+  };
+  guardandoTutor = false;
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
@@ -61,7 +85,7 @@ export class AdminListaJugadores implements OnInit {
     this.cargarCategorias();
   }
 
-  private cargarUsuario() {
+  private cargarUsuario(): void {
     const token = this.authService.getToken();
     const rol = this.authService.getRol() || 'Tesorero';
 
@@ -74,17 +98,17 @@ export class AdminListaJugadores implements OnInit {
           nombre: rol,
           email: email
         };
-      } catch (e) {
+      } catch {
         this.usuarioActual = { nombre: rol, email: '' };
       }
     }
   }
 
-  private cargarJugadores() {
+  cargarJugadores(): void {
     this.http.get<any[]>('http://localhost:5191/api/jugadores').subscribe({
       next: (data) => {
         this.players = data.map(j => {
-          let fechaFormateada = 'N/A';
+          let fechaFormateada = 'Sin informar';
           if (j.fechaDeNacimiento) {
             const date = new Date(j.fechaDeNacimiento);
             fechaFormateada = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -96,7 +120,8 @@ export class AdminListaJugadores implements OnInit {
             dni: j.dni,
             categoria: j.nombreCategoria || 'Sin categoría',
             fechaNacimiento: fechaFormateada,
-            estadoCuota: j.estadoCuota || 'AL DÍA'
+            estadoCuota: j.estadoCuota || 'AL DÍA',
+            tutor: j.tutor || j.Tutor || null
           };
         });
       },
@@ -106,7 +131,7 @@ export class AdminListaJugadores implements OnInit {
     });
   }
 
-  private cargarCategorias() {
+  private cargarCategorias(): void {
     this.http.get<Categoria[]>('http://localhost:5191/api/categorias').subscribe({
       next: (data) => {
         this.listaCategorias = data;
@@ -136,34 +161,34 @@ export class AdminListaJugadores implements OnInit {
   }
 
   // Control UI: Sidebar y Menú Usuario
-  toggleMenuUsuario(event: MouseEvent) {
+  toggleMenuUsuario(event: MouseEvent): void {
     event.stopPropagation();
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
   }
 
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.sidebarOculto = !this.sidebarOculto;
   }
 
   @HostListener('document:click')
-  cerrarMenus() {
+  cerrarMenus(): void {
     this.menuUsuarioAbierto = false;
   }
 
   // Navegación
-  irAAltaJugador() {
+  irAAltaJugador(): void {
     this.router.navigate(['/admin/alta-jugador']);
   }
 
-  irASeleccionPortales() {
+  irASeleccionPortales(): void {
     this.router.navigate(['/seleccion-portales']);
   }
 
-  irAConfiguracion() {
+  irAConfiguracion(): void {
     alert('Módulo de configuración de cuenta en desarrollo.');
   }
 
-  selectNav(label: string) {
+  selectNav(label: string): void {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
     if (label === 'Inicio') {
@@ -177,24 +202,109 @@ export class AdminListaJugadores implements OnInit {
     }
   }
 
-  verFicha(id: number) {
+  verFicha(id: number): void {
     this.router.navigate(['/admin/ficha-jugador', id]);
   }
 
-  editarPerfil(id: number) {
+  editarPerfil(id: number): void {
     this.router.navigate(['/admin/editar-perfil', id]);
   }
 
-  getBadgeClass(estado: Player['estadoCuota']): string {
-    switch (estado) {
-      case 'AL DÍA': return 'badge-aldia';
-      case 'PENDIENTE': return 'badge-pendiente';
-      case 'ADEUDA': return 'badge-adeuda';
-      default: return '';
-    }
+  // Acciones de Eliminación
+  abrirModalEliminar(player: Player): void {
+    this.jugadorAEliminar = player;
+    this.modalEliminarVisible = true;
   }
 
-  cerrarSesion() {
+  cancelarEliminar(): void {
+    this.modalEliminarVisible = false;
+    this.jugadorAEliminar = null;
+  }
+
+  confirmarEliminar(): void {
+    if (!this.jugadorAEliminar) return;
+
+    this.eliminando = true;
+    const id = this.jugadorAEliminar.id;
+
+    this.http.delete(`http://localhost:5191/api/jugadores/${id}`).subscribe({
+      next: () => {
+        this.players = this.players.filter(p => p.id !== id);
+        this.eliminando = false;
+        this.modalEliminarVisible = false;
+        this.jugadorAEliminar = null;
+      },
+      error: (err) => {
+        this.eliminando = false;
+        alert('Error al eliminar el jugador: ' + (err.error?.message || 'Error del servidor'));
+      }
+    });
+  }
+
+  // Acciones de Gestión de Tutor
+  abrirModalTutor(player: Player): void {
+    this.jugadorTutor = player;
+    if (player.tutor) {
+      this.tutorForm = {
+        nombre: player.tutor.nombre || '',
+        apellido: player.tutor.apellido || '',
+        parentesco: player.tutor.parentesco || 'Padre',
+        telefono: player.tutor.telefono || '',
+        email: player.tutor.email || ''
+      };
+    } else {
+      this.tutorForm = {
+        nombre: '',
+        apellido: '',
+        parentesco: 'Padre',
+        telefono: '',
+        email: ''
+      };
+    }
+    this.modalTutorVisible = true;
+  }
+
+  cancelarTutor(): void {
+    this.modalTutorVisible = false;
+    this.jugadorTutor = null;
+  }
+
+  guardarTutor(): void {
+    if (!this.jugadorTutor) return;
+
+    if (!this.tutorForm.nombre || !this.tutorForm.apellido || !this.tutorForm.telefono) {
+      alert('Nombre, apellido y teléfono del tutor son obligatorios.');
+      return;
+    }
+
+    this.guardandoTutor = true;
+    const id = this.jugadorTutor.id;
+
+    this.http.put(`http://localhost:5191/api/jugadores/${id}/tutor`, this.tutorForm).subscribe({
+      next: () => {
+        if (this.jugadorTutor) {
+          this.jugadorTutor.tutor = { ...this.tutorForm };
+        }
+        this.guardandoTutor = false;
+        this.modalTutorVisible = false;
+        this.jugadorTutor = null;
+      },
+      error: (err) => {
+        this.guardandoTutor = false;
+        alert('Error al guardar tutor: ' + (err.error?.message || 'Error del servidor'));
+      }
+    });
+  }
+
+  getBadgeClass(estado: Player['estadoCuota']): string {
+    const e = (estado || '').toUpperCase();
+    if (e.includes('AL DÍA') || e.includes('AL DIA')) return 'badge-aldia';
+    if (e.includes('PENDIENTE')) return 'badge-pendiente';
+    if (e.includes('ADEUDA') || e.includes('INHABILITADO')) return 'badge-adeuda';
+    return '';
+  }
+
+  cerrarSesion(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }

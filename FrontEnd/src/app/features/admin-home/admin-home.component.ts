@@ -5,13 +5,22 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 
+interface TutorInfo {
+  nombre?: string;
+  apellido?: string;
+  telefono?: string;
+  email?: string;
+  parentesco?: string;
+}
+
 interface Player {
   id: number;
   nombreCompleto: string;
   dni: string;
   categoria: string;
   fechaNacimiento: string;
-  estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | string;
+  estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | 'INHABILITADO' | string;
+  tutor?: TutorInfo | null;
 }
 
 interface Categoria {
@@ -27,9 +36,9 @@ interface Categoria {
   styleUrl: './admin-home.component.css'
 })
 export class AdminHomeComponent implements OnInit {
-  private router = inject(Router);
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   usuarioActual = {
     nombre: 'Cargando...',
@@ -41,9 +50,12 @@ export class AdminHomeComponent implements OnInit {
   ordenFiltro = '';
   activeTab = 'Inicio';
 
-  // Estados de control de la UI
   menuUsuarioAbierto = false;
   sidebarOculto = false;
+
+  // Modal para visualizar datos del tutor
+  tutorModalVisible = false;
+  jugadorConTutor: Player | null = null;
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: true },
@@ -53,8 +65,9 @@ export class AdminHomeComponent implements OnInit {
   ];
 
   kpiCards = [
-    { title: 'Jugadores Activos', value: '...', type: 'jugadores', icon: 'group' },
-    { title: 'Categorias Activas', value: '...', type: 'categorias', icon: 'flag' }
+    { title: 'Jugadores Registrados', value: '...', type: 'jugadores' },
+    { title: 'Categorías Activas', value: '...', type: 'categorias' },
+    { title: 'Cuotas al Día', value: '...', type: 'cuotas' }
   ];
 
   players: Player[] = [];
@@ -66,7 +79,7 @@ export class AdminHomeComponent implements OnInit {
     this.cargarCategoriasBd();
   }
 
-  private cargarUsuario() {
+  private cargarUsuario(): void {
     const token = this.authService.getToken();
     const rol = this.authService.getRol() || 'Tesorero';
 
@@ -79,17 +92,17 @@ export class AdminHomeComponent implements OnInit {
           nombre: rol,
           email: email
         };
-      } catch (e) {
+      } catch {
         this.usuarioActual = { nombre: rol, email: '' };
       }
     }
   }
 
-  private cargarDatos() {
+  private cargarDatos(): void {
     this.http.get<any[]>('http://localhost:5191/api/jugadores').subscribe({
       next: (data) => {
         this.players = data.map(j => {
-          let fechaFormateada = 'N/A';
+          let fechaFormateada = 'Sin informar';
           if (j.fechaDeNacimiento) {
             const date = new Date(j.fechaDeNacimiento);
             fechaFormateada = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -101,19 +114,25 @@ export class AdminHomeComponent implements OnInit {
             dni: j.dni,
             categoria: j.nombreCategoria || 'Sin categoría',
             fechaNacimiento: fechaFormateada,
-            estadoCuota: j.estadoCuota || 'AL DÍA'
+            estadoCuota: j.estadoCuota || 'AL DÍA',
+            tutor: j.tutor || j.Tutor || null
           };
         });
+
+        const alDia = this.players.filter(p => p.estadoCuota === 'AL DÍA').length;
+
         this.kpiCards[0].value = `+${this.players.length}`;
+        this.kpiCards[2].value = `${alDia}/${this.players.length}`;
       },
       error: (err) => {
         console.error('Error al cargar jugadores', err);
         this.kpiCards[0].value = '0';
+        this.kpiCards[2].value = '0';
       }
     });
   }
 
-  private cargarCategoriasBd() {
+  private cargarCategoriasBd(): void {
     this.http.get<Categoria[]>('http://localhost:5191/api/categorias').subscribe({
       next: (data) => {
         this.listaCategorias = data;
@@ -124,6 +143,21 @@ export class AdminHomeComponent implements OnInit {
         this.kpiCards[1].value = '0';
       }
     });
+  }
+
+  // Prioridad: 1° Inhabilitado / Adeuda (Rojo), 2° Pendiente (Amarillo), 3° Al Día (Verde)
+  private getPrioridadEstadoCuota(estado: string): number {
+    const e = (estado || '').trim().toUpperCase();
+    if (e.includes('INHABILITADO') || e.includes('ADEUDA')) {
+      return 1;
+    }
+    if (e.includes('PENDIENTE')) {
+      return 2;
+    }
+    if (e.includes('AL DÍA') || e.includes('AL DIA')) {
+      return 3;
+    }
+    return 4;
   }
 
   get filteredPlayers(): Player[] {
@@ -140,38 +174,60 @@ export class AdminHomeComponent implements OnInit {
         if (this.ordenFiltro === 'nombre') return a.nombreCompleto.localeCompare(b.nombreCompleto);
         if (this.ordenFiltro === 'dni') return a.dni.localeCompare(b.dni);
         if (this.ordenFiltro === 'categoria') return a.categoria.localeCompare(b.categoria);
+        if (this.ordenFiltro === 'cuota') {
+          const pesoA = this.getPrioridadEstadoCuota(a.estadoCuota);
+          const pesoB = this.getPrioridadEstadoCuota(b.estadoCuota);
+          if (pesoA !== pesoB) {
+            return pesoA - pesoB;
+          }
+          return a.nombreCompleto.localeCompare(b.nombreCompleto);
+        }
         return 0;
       });
   }
 
-  // Métodos de interacción visual
-  toggleMenuUsuario(event: MouseEvent) {
+  // Validador de existencia de tutor
+  tieneTutor(player: Player): boolean {
+    if (!player.tutor) return false;
+    const t = player.tutor;
+    return !!((t.nombre && t.nombre.trim() !== '' && t.nombre !== 'Sin informar') ||
+      (t.apellido && t.apellido.trim() !== ''));
+  }
+
+  verTutor(player: Player): void {
+    if (!this.tieneTutor(player)) return;
+    this.jugadorConTutor = player;
+    this.tutorModalVisible = true;
+  }
+
+  cerrarModalTutor(): void {
+    this.tutorModalVisible = false;
+    this.jugadorConTutor = null;
+  }
+
+  toggleMenuUsuario(event: MouseEvent): void {
     event.stopPropagation();
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
   }
 
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.sidebarOculto = !this.sidebarOculto;
   }
 
   @HostListener('document:click')
-  cerrarMenus() {
+  cerrarMenus(): void {
     this.menuUsuarioAbierto = false;
   }
 
-  irAAltaJugador() {
-    this.router.navigate(['/admin/alta-jugador']);
-  }
-
-  irASeleccionPortales() {
+  irASeleccionPortales(): void {
     this.router.navigate(['/seleccion-portales']);
   }
 
-  irAConfiguracion() {
+  irAConfiguracion(): void {
     alert('Módulo de configuración de cuenta en desarrollo.');
   }
 
-  selectNav(label: string) {
+  selectNav(label: string): void {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
     if (label === 'Jugadores') {
@@ -185,24 +241,15 @@ export class AdminHomeComponent implements OnInit {
     }
   }
 
-  verFicha(id: number) {
-    this.router.navigate(['/admin/ficha-jugador', id]);
-  }
-
-  editarPerfil(id: number) {
-    this.router.navigate(['/admin/editar-perfil', id]);
-  }
-
   getBadgeClass(estado: Player['estadoCuota']): string {
-    switch (estado) {
-      case 'AL DÍA': return 'badge-aldia';
-      case 'PENDIENTE': return 'badge-pendiente';
-      case 'ADEUDA': return 'badge-adeuda';
-      default: return '';
-    }
+    const e = (estado || '').toUpperCase();
+    if (e.includes('AL DÍA') || e.includes('AL DIA')) return 'badge-aldia';
+    if (e.includes('PENDIENTE')) return 'badge-pendiente';
+    if (e.includes('ADEUDA') || e.includes('INHABILITADO')) return 'badge-adeuda';
+    return '';
   }
 
-  cerrarSesion() {
+  cerrarSesion(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }

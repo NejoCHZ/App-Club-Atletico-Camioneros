@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace CACC.API.DTOs
@@ -13,8 +15,20 @@ namespace CACC.API.DTOs
         [JsonPropertyName("dni")]
         public string Dni { get; set; } = string.Empty;
 
+        [JsonPropertyName("genero")]
+        public string? Genero { get; set; }
+
         [JsonPropertyName("fechaNacimiento")]
         public DateTime? FechaDeNacimiento { get; set; }
+
+        [JsonPropertyName("domicilio")]
+        public string? Domicilio { get; set; }
+
+        [JsonPropertyName("idCategoria")]
+        public int IdCategoria { get; set; }
+
+        [JsonPropertyName("clubOrigen")]
+        public string? ClubOrigen { get; set; }
 
         [JsonPropertyName("posicion")]
         public string? Posicion { get; set; }

@@ -13,6 +13,7 @@ namespace CACC.API.DTOs
         public string? ClubOrigen { get; set; }
         public bool FichaMedicaLiga { get; set; }
         public string? PosicionCancha { get; set; }
+        public string? Domicilio { get; set; }
 
         // Nuevos campos mapeados desde la DB
         public decimal? Peso { get; set; }

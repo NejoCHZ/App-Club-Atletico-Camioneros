@@ -82,7 +82,7 @@
       </div>
     </header>
 
-    <!-- Main View Body (Contenido a 100vh con Scroll Interno) -->
+    <!-- Main View Body (Alto fijo 100vh con Scroll Interno) -->
     <main class="content-body">
       <!-- Success Toast -->
       <div *ngIf="mensajeExito" class="toast-success">
@@ -184,11 +184,11 @@
           <div class="column-right">
             <div class="form-group">
               <label>Patologías</label>
-              <textarea [(ngModel)]="patologias" rows="5" class="form-textarea" placeholder="Describa antecedentes o patologías relevantes..."></textarea>
+              <textarea [(ngModel)]="patologias" class="form-textarea" placeholder="Describa antecedentes o patologías relevantes..."></textarea>
             </div>
             <div class="form-group">
               <label>Observaciones médicas</label>
-              <textarea [(ngModel)]="observacionesMedicas" rows="5" class="form-textarea" placeholder="Observaciones clínicas, apto físico, etc..."></textarea>
+              <textarea [(ngModel)]="observacionesMedicas" class="form-textarea" placeholder="Observaciones clínicas, apto físico, etc..."></textarea>
             </div>
           </div>
         </div>
