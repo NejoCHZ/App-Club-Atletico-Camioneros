@@ -24,9 +24,9 @@ export interface StaffMember {
   styleUrl: './admin-staff.component.css'
 })
 export class AdminStaffComponent implements OnInit {
-  private router = inject(Router);
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   usuarioActual = {
     nombre: 'Cargando...',
@@ -35,11 +35,22 @@ export class AdminStaffComponent implements OnInit {
 
   searchTerm = '';
   rolFiltro = '';
+  ordenFiltro = '';
   activeTab = 'Staff';
 
-  // Estados interactivos unificados del Layout
   menuUsuarioAbierto = false;
   sidebarOculto = false;
+
+  // Matriz de los 7 roles sin aclaraciones parentéticas
+  rolesDisponibles: string[] = [
+    'Administrador',
+    'Administrativo',
+    'Médico',
+    'Director Técnico',
+    'Don QR',
+    'Preparador Físico',
+    'Coordinador'
+  ];
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
@@ -55,30 +66,50 @@ export class AdminStaffComponent implements OnInit {
     this.cargarStaff();
   }
 
-  private cargarUsuario() {
+  // Sanitizador para mostrar "Administrador" en lugar de "Administrador (Tesorero)" o "Tesorero"
+  limpiarNombreRol(rol: string): string {
+    if (!rol) return '';
+    let r = rol.replace(/\s*\([^)]*\)/gi, '').trim();
+    if (r.toLowerCase() === 'tesorero') {
+      r = 'Administrador';
+    }
+    return r;
+  }
+
+  private normalizar(texto: string): string {
+    return (texto || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
+  }
+
+  private cargarUsuario(): void {
     const token = this.authService.getToken();
-    const rol = this.authService.getRol() || 'Tesorero';
+    const rol = this.authService.getRol() || 'Administrador';
 
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress']
+          || payload.email
+          || '';
 
         this.usuarioActual = {
-          nombre: rol,
+          nombre: this.limpiarNombreRol(rol),
           email: email
         };
-      } catch (e) {
-        this.usuarioActual = { nombre: rol, email: '' };
+      } catch {
+        this.usuarioActual = { nombre: this.limpiarNombreRol(rol), email: '' };
       }
     }
   }
 
-  private cargarStaff() {
+  private cargarStaff(): void {
     this.http.get<any[]>('http://localhost:5191/api/staff').subscribe({
       next: (data) => {
         this.trabajadores = data.map(s => {
-          let edadTexto = 'N/A';
+          let edadTexto = 'Sin edad';
           if (s.fechaDeNacimiento) {
             const birthDate = new Date(s.fechaDeNacimiento);
             const hoy = new Date();
@@ -92,72 +123,81 @@ export class AdminStaffComponent implements OnInit {
             edadTexto = `${s.edad} AÑOS`;
           }
 
+          const rolLimpio = this.limpiarNombreRol(s.rol || 'STAFF');
+
           return {
             id: s.idStaff || s.id,
-            nombreCompleto: s.nombreCompleto || `${s.nombre || ''} ${s.apellido || ''}`.trim(),
-            dni: s.dni || '',
-            rol: (s.rol || 'STAFF').toUpperCase(),
+            nombreCompleto: (s.nombreCompleto || `${s.nombre || ''} ${s.apellido || ''}`).trim().toUpperCase(),
+            dni: s.dni || '-',
+            rol: rolLimpio.toUpperCase(),
             edad: edadTexto,
-            categoriaAsignada: s.categoriaAsignada || 'TODAS',
+            categoriaAsignada: s.categoriaAsignada || 'Todas / General',
             telefono: s.telefono || '-',
             estado: s.activo !== undefined ? (s.activo ? 'ACTIVO' : 'INACTIVO') : 'ACTIVO'
           };
         });
       },
       error: (err) => {
-        console.error('Error al cargar staff desde la API', err);
+        console.error('Error al cargar la nómina de staff:', err);
       }
     });
   }
 
-  toggleRolFiltro(rol: string) {
-    if (this.rolFiltro === rol) {
-      this.rolFiltro = '';
-    } else {
-      this.rolFiltro = rol;
-    }
-  }
-
   get filteredStaff(): StaffMember[] {
-    return this.trabajadores.filter(t => {
-      const term = this.searchTerm.trim().toLowerCase();
-      const matchSearch = !term ||
-        t.nombreCompleto.toLowerCase().includes(term) ||
-        t.dni.includes(term);
-      const matchRol = !this.rolFiltro || t.rol.toUpperCase() === this.rolFiltro.toUpperCase();
-      return matchSearch && matchRol;
-    });
+    return this.trabajadores
+      .filter(t => {
+        const term = this.searchTerm.trim().toLowerCase();
+        const matchSearch = !term ||
+          t.nombreCompleto.toLowerCase().includes(term) ||
+          t.dni.includes(term);
+
+        const matchRol = !this.rolFiltro ||
+          this.normalizar(t.rol).includes(this.normalizar(this.rolFiltro));
+
+        return matchSearch && matchRol;
+      })
+      .sort((a, b) => {
+        if (this.ordenFiltro === 'nombre') return a.nombreCompleto.localeCompare(b.nombreCompleto);
+        if (this.ordenFiltro === 'nombre-desc') return b.nombreCompleto.localeCompare(a.nombreCompleto);
+        if (this.ordenFiltro === 'dni') return a.dni.localeCompare(b.dni);
+        if (this.ordenFiltro === 'rol') return a.rol.localeCompare(b.rol);
+        if (this.ordenFiltro === 'edad') {
+          const edadA = parseInt(a.edad, 10) || 0;
+          const edadB = parseInt(b.edad, 10) || 0;
+          return edadB - edadA;
+        }
+        return 0;
+      });
   }
 
-  // Interacción de UI estandarizada
-  toggleMenuUsuario(event: MouseEvent) {
+  toggleMenuUsuario(event: MouseEvent): void {
     event.stopPropagation();
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
   }
 
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.sidebarOculto = !this.sidebarOculto;
   }
 
   @HostListener('document:click')
-  cerrarMenus() {
+  cerrarMenus(): void {
     this.menuUsuarioAbierto = false;
   }
 
-  irASeleccionPortales() {
+  irASeleccionPortales(): void {
     this.router.navigate(['/seleccion-portales']);
   }
 
-  irAConfiguracion() {
+  irAConfiguracion(): void {
     alert('Módulo de configuración de cuenta en desarrollo.');
   }
 
-  cerrarSesion() {
+  cerrarSesion(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  selectNav(label: string) {
+  selectNav(label: string): void {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
     if (label === 'Inicio') {
@@ -171,15 +211,15 @@ export class AdminStaffComponent implements OnInit {
     }
   }
 
-  darDeAltaTrabajador() {
+  darDeAltaTrabajador(): void {
     this.router.navigate(['/admin/alta-trabajador']);
   }
 
-  editarTrabajador(id: number) {
+  editarTrabajador(id: number): void {
     this.router.navigate(['/admin/staff/editar-ficha', id]);
   }
 
-  verFicha(id: number) {
+  verFicha(id: number): void {
     this.router.navigate(['/admin/staff/ver-ficha', id]);
   }
 }

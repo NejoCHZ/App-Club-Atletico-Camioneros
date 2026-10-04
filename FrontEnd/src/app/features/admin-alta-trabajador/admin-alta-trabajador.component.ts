@@ -6,6 +6,11 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
 
+export interface CategoriaSimple {
+  idCategoria: number;
+  nombreCategoria: string;
+}
+
 @Component({
   selector: 'app-admin-alta-trabajador',
   standalone: true,
@@ -14,20 +19,20 @@ import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-cred
   styleUrl: './admin-alta-trabajador.component.css'
 })
 export class AdminAltaTrabajadorComponent implements OnInit {
-  private router = inject(Router);
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   usuarioActual = {
     nombre: 'Cargando...',
     email: '...'
   };
 
-  // Control interactivo de UI
   menuUsuarioAbierto = false;
   sidebarOculto = false;
   mostrarPopupCredencial = false;
   mensajeExito = false;
+  isLoading = false;
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
@@ -36,14 +41,26 @@ export class AdminAltaTrabajadorComponent implements OnInit {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
-  // Datos del empleado
+  // Matriz Oficial de 7 Roles del CACC
+  rolesDisponibles = [
+    { valor: 'ADMINISTRADOR', texto: 'Administrador' },
+    { valor: 'ADMINISTRATIVO', texto: 'Administrativo' },
+    { valor: 'MÉDICO', texto: 'Médico' },
+    { valor: 'DIRECTOR TÉCNICO', texto: 'Director Técnico' },
+    { valor: 'DON QR', texto: 'Don QR' },
+    { valor: 'PREPARADOR FÍSICO', texto: 'Preparador Físico' },
+    { valor: 'COORDINADOR', texto: 'Coordinador' }
+  ];
+
+  listaCategorias: CategoriaSimple[] = [];
+  categoriaSeleccionadaId: number | null = null;
+
+  // Datos del colaborador
   dni = '';
   nombre = '';
   apellido = '';
   fechaNacimiento = '';
   rol = '';
-  fotoNombre: string | null = null;
-  fotoPreview: string | null = null;
 
   // Contacto y Seguridad
   telefono = '';
@@ -57,88 +74,75 @@ export class AdminAltaTrabajadorComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarUsuario();
+    this.cargarCategorias();
   }
 
-  private cargarUsuario() {
+  limpiarNombreRol(rol: string): string {
+    if (!rol) return '';
+    let r = rol.replace(/\s*\([^)]*\)/gi, '').trim();
+    if (r.toLowerCase() === 'tesorero') {
+      r = 'Administrador';
+    }
+    return r;
+  }
+
+  private cargarUsuario(): void {
     const token = this.authService.getToken();
-    const rol = this.authService.getRol() || 'Tesorero';
+    const rol = this.authService.getRol() || 'Administrador';
 
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress']
+          || payload.email
+          || '';
+
         this.usuarioActual = {
-          nombre: rol,
+          nombre: this.limpiarNombreRol(rol),
           email: email
         };
       } catch {
-        this.usuarioActual = { nombre: rol, email: '' };
+        this.usuarioActual = { nombre: this.limpiarNombreRol(rol), email: '' };
       }
     }
   }
 
-  toggleSidebar() {
-    this.sidebarOculto = !this.sidebarOculto;
+  private cargarCategorias(): void {
+    this.http.get<any[]>('http://localhost:5191/api/categorias').subscribe({
+      next: (data) => {
+        this.listaCategorias = data.map(c => ({
+          idCategoria: c.idCategoria || c.PK_id_categoria,
+          nombreCategoria: c.nombreCategoria || c.nombre_categoria
+        }));
+      },
+      error: (err) => {
+        console.error('Error al obtener categorías deportivas:', err);
+      }
+    });
   }
 
-  toggleMenuUsuario(event: MouseEvent) {
-    event.stopPropagation();
-    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  requiereCategoria(): boolean {
+    const r = (this.rol || '').toUpperCase();
+    return r === 'DIRECTOR TÉCNICO' || r === 'PREPARADOR FÍSICO';
   }
 
-  @HostListener('document:click')
-  cerrarMenus() {
-    this.menuUsuarioAbierto = false;
-  }
-
-  irASeleccionPortales() {
-    this.router.navigate(['/seleccion-portales']);
-  }
-
-  irAConfiguracion() {
-    alert('Módulo de configuración de cuenta en desarrollo.');
-  }
-
-  cerrarSesion() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  selectNav(label: string) {
-    if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
-    } else if (label === 'Jugadores') {
-      this.router.navigate(['/admin/lista-jugadores']);
-    } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
+  onRolChange(): void {
+    if (!this.requiereCategoria()) {
+      this.categoriaSeleccionadaId = null;
     }
   }
 
-  volver() {
-    this.router.navigate(['/admin/staff']);
-  }
-
-  onFechaNacimientoInput(event: Event) {
+  onFechaNacimientoInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const inputEvent = event as InputEvent;
 
     let raw = input.value.replace(/\D/g, '');
-    if (raw.length > 8) {
-      raw = raw.substring(0, 8);
-    }
+    if (raw.length > 8) raw = raw.substring(0, 8);
 
     let formatted = '';
-    if (raw.length > 0) {
-      formatted = raw.substring(0, 2);
-    }
-    if (raw.length > 2) {
-      formatted += '/' + raw.substring(2, 4);
-    }
-    if (raw.length > 4) {
-      formatted += '/' + raw.substring(4, 8);
-    }
+    if (raw.length > 0) formatted = raw.substring(0, 2);
+    if (raw.length > 2) formatted += '/' + raw.substring(2, 4);
+    if (raw.length > 4) formatted += '/' + raw.substring(4, 8);
 
     if (inputEvent && inputEvent.inputType === 'deleteContentBackward') {
       if (input.value.endsWith('/')) {
@@ -150,17 +154,14 @@ export class AdminAltaTrabajadorComponent implements OnInit {
     input.value = formatted;
   }
 
-  generarCredencial() {
-    this.guardarYGenerarQR();
-  }
-
-  descargarCredencial() {
-    alert('Descargando credencial...');
-  }
-
-  guardarYGenerarQR() {
+  guardarYGenerarQR(): void {
     if (!this.dni || !this.nombre || !this.apellido || !this.fechaNacimiento || !this.rol) {
       alert('Por favor complete los campos obligatorios (*) de los Datos del Empleado.');
+      return;
+    }
+
+    if (this.requiereCategoria() && !this.categoriaSeleccionadaId) {
+      alert('Debe asignar una categoría deportiva obligatoria para el Director Técnico o Preparador Físico.');
       return;
     }
 
@@ -192,21 +193,72 @@ export class AdminAltaTrabajadorComponent implements OnInit {
       telefono: this.telefono.trim(),
       email: this.email.trim(),
       contrasenia: this.password,
-      rol: this.rol
+      rol: this.rol,
+      idCategoria: this.categoriaSeleccionadaId
     };
 
+    this.isLoading = true;
     this.http.post<any>('http://localhost:5191/api/staff', payload).subscribe({
       next: () => {
+        this.isLoading = false;
         this.mensajeExito = true;
         this.mostrarPopupCredencial = true;
       },
       error: (err) => {
+        this.isLoading = false;
         if (err.status === 409) {
-          alert('Ya existe un empleado o usuario registrado con ese DNI o Email.');
+          alert('Conflicto: Ya existe una persona o usuario registrado con ese DNI o Email en el club.');
         } else {
-          alert('Error al registrar el empleado: ' + (err.error?.message || 'Error del servidor'));
+          alert('Error al registrar el personal: ' + (err.error?.message || 'Error del servidor.'));
         }
       }
     });
+  }
+
+  descargarCredencial(): void {
+    alert('Descargando credencial oficial en formato PDF...');
+  }
+
+  toggleSidebar(): void {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  toggleMenuUsuario(event: MouseEvent): void {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  @HostListener('document:click')
+  cerrarMenus(): void {
+    this.menuUsuarioAbierto = false;
+  }
+
+  irASeleccionPortales(): void {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion(): void {
+    alert('Módulo de configuración de cuenta en desarrollo.');
+  }
+
+  cerrarSesion(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  selectNav(label: string): void {
+    if (label === 'Inicio') {
+      this.router.navigate(['/admin']);
+    } else if (label === 'Jugadores') {
+      this.router.navigate(['/admin/lista-jugadores']);
+    } else if (label === 'Staff') {
+      this.router.navigate(['/admin/staff']);
+    } else if (label === 'Categorias' || label === 'Categorías') {
+      this.router.navigate(['/admin/categorias']);
+    }
+  }
+
+  volver(): void {
+    this.router.navigate(['/admin/staff']);
   }
 }

@@ -1,4 +1,4 @@
-/* Layout Principal - Alto fijo en ventana */
+/* Layout Principal - Alto Fijo 100vh */
 .cacc-layout {
   display: flex;
   height: 100vh;
@@ -87,7 +87,7 @@
     font-weight: 600;
   }
 
-/* Sidebar Footer: Portales arriba de Cerrar Sesión */
+/* Sidebar Footer */
 .sidebar-footer {
   margin-top: auto;
   padding: 14px 14px 18px 14px;
@@ -130,7 +130,7 @@
   color: #FCA5A5;
 }
 
-/* Main Content Wrapper */
+/* Contenedor Principal */
 .main-wrapper {
   flex: 1;
   display: flex;
@@ -149,7 +149,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 30px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   z-index: 10;
 }
 
@@ -183,7 +183,7 @@
   margin: 0;
 }
 
-/* Menú de Perfil & Dropdown Flotante */
+/* Perfil y Dropdown */
 .admin-profile {
   position: relative;
   display: flex;
@@ -300,7 +300,7 @@
     color: #B91C1C !important;
   }
 
-/* Cuerpo de la Pantalla */
+/* Área Central de Contenido */
 .content-body {
   padding: 20px 30px;
   display: flex;
@@ -311,68 +311,31 @@
   overflow: hidden;
 }
 
-.page-title {
-  font-size: 22px;
-  font-weight: 800;
-  color: #0F172A;
-  margin: 0;
-  flex-shrink: 0;
-}
-
-/* Control Card */
-.control-card {
-  background: #FFFFFF;
-  border-radius: 14px;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  flex-shrink: 0;
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.filter-label {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #475569;
-}
-
-.filter-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 20px;
-  border: 1px solid #CBD5E1;
+/* Tarjeta Principal de la Tabla */
+.table-card {
   background-color: #FFFFFF;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
-  .filter-pill:hover {
-    background-color: #F1F5F9;
-  }
+/* Controles de Filtro, Búsqueda y Botón */
+.table-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
 
-  .filter-pill.active {
-    background-color: #D1FAE5;
-    border-color: #007A3D;
-    color: #007A3D;
-  }
-
-.search-input-wrapper {
+.search-box {
   position: relative;
   flex: 1;
-  max-width: 380px;
+  min-width: 240px;
   display: flex;
   align-items: center;
 }
@@ -380,196 +343,278 @@
 .search-icon {
   position: absolute;
   left: 12px;
+  pointer-events: none;
 }
 
-.search-field {
+.search-input {
   width: 100%;
-  height: 40px;
+  height: 38px;
   padding: 0 14px 0 38px;
   border: 1px solid #CBD5E1;
   border-radius: 8px;
   font-size: 13.5px;
+  color: #1E293B;
   outline: none;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
 }
 
-  .search-field:focus {
+  .search-input:focus {
     border-color: #007A3D;
   }
 
-.btn-alta-trabajador {
+.select-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 190px;
+}
+
+  .select-box select {
+    width: 100%;
+    height: 38px;
+    appearance: none;
+    padding: 0 36px 0 14px;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #334155;
+    background-color: #FFFFFF;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+    .select-box select:focus {
+      border-color: #007A3D;
+    }
+
+.select-arrow {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+/* Botón de Alta Verde */
+.btn-alta {
+  height: 38px;
   background-color: #007A3D;
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  padding: 0 18px;
-  height: 40px;
-  font-weight: 600;
+  padding: 0 16px;
   font-size: 13.5px;
+  font-weight: 700;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   white-space: nowrap;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-sizing: border-box;
 }
 
-  .btn-alta-trabajador:hover {
+  .btn-alta:hover {
     background-color: #006633;
   }
 
-/* Tarjeta Principal de Lista */
-.list-container-card {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
+  .btn-alta:active {
+    transform: scale(0.98);
+  }
 
-.list-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #475569;
-  letter-spacing: 0.5px;
-  margin: 0 0 16px 0;
-  flex-shrink: 0;
-}
+  .btn-alta .plus-icon {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1;
+  }
 
-/* Scroll interno de lista de trabajadores */
-.workers-list {
+/* Contenedor de la Tabla */
+.table-responsive {
   flex: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-right: 4px;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
   min-height: 0;
+  background-color: #FFFFFF;
 }
 
-  .workers-list::-webkit-scrollbar {
+  .table-responsive::-webkit-scrollbar {
     width: 6px;
   }
 
-  .workers-list::-webkit-scrollbar-track {
-    background: #F8FAFC;
-    border-radius: 4px;
-  }
-
-  .workers-list::-webkit-scrollbar-thumb {
+  .table-responsive::-webkit-scrollbar-thumb {
     background: #CBD5E1;
     border-radius: 4px;
   }
 
-    .workers-list::-webkit-scrollbar-thumb:hover {
-      background: #94A3B8;
-    }
-
-/* Fila de Trabajador */
-.worker-row-card {
-  display: flex;
-  align-items: center;
-  padding: 12px 18px;
-  background: #F8FAFC;
-  border-radius: 12px;
-  border: 1px solid #E2E8F0;
-  transition: all 0.2s ease;
+.cacc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
 }
 
-  .worker-row-card:hover {
-    background: #F1F5F9;
-    border-color: #CBD5E1;
-    transform: translateY(-1px);
+  .cacc-table th {
+    background-color: #007A3D;
+    color: #FFFFFF;
+    padding: 10px 12px;
+    font-weight: 700;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
   }
 
-.worker-avatar-wrapper {
-  margin-right: 16px;
+  .cacc-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #F1F5F9;
+    color: #334155;
+    vertical-align: middle;
+  }
+
+  .cacc-table tbody tr {
+    transition: background-color 0.15s ease-in-out;
+  }
+
+    .cacc-table tbody tr:hover {
+      background-color: #E6F4EA;
+    }
+
+/* Anchos de columnas en Staff */
+.th-avatar, .col-foto {
+  width: 50px;
+  text-align: center;
 }
 
-.worker-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #D1FAE5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.worker-col {
-  display: flex;
-  align-items: center;
-}
-
-.col-name {
-  flex: 2;
-}
-
-.worker-name {
-  font-size: 14px;
+.th-nombre, .col-nombre {
+  width: auto;
   font-weight: 700;
   color: #0F172A;
   text-transform: uppercase;
 }
 
-.col-dni {
-  flex: 1.2;
+.th-dni, .col-dni {
+  width: 110px;
+  font-weight: 600;
+  color: #475569;
 }
 
-.col-rol {
-  flex: 1.4;
+.th-rol, .col-rol {
+  width: 160px;
 }
 
-.col-edad {
-  flex: 1;
+.th-categoria, .col-categoria {
+  width: 160px;
 }
 
-.info-label-muted {
-  font-size: 13px;
-  color: #64748B;
-  font-weight: 500;
+.th-edad, .col-edad {
+  width: 100px;
+  color: #475569;
+  font-weight: 600;
 }
 
-.badge-rol {
-  background-color: #E2E8F0;
+.th-estado, .col-estado {
+  width: 110px;
+  text-align: center;
+}
+
+.th-acciones, .col-acciones {
+  width: 110px;
+  text-align: center;
+}
+
+/* Avatar Circle */
+.user-avatar-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: #D1FAE5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Píldoras de Rol y Categoría */
+.category-pill {
+  display: inline-block;
+  background-color: #F1F5F9;
   color: #334155;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.col-actions {
-  flex: 1.6;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.btn-action-outline {
-  background: #FFFFFF;
-  border: 1.5px solid #007A3D;
-  color: #007A3D;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-  .btn-action-outline:hover {
-    background: #007A3D;
-    color: #FFFFFF;
+  .category-pill.pill-muted {
+    background-color: #F8FAFC;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
   }
 
-.no-results {
+/* Badges de Estado */
+.badge-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  border-width: 1.5px;
+  border-style: solid;
+}
+
+.badge-aldia {
+  background-color: #E8F5E9;
+  color: #007A3D;
+  border-color: #007A3D;
+}
+
+.badge-adeuda {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border-color: #DC2626;
+}
+
+/* Botones de Acción (Iconos) */
+.action-buttons-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-action-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #CBD5E1;
+  background-color: #FFFFFF;
+  color: #007A3D;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+  .btn-action-icon:hover {
+    background-color: #E8F5E9;
+    border-color: #007A3D;
+    color: #006633;
+  }
+
+.no-records {
   text-align: center;
+  color: #94A3B8;
   padding: 30px;
-  color: #64748B;
-  font-size: 14px;
+  font-size: 13.5px;
 }

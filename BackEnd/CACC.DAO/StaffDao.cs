@@ -1,7 +1,10 @@
 using CACC.Entities;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace CACC.DAO
 {
@@ -21,11 +24,11 @@ namespace CACC.DAO
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            var query = @"
+            const string query = @"
                 SELECT p.PK_id_persona, p.genero, p.fecha_de_nacimiento, p.dni, p.nombre, p.apellido
                 FROM STAFF s
                 INNER JOIN USUARIOS u ON s.FK_id_usuario = u.PK_id_usuario
-                INNER JOIN PERSONAS p ON u.FK_id_persona = p.PK_id_persona";
+                INNER JOIN PERSONAS p ON u.FK_id_persona = p.PK_id_persona;";
 
             using var command = new SqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -37,22 +40,22 @@ namespace CACC.DAO
                     IdPersona = reader.GetInt32(reader.GetOrdinal("PK_id_persona")),
                     Genero = reader.IsDBNull(reader.GetOrdinal("genero")) ? null : reader.GetString(reader.GetOrdinal("genero")),
                     FechaDeNacimiento = reader.IsDBNull(reader.GetOrdinal("fecha_de_nacimiento")) ? null : reader.GetDateTime(reader.GetOrdinal("fecha_de_nacimiento")),
-                    Dni = reader.GetString(reader.GetOrdinal("dni")),
-                    Nombre = reader.GetString(reader.GetOrdinal("nombre")),
-                    Apellido = reader.GetString(reader.GetOrdinal("apellido"))
+                    Dni = reader.IsDBNull(reader.GetOrdinal("dni")) ? string.Empty : reader.GetString(reader.GetOrdinal("dni")),
+                    Nombre = reader.IsDBNull(reader.GetOrdinal("nombre")) ? string.Empty : reader.GetString(reader.GetOrdinal("nombre")),
+                    Apellido = reader.IsDBNull(reader.GetOrdinal("apellido")) ? string.Empty : reader.GetString(reader.GetOrdinal("apellido"))
                 });
             }
 
             return listaStaff;
         }
 
-        public async Task<IEnumerable<StaffDetalle>> ObtenerTodosAsync()
+        public async Task<IEnumerable<StaffDetalle>> ObtenerTodosAsync(int? rolId = null)
         {
             var lista = new List<StaffDetalle>();
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            var query = @"
+            const string query = @"
                 SELECT 
                     s.PK_id_staff AS IdStaff,
                     u.PK_id_usuario AS IdUsuario,
@@ -63,6 +66,7 @@ namespace CACC.DAO
                     p.fecha_de_nacimiento AS FechaDeNacimiento,
                     p.genero AS Genero,
                     u.email AS Email,
+                    r.PK_id_rol AS IdRol,
                     r.nombre_rol AS Rol,
                     ISNULL((
                         SELECT STRING_AGG(c.nombre_categoria, ', ')
@@ -74,9 +78,13 @@ namespace CACC.DAO
                 FROM STAFF s
                 INNER JOIN USUARIOS u ON s.FK_id_usuario = u.PK_id_usuario
                 INNER JOIN PERSONAS p ON u.FK_id_persona = p.PK_id_persona
-                INNER JOIN ROLES r ON u.FK_id_rol = r.PK_id_rol";
+                INNER JOIN ROLES r ON u.FK_id_rol = r.PK_id_rol
+                WHERE (@RolId IS NULL OR r.PK_id_rol = @RolId)
+                ORDER BY r.PK_id_rol ASC, p.apellido ASC, p.nombre ASC;";
 
             using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@RolId", (object?)rolId ?? DBNull.Value);
+
             using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -94,6 +102,7 @@ namespace CACC.DAO
                         : reader.GetDateTime(reader.GetOrdinal("FechaDeNacimiento")),
                     Genero = reader.IsDBNull(reader.GetOrdinal("Genero")) ? null : reader.GetString(reader.GetOrdinal("Genero")),
                     Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
+                    IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
                     Rol = reader.IsDBNull(reader.GetOrdinal("Rol")) ? string.Empty : reader.GetString(reader.GetOrdinal("Rol")),
                     CategoriaAsignada = reader.IsDBNull(reader.GetOrdinal("CategoriaAsignada")) ? "Todas / General" : reader.GetString(reader.GetOrdinal("CategoriaAsignada")),
                     Activo = reader.IsDBNull(reader.GetOrdinal("Activo")) || reader.GetBoolean(reader.GetOrdinal("Activo"))
@@ -101,6 +110,67 @@ namespace CACC.DAO
             }
 
             return lista;
+        }
+
+        public async Task<StaffDetalle?> ObtenerPorIdAsync(int idStaff)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"
+                SELECT 
+                    s.PK_id_staff AS IdStaff,
+                    u.PK_id_usuario AS IdUsuario,
+                    p.PK_id_persona AS IdPersona,
+                    p.nombre AS Nombre,
+                    p.apellido AS Apellido,
+                    p.dni AS Dni,
+                    p.fecha_de_nacimiento AS FechaDeNacimiento,
+                    p.genero AS Genero,
+                    u.email AS Email,
+                    r.PK_id_rol AS IdRol,
+                    r.nombre_rol AS Rol,
+                    ISNULL((
+                        SELECT STRING_AGG(c.nombre_categoria, ', ')
+                        FROM STAFF_CATEGORIAS sc
+                        INNER JOIN CATEGORIAS c ON sc.FK_id_categoria = c.PK_id_categoria
+                        WHERE sc.FK_id_staff = s.PK_id_staff
+                    ), 'Todas / General') AS CategoriaAsignada,
+                    ISNULL(u.activo, 1) AS Activo
+                FROM STAFF s
+                INNER JOIN USUARIOS u ON s.FK_id_usuario = u.PK_id_usuario
+                INNER JOIN PERSONAS p ON u.FK_id_persona = p.PK_id_persona
+                INNER JOIN ROLES r ON u.FK_id_rol = r.PK_id_rol
+                WHERE s.PK_id_staff = @IdStaff;";
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@IdStaff", idStaff);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new StaffDetalle
+                {
+                    IdStaff = reader.GetInt32(reader.GetOrdinal("IdStaff")),
+                    IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                    IdPersona = reader.GetInt32(reader.GetOrdinal("IdPersona")),
+                    Nombre = reader.IsDBNull(reader.GetOrdinal("Nombre")) ? string.Empty : reader.GetString(reader.GetOrdinal("Nombre")),
+                    Apellido = reader.IsDBNull(reader.GetOrdinal("Apellido")) ? string.Empty : reader.GetString(reader.GetOrdinal("Apellido")),
+                    Dni = reader.IsDBNull(reader.GetOrdinal("Dni")) ? string.Empty : reader.GetString(reader.GetOrdinal("Dni")),
+                    FechaDeNacimiento = reader.IsDBNull(reader.GetOrdinal("FechaDeNacimiento"))
+                        ? null
+                        : reader.GetDateTime(reader.GetOrdinal("FechaDeNacimiento")),
+                    Genero = reader.IsDBNull(reader.GetOrdinal("Genero")) ? null : reader.GetString(reader.GetOrdinal("Genero")),
+                    Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
+                    IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
+                    Rol = reader.IsDBNull(reader.GetOrdinal("Rol")) ? string.Empty : reader.GetString(reader.GetOrdinal("Rol")),
+                    CategoriaAsignada = reader.IsDBNull(reader.GetOrdinal("CategoriaAsignada")) ? "Todas / General" : reader.GetString(reader.GetOrdinal("CategoriaAsignada")),
+                    Activo = reader.IsDBNull(reader.GetOrdinal("Activo")) || reader.GetBoolean(reader.GetOrdinal("Activo"))
+                };
+            }
+
+            return null;
         }
 
         public async Task<int> CrearAsync(StaffAlta staff)
@@ -112,7 +182,7 @@ namespace CACC.DAO
             try
             {
                 // 1. Verificar si la persona ya existe por DNI o insertarla
-                var queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @Dni;";
+                const string queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @Dni;";
                 using var cmdCheckPersona = new SqlCommand(queryCheckPersona, connection, transaction);
                 cmdCheckPersona.Parameters.AddWithValue("@Dni", staff.Dni);
                 var resultPersona = await cmdCheckPersona.ExecuteScalarAsync();
@@ -124,7 +194,7 @@ namespace CACC.DAO
                 }
                 else
                 {
-                    var queryPersona = @"
+                    const string queryPersona = @"
                         INSERT INTO PERSONAS (nombre, apellido, dni, fecha_de_nacimiento, genero, domicilio)
                         OUTPUT INSERTED.PK_id_persona
                         VALUES (@Nombre, @Apellido, @Dni, @FechaNacimiento, @Genero, @Domicilio);";
@@ -140,12 +210,12 @@ namespace CACC.DAO
                     idPersona = Convert.ToInt32(await cmdPersona.ExecuteScalarAsync());
                 }
 
-                // 2. Generar PK_id_usuario manualmente (la tabla no tiene IDENTITY)
-                var queryMaxUsuario = "SELECT ISNULL(MAX(PK_id_usuario), 0) + 1 FROM USUARIOS;";
+                // 2. Insertar usuario y obtener ID
+                const string queryMaxUsuario = "SELECT ISNULL(MAX(PK_id_usuario), 0) + 1 FROM USUARIOS;";
                 using var cmdMaxUsuario = new SqlCommand(queryMaxUsuario, connection, transaction);
                 int idUsuario = Convert.ToInt32(await cmdMaxUsuario.ExecuteScalarAsync());
 
-                var queryUsuario = @"
+                const string queryUsuario = @"
                     INSERT INTO USUARIOS (PK_id_usuario, FK_id_persona, FK_id_rol, email, contrasenia, activo)
                     VALUES (@IdUsuario, @IdPersona, @IdRol, @Email, @Contrasenia, 1);";
 
@@ -157,12 +227,12 @@ namespace CACC.DAO
                 cmdUsuario.Parameters.AddWithValue("@Contrasenia", staff.ContraseniaHasheada);
                 await cmdUsuario.ExecuteNonQueryAsync();
 
-                // 3. Generar PK_id_staff manualmente e insertar en STAFF
-                var queryMaxStaff = "SELECT ISNULL(MAX(PK_id_staff), 0) + 1 FROM STAFF;";
+                // 3. Insertar en STAFF
+                const string queryMaxStaff = "SELECT ISNULL(MAX(PK_id_staff), 0) + 1 FROM STAFF;";
                 using var cmdMaxStaff = new SqlCommand(queryMaxStaff, connection, transaction);
                 int idStaff = Convert.ToInt32(await cmdMaxStaff.ExecuteScalarAsync());
 
-                var queryStaff = @"
+                const string queryStaff = @"
                     INSERT INTO STAFF (PK_id_staff, FK_id_usuario)
                     VALUES (@IdStaff, @IdUsuario);";
 
@@ -174,11 +244,11 @@ namespace CACC.DAO
                 // 4. Asignar categoría en STAFF_CATEGORIAS si fue provista
                 if (staff.IdCategoria.HasValue && staff.IdCategoria.Value > 0)
                 {
-                    var queryMaxStaffCat = "SELECT ISNULL(MAX(PK_id_staff_categoria), 0) + 1 FROM STAFF_CATEGORIAS;";
+                    const string queryMaxStaffCat = "SELECT ISNULL(MAX(PK_id_staff_categoria), 0) + 1 FROM STAFF_CATEGORIAS;";
                     using var cmdMaxStaffCat = new SqlCommand(queryMaxStaffCat, connection, transaction);
                     int idStaffCat = Convert.ToInt32(await cmdMaxStaffCat.ExecuteScalarAsync());
 
-                    var queryStaffCat = @"
+                    const string queryStaffCat = @"
                         INSERT INTO STAFF_CATEGORIAS (PK_id_staff_categoria, FK_id_staff, FK_id_categoria)
                         VALUES (@IdStaffCat, @IdStaff, @IdCategoria);";
 
