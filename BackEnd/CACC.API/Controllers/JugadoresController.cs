@@ -55,7 +55,7 @@ namespace CACC.API.Controllers
                 {
                     Nombre = j.Tutor.Nombre,
                     Apellido = j.Tutor.Apellido,
-                    Telefono = j.Tutor.Telefono,
+                    Telefono = j.Tutor.Telefono ?? string.Empty,
                     Email = j.Tutor.Email,
                     Parentesco = j.Tutor.Parentesco
                 }
@@ -91,6 +91,14 @@ namespace CACC.API.Controllers
                 Altura = j.Altura,
                 PieHabil = j.PieHabil,
                 EstadoCuota = j.EstadoCuota,
+                Tutor = j.Tutor == null ? null : new TutorDto
+                {
+                    Nombre = j.Tutor.Nombre,
+                    Apellido = j.Tutor.Apellido,
+                    Telefono = j.Tutor.Telefono ?? string.Empty,
+                    Email = j.Tutor.Email,
+                    Parentesco = j.Tutor.Parentesco
+                },
                 FichaMedica = j.FichaMedica == null ? null : new FichaMedicaDto
                 {
                     GrupoSanguineo = j.FichaMedica.GrupoSanguineo,
@@ -217,6 +225,7 @@ namespace CACC.API.Controllers
                 return StatusCode(500, new { message = "Error interno al crear el jugador.", details = ex.Message });
             }
         }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Tesorero")]
         public async Task<IActionResult> EliminarJugador(int id)

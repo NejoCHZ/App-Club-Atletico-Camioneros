@@ -24,6 +24,7 @@ namespace CACC.Entities
 
         public FichaMedicaDetalle? FichaMedica { get; set; }
         public List<PartidoDetalle> Partidos { get; set; } = new List<PartidoDetalle>();
+        public TutorDetalle? Tutor { get; set; }
 
         // Propiedad para mabasa ti estado ti kuota manipud iti VISTA_ESTADO_DEUDA
         public string EstadoCuota { get; set; } = "AL DÍA";

@@ -1,4 +1,4 @@
-/* Layout Principal - Confinado a 100vh */
+/* Layout Principal - Alto Fijo 100vh */
 .cacc-layout {
   display: flex;
   height: 100vh;
@@ -87,7 +87,7 @@
     font-weight: 600;
   }
 
-/* Sidebar Footer: Portales arriba de Cerrar Sesión */
+/* Sidebar Footer */
 .sidebar-footer {
   margin-top: auto;
   padding: 14px 14px 18px 14px;
@@ -130,7 +130,7 @@
   color: #FCA5A5;
 }
 
-/* Main Content Wrapper */
+/* Contenedor Principal */
 .main-wrapper {
   flex: 1;
   display: flex;
@@ -149,7 +149,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 30px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   z-index: 10;
 }
 
@@ -183,7 +183,7 @@
   margin: 0;
 }
 
-/* Menú de Perfil & Dropdown Flotante */
+/* Perfil y Dropdown */
 .admin-profile {
   position: relative;
   display: flex;
@@ -300,9 +300,9 @@
     color: #B91C1C !important;
   }
 
-/* Área Central de Contenido con Scroll Interno */
+/* Área Central de Contenido */
 .content-body {
-  padding: 24px 30px;
+  padding: 20px 30px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -315,38 +315,29 @@
     width: 6px;
   }
 
-  .content-body::-webkit-scrollbar-track {
-    background: #F8FAFC;
-    border-radius: 4px;
-  }
-
   .content-body::-webkit-scrollbar-thumb {
     background: #CBD5E1;
     border-radius: 4px;
   }
 
-    .content-body::-webkit-scrollbar-thumb:hover {
-      background: #94A3B8;
-    }
-
 /* Toast de Éxito */
 .toast-success {
-  background-color: #D1FAE5;
+  background-color: #E8F5E9;
   border: 1px solid #007A3D;
-  color: #065F46;
+  color: #007A3D;
   padding: 12px 18px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 14px;
-  font-weight: 600;
-  animation: dropdownFadeIn 0.3s ease;
+  font-weight: 700;
+  box-shadow: 0 2px 5px rgba(0, 122, 61, 0.1);
 }
 
-/* Tarjeta Principal del Formulario */
+/* Tarjeta Principal */
 .single-main-card {
-  background: #FFFFFF;
+  background-color: #FFFFFF;
   border-radius: 16px;
   padding: 24px 28px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -358,44 +349,31 @@
 .card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 14px;
+  gap: 10px;
   border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 12px;
 }
 
 .icon-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background-color: #D1FAE5;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .card-title {
   font-size: 16px;
-  font-weight: 700;
-  color: #0F172A;
+  font-weight: 800;
+  color: #007A3D;
   margin: 0;
 }
 
-/* Grilla de 2 Columnas */
+/* Grid de Formulario: 2 Columnas */
 .card-content-grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 32px;
-  align-items: start;
 }
 
-@media (max-width: 960px) {
-  .card-content-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.column-left,
-.column-right {
+.column-left, .column-right {
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -405,60 +383,50 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
 }
 
   .form-group label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 
 .required-asterisk {
   color: #DC2626;
-  font-weight: bold;
+  font-weight: 800;
 }
 
 .form-row-2 {
-  display: flex;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
-/* Inputs, Selects y Textareas */
-.form-input,
-.form-select,
-.form-textarea {
+.form-input, .form-textarea {
   width: 100%;
+  padding: 9px 14px;
   border: 1px solid #CBD5E1;
   border-radius: 8px;
   font-size: 13.5px;
   color: #1E293B;
-  outline: none;
   background-color: #FFFFFF;
   box-sizing: border-box;
+  outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-input,
-.form-select {
-  height: 40px;
-  padding: 0 14px;
-}
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    border-color: #007A3D;
+    box-shadow: 0 0 0 2px rgba(0, 122, 61, 0.15);
+  }
 
 .form-textarea {
-  padding: 10px 14px;
   resize: vertical;
-  min-height: 120px;
-  line-height: 1.4;
+  min-height: 125px;
   font-family: inherit;
 }
-
-  .form-input:focus,
-  .form-select:focus,
-  .form-textarea:focus {
-    border-color: #007A3D;
-    box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.12);
-  }
 
 .select-wrapper {
   position: relative;
@@ -466,76 +434,95 @@
   align-items: center;
 }
 
-  .select-wrapper select {
-    appearance: none;
-    padding-right: 36px;
-    cursor: pointer;
-  }
+.form-select {
+  width: 100%;
+  appearance: none;
+  padding: 9px 36px 9px 14px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #334155;
+  background-color: #FFFFFF;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.highlight-select {
+  background-color: #F0FDF4;
+  border-color: #86EFAC;
+}
 
 .select-arrow {
   position: absolute;
-  right: 12px;
+  right: 14px;
   pointer-events: none;
   display: flex;
   align-items: center;
 }
 
-/* Pie de Acciones */
+/* Footer del Formulario */
 .page-footer-actions {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
-  background: #FFFFFF;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  margin-top: auto;
+  align-items: center;
+  padding: 12px 0 24px 0;
 }
 
 .left-note {
-  font-size: 13px;
+  font-size: 12px;
   color: #64748B;
   font-weight: 500;
 }
 
 .right-buttons {
   display: flex;
+  align-items: center;
   gap: 12px;
 }
 
 .btn-cancel-white {
-  background: #FFFFFF;
-  border: 1.5px solid #CBD5E1;
+  background-color: #FFFFFF;
   color: #475569;
-  padding: 9px 20px;
+  border: 1px solid #CBD5E1;
+  padding: 9px 22px;
   border-radius: 8px;
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
   .btn-cancel-white:hover {
     background-color: #F8FAFC;
     border-color: #94A3B8;
-    color: #1E293B;
   }
 
 .btn-save-qr {
   background-color: #007A3D;
   color: #FFFFFF;
   border: none;
-  padding: 9px 22px;
+  padding: 9px 24px;
   border-radius: 8px;
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
-  .btn-save-qr:hover {
+  .btn-save-qr:hover:not(:disabled) {
     background-color: #006633;
+  }
+
+  .btn-save-qr:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-save-qr:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
   }

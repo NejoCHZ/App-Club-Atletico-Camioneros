@@ -6,16 +6,31 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5191/api/auth'; // La URL de tu backend
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = 'http://localhost:5191/api/auth';
 
   login(credenciales: { email: string; password: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credenciales).pipe(
       tap(response => {
-        // Cuando el backend responde OK, guardamos el token y el rol
         if (response && response.token) {
           localStorage.setItem('jwt_token', response.token);
-          localStorage.setItem('user_rol', response.rol);
+
+          // 1. Intentar leer rol desde el body
+          let rolDetectado = response.rol || response.role || response.Rol;
+
+          // 2. Si no vino en el body, extraerlo del payload del JWT
+          if (!rolDetectado) {
+            try {
+              const payload = JSON.parse(atob(response.token.split('.')[1]));
+              rolDetectado = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+                || payload.role
+                || payload.rol;
+            } catch {
+              rolDetectado = 'Tesorero';
+            }
+          }
+
+          localStorage.setItem('user_rol', rolDetectado || 'Tesorero');
         }
       })
     );
@@ -26,7 +41,25 @@ export class AuthService {
   }
 
   getRol(): string | null {
-    return localStorage.getItem('user_rol');
+    const rolLocal = localStorage.getItem('user_rol');
+    if (rolLocal && rolLocal !== 'undefined' && rolLocal !== 'null') {
+      return rolLocal;
+    }
+
+    // Respaldo: leer directo del token si user_rol estuviera vacío
+    const token = this.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+          || payload.role
+          || payload.rol
+          || null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
   }
 
   logout(): void {
@@ -48,12 +81,11 @@ export class AuthService {
       const payload = token.split('.')[1];
       const decoded = JSON.parse(atob(payload));
 
-      // .NET serializa los claims con estas URLs estándar por defecto
       return {
         email: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || decoded.email || 'usuario@cacc.com.ar',
-        rol: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decoded.rol || rolLocal
+        rol: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decoded.role || decoded.rol || rolLocal
       };
-    } catch (e) {
+    } catch {
       return { email: 'usuario@cacc.com.ar', rol: rolLocal };
     }
   }

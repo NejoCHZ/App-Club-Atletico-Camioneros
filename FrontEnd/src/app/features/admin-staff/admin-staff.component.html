@@ -1,5 +1,5 @@
 <div class="cacc-layout" [class.sidebar-collapsed]="sidebarOculto">
-  <!-- Left Sidebar (Verde Institucional CACC) -->
+  <!-- Sidebar Lateral Institucional -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo-wrapper">
@@ -25,7 +25,7 @@
       </a>
     </nav>
 
-    <!-- Footer: Selección de Portales arriba de Cerrar Sesión -->
+    <!-- Footer del Sidebar: Portales + Cerrar Sesión -->
     <div class="sidebar-footer">
       <a class="footer-action-btn portal-btn" (click)="irASeleccionPortales()" title="Volver a Selección de Portales">
         <span class="footer-icon">
@@ -43,7 +43,7 @@
     </div>
   </aside>
 
-  <!-- Main Content Wrapper -->
+  <!-- Contenedor Principal -->
   <div class="main-wrapper">
     <!-- Header Superior -->
     <header class="top-header">
@@ -51,11 +51,11 @@
         <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="header-title">Panel de Gestión de Staff</h1>
+        <h1 class="header-title">Listado General de Staff</h1>
       </div>
 
       <div class="header-right">
-        <!-- Perfil con Menú Desplegable Flotante -->
+        <!-- Perfil con Menú Desplegable Flotante (Nombre: Administrador) -->
         <div class="admin-profile" (click)="toggleMenuUsuario($event)">
           <div class="profile-avatar">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
@@ -82,88 +82,106 @@
       </div>
     </header>
 
-    <!-- Main View Body (Alto contenido 100vh) -->
+    <!-- Área Central de Contenido -->
     <main class="content-body">
-      <h1 class="page-title">Staff</h1>
+      <!-- Tarjeta Principal de la Tabla -->
+      <section class="table-card">
+        <!-- Controles de Filtro, Búsqueda y Botón de Alta -->
+        <div class="table-controls">
+          <div class="search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Buscar por DNI o Nombre..." [(ngModel)]="searchTerm" class="search-input" />
+          </div>
 
-      <!-- Filter Controls Card -->
-      <section class="control-card">
-        <div class="filter-group">
-          <span class="filter-label">Filtrar por rol:</span>
+          <!-- Filtro de Rol con selector estandarizado CACC -->
+          <div class="select-box">
+            <select [(ngModel)]="rolFiltro">
+              <option value="">Todos los roles</option>
+              <option *ngFor="let rol of rolesDisponibles" [value]="rol">
+                {{ rol }}
+              </option>
+            </select>
+            <span class="select-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </div>
 
-          <button type="button"
-                  class="filter-pill"
-                  [class.active]="rolFiltro === 'DIRECTOR TÉCNICO'"
-                  (click)="toggleRolFiltro('DIRECTOR TÉCNICO')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 11.5a3.5 3.5 0 1 0-7 0v1.5H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h7.1A3.5 3.5 0 1 0 18 11.5zM11 9V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4h-4z" /></svg>
-            Director Técnico
-          </button>
+          <!-- Ordenar por -->
+          <div class="select-box">
+            <select [(ngModel)]="ordenFiltro">
+              <option value="">Ordenar por</option>
+              <option value="nombre">Nombre (A-Z)</option>
+              <option value="nombre-desc">Nombre (Z-A)</option>
+              <option value="dni">DNI</option>
+              <option value="rol">Rol</option>
+              <option value="edad">Edad</option>
+            </select>
+            <span class="select-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </div>
 
-          <button type="button"
-                  class="filter-pill"
-                  [class.active]="rolFiltro === 'COORDINADOR'"
-                  (click)="toggleRolFiltro('COORDINADOR')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            Coordinador
-          </button>
-
-          <button type="button"
-                  class="filter-pill"
-                  [class.active]="rolFiltro === 'MÉDICO'"
-                  (click)="toggleRolFiltro('MÉDICO')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-            Médico
+          <!-- Botón de Alta Verde Institucional -->
+          <button type="button" class="btn-alta" (click)="darDeAltaTrabajador()">
+            <span class="plus-icon">+</span> Dar de alta Trabajador
           </button>
         </div>
 
-        <div class="search-input-wrapper">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por DNI o Nombre" class="search-field" />
-        </div>
+        <!-- Tabla con Scroll Interno idéntica a adminHome -->
+        <div class="table-responsive">
+          <table class="cacc-table">
+            <thead>
+              <tr>
+                <th class="th-avatar"></th>
+                <th class="th-nombre">NOMBRE COMPLETO</th>
+                <th class="th-dni">DNI</th>
+                <th class="th-rol">ROL</th>
+                <th class="th-categoria">CATEGORÍA ASIGNADA</th>
+                <th class="th-edad">EDAD</th>
+                <th class="th-estado">ESTADO</th>
+                <th class="th-acciones">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of filteredStaff">
+                <td class="col-foto">
+                  <div class="user-avatar-circle">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#007A3D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+                  </div>
+                </td>
+                <td class="col-nombre">{{ t.nombreCompleto }}</td>
+                <td class="col-dni">{{ t.dni }}</td>
+                <td class="col-rol">
+                  <span class="category-pill">{{ t.rol }}</span>
+                </td>
+                <td class="col-categoria">
+                  <span class="category-pill pill-muted">{{ t.categoriaAsignada }}</span>
+                </td>
+                <td class="col-edad">{{ t.edad }}</td>
+                <td class="col-estado">
+                  <span class="badge-status" [ngClass]="t.estado === 'ACTIVO' ? 'badge-aldia' : 'badge-adeuda'">
+                    {{ t.estado }}
+                  </span>
+                </td>
+                <td class="col-acciones">
+                  <div class="action-buttons-group">
+                    <button type="button" class="btn-action-icon" (click)="verFicha(t.id)" title="Ver ficha">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                    <button type="button" class="btn-action-icon" (click)="editarTrabajador(t.id)" title="Editar Trabajador">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
 
-        <button type="button" class="btn-alta-trabajador" (click)="darDeAltaTrabajador()">
-          <span class="plus-icon">+</span> Dar de alta trabajador
-        </button>
-      </section>
-
-      <!-- Main Workers List Card Container -->
-      <section class="list-container-card">
-        <h2 class="list-title">LISTA DE TRABAJADORES</h2>
-
-        <!-- Scroll interno contenido -->
-        <div class="workers-list">
-          <div class="worker-row-card" *ngFor="let t of filteredStaff">
-            <div class="worker-avatar-wrapper">
-              <div class="worker-avatar">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#007A3D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
-              </div>
-            </div>
-
-            <div class="worker-col col-name">
-              <span class="worker-name">{{ t.nombreCompleto }}</span>
-            </div>
-
-            <div class="worker-col col-dni">
-              <span class="info-label-muted">DNI: {{ t.dni }}</span>
-            </div>
-
-            <div class="worker-col col-rol">
-              <span class="badge-rol">{{ t.rol }}</span>
-            </div>
-
-            <div class="worker-col col-edad">
-              <span class="info-label-muted">{{ t.edad }}</span>
-            </div>
-
-            <div class="worker-col col-actions">
-              <button type="button" class="btn-action-outline edit-btn" (click)="editarTrabajador(t.id)">Editar Trabajador</button>
-              <button type="button" class="btn-action-outline view-btn" (click)="verFicha(t.id)">Ver ficha</button>
-            </div>
-          </div>
-
-          <div *ngIf="filteredStaff.length === 0" class="no-results">
-            No se encontraron trabajadores registrados con los criterios seleccionados.
-          </div>
+              <tr *ngIf="filteredStaff.length === 0">
+                <td colspan="8" class="no-records">
+                  No se encontraron trabajadores que coincidan con los criterios de búsqueda.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>

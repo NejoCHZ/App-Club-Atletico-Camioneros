@@ -37,6 +37,7 @@ namespace CACC.API.Controllers
                 Dni = s.Dni,
                 FechaDeNacimiento = s.FechaDeNacimiento,
                 Email = s.Email,
+                IdRol = s.IdRol,
                 Rol = s.Rol,
                 CategoriaAsignada = s.CategoriaAsignada,
                 Activo = s.Activo
@@ -46,7 +47,7 @@ namespace CACC.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Tesorero")]
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero")]
         public async Task<IActionResult> CrearStaff([FromBody] StaffCreateDto dto)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Dni) || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Contrasenia))
@@ -56,19 +57,20 @@ namespace CACC.API.Controllers
 
             try
             {
-                // Hasheo de contraseña con BCrypt
                 string passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Contrasenia);
 
-                // Resolución de rol por ID o nombre
+                // Resolución estricta de la matriz oficial (1 al 7)
                 int idRol = dto.IdRol ?? 4;
                 if (!string.IsNullOrWhiteSpace(dto.Rol))
                 {
                     var r = dto.Rol.ToUpper();
-                    if (r.Contains("TESORERO")) idRol = 1;
-                    else if (r.Contains("COORDINADOR")) idRol = 2;
+                    if (r.Contains("TESORERO") || r.Contains("ADMINISTRADOR")) idRol = 1;
+                    else if (r.Contains("ADMINISTRATIVO")) idRol = 2;
                     else if (r.Contains("MÉDICO") || r.Contains("MEDICO")) idRol = 3;
-                    else if (r.Contains("TÉCNICO") || r.Contains("TECNICO") || r.Contains("FÍSICO") || r.Contains("FISICO")) idRol = 4;
+                    else if (r.Contains("TÉCNICO") || r.Contains("TECNICO") || r.Contains("DT")) idRol = 4;
                     else if (r.Contains("QR")) idRol = 5;
+                    else if (r.Contains("FÍSICO") || r.Contains("FISICO") || r.Contains("PF")) idRol = 6;
+                    else if (r.Contains("COORDINADOR")) idRol = 7;
                 }
 
                 DateTime? fecha = null;
