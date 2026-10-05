@@ -146,17 +146,23 @@
 
             <!-- Asignación de Categoría (Visible para DT y Preparador Físico) -->
             <div class="form-group" *ngIf="requiereCategoria()">
-              <label>Categoría asignada (Plantel a cargo) <span class="required-asterisk">*</span></label>
-              <div class="select-wrapper">
-                <select [(ngModel)]="categoriaSeleccionadaId" class="form-select highlight-select">
-                  <option [ngValue]="null" disabled selected>Seleccionar división deportiva...</option>
-                  <option *ngFor="let cat of listaCategorias" [ngValue]="cat.idCategoria">
-                    {{ cat.nombreCategoria }}
-                  </option>
-                </select>
-                <span class="select-arrow">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <div class="category-header-row">
+                <label>Categorías asignadas (Planteles a cargo) <span class="required-asterisk">*</span></label>
+                <span class="category-counter-badge">
+                  {{ categoriasSeleccionadasIds.length }} seleccionada(s)
                 </span>
+              </div>
+              <p class="category-helper-text">Hacé clic sobre las divisiones para asignarlas o quitarlas:</p>
+
+              <div class="category-pills-selector">
+                <button type="button"
+                        *ngFor="let cat of listaCategorias"
+                        class="cat-pill-btn"
+                        [class.selected]="isCategoriaSeleccionada(cat.idCategoria)"
+                        (click)="toggleCategoria(cat.idCategoria)">
+                  <span class="cat-pill-check" *ngIf="isCategoriaSeleccionada(cat.idCategoria)">✓</span>
+                  {{ cat.nombreCategoria }}
+                </button>
               </div>
             </div>
 

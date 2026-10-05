@@ -41,7 +41,6 @@ export class AdminAltaTrabajadorComponent implements OnInit {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
-  // Matriz Oficial de 7 Roles del CACC
   rolesDisponibles = [
     { valor: 'ADMINISTRADOR', texto: 'Administrador' },
     { valor: 'ADMINISTRATIVO', texto: 'Administrativo' },
@@ -53,16 +52,14 @@ export class AdminAltaTrabajadorComponent implements OnInit {
   ];
 
   listaCategorias: CategoriaSimple[] = [];
-  categoriaSeleccionadaId: number | null = null;
+  categoriasSeleccionadasIds: number[] = [];
 
-  // Datos del colaborador
   dni = '';
   nombre = '';
   apellido = '';
   fechaNacimiento = '';
   rol = '';
 
-  // Contacto y Seguridad
   telefono = '';
   email = '';
   password = '';
@@ -115,9 +112,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
           nombreCategoria: c.nombreCategoria || c.nombre_categoria
         }));
       },
-      error: (err) => {
-        console.error('Error al obtener categorías deportivas:', err);
-      }
+      error: (err) => console.error('Error al obtener categorías deportivas:', err)
     });
   }
 
@@ -128,8 +123,21 @@ export class AdminAltaTrabajadorComponent implements OnInit {
 
   onRolChange(): void {
     if (!this.requiereCategoria()) {
-      this.categoriaSeleccionadaId = null;
+      this.categoriasSeleccionadasIds = [];
     }
+  }
+
+  toggleCategoria(idCat: number): void {
+    const idx = this.categoriasSeleccionadasIds.indexOf(idCat);
+    if (idx > -1) {
+      this.categoriasSeleccionadasIds.splice(idx, 1);
+    } else {
+      this.categoriasSeleccionadasIds.push(idCat);
+    }
+  }
+
+  isCategoriaSeleccionada(idCat: number): boolean {
+    return this.categoriasSeleccionadasIds.includes(idCat);
   }
 
   onFechaNacimientoInput(event: Event): void {
@@ -160,8 +168,8 @@ export class AdminAltaTrabajadorComponent implements OnInit {
       return;
     }
 
-    if (this.requiereCategoria() && !this.categoriaSeleccionadaId) {
-      alert('Debe asignar una categoría deportiva obligatoria para el Director Técnico o Preparador Físico.');
+    if (this.requiereCategoria() && this.categoriasSeleccionadasIds.length === 0) {
+      alert('Debe asignar al menos una categoría deportiva para el Director Técnico o Preparador Físico.');
       return;
     }
 
@@ -194,7 +202,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
       email: this.email.trim(),
       contrasenia: this.password,
       rol: this.rol,
-      idCategoria: this.categoriaSeleccionadaId
+      categoriasIds: this.categoriasSeleccionadasIds
     };
 
     this.isLoading = true;
@@ -209,7 +217,8 @@ export class AdminAltaTrabajadorComponent implements OnInit {
         if (err.status === 409) {
           alert('Conflicto: Ya existe una persona o usuario registrado con ese DNI o Email en el club.');
         } else {
-          alert('Error al registrar el personal: ' + (err.error?.message || 'Error del servidor.'));
+          const det = err.error?.details ? ` (${err.error.details})` : '';
+          alert('Error al registrar el personal: ' + (err.error?.message || 'Error del servidor.') + det);
         }
       }
     });
