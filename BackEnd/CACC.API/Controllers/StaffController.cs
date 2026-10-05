@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CACC.API.DTOs;
@@ -40,7 +41,7 @@ namespace CACC.API.Controllers
                 Email = s.Email,
                 IdRol = s.IdRol,
                 Rol = s.Rol,
-                IdCategoriaAsignada = s.IdCategoriaAsignada,
+                CategoriasIds = s.CategoriasIds,
                 CategoriaAsignada = s.CategoriaAsignada,
                 Activo = s.Activo
             });
@@ -70,7 +71,7 @@ namespace CACC.API.Controllers
                 Email = s.Email,
                 IdRol = s.IdRol,
                 Rol = s.Rol,
-                IdCategoriaAsignada = s.IdCategoriaAsignada,
+                CategoriasIds = s.CategoriasIds,
                 CategoriaAsignada = s.CategoriaAsignada,
                 Activo = s.Activo
             };
@@ -111,6 +112,12 @@ namespace CACC.API.Controllers
                         fecha = f;
                 }
 
+                var catList = dto.CategoriasIds ?? new List<int>();
+                if (dto.IdCategoria.HasValue && dto.IdCategoria.Value > 0 && !catList.Contains(dto.IdCategoria.Value))
+                {
+                    catList.Add(dto.IdCategoria.Value);
+                }
+
                 var staffAlta = new StaffAlta
                 {
                     Nombre = dto.Nombre.Trim(),
@@ -122,7 +129,7 @@ namespace CACC.API.Controllers
                     Email = dto.Email.Trim(),
                     ContraseniaHasheada = passwordHash,
                     IdRol = idRol,
-                    IdCategoria = dto.IdCategoria
+                    CategoriasIds = catList
                 };
 
                 int nuevoIdStaff = await _staffDao.CrearAsync(staffAlta);
@@ -181,6 +188,12 @@ namespace CACC.API.Controllers
                     passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Contrasenia.Trim());
                 }
 
+                var catList = dto.CategoriasIds ?? new List<int>();
+                if (dto.IdCategoria.HasValue && dto.IdCategoria.Value > 0 && !catList.Contains(dto.IdCategoria.Value))
+                {
+                    catList.Add(dto.IdCategoria.Value);
+                }
+
                 var staffEdicion = new StaffEdicion
                 {
                     IdStaff = id,
@@ -193,7 +206,7 @@ namespace CACC.API.Controllers
                     Email = dto.Email.Trim(),
                     ContraseniaHasheada = passwordHash,
                     IdRol = idRol,
-                    IdCategoria = dto.IdCategoria,
+                    CategoriasIds = catList,
                     Activo = dto.Activo
                 };
 

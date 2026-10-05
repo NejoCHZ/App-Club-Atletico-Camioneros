@@ -45,7 +45,7 @@ export class AdminStaffEditarFicha implements OnInit {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
-  // Matriz de 7 roles institucionales
+  // Matriz de 7 roles institucionales oficial CACC
   rolesDisponibles = [
     { id: 1, valor: 'ADMINISTRADOR', texto: 'Administrador' },
     { id: 2, valor: 'ADMINISTRATIVO', texto: 'Administrativo' },
@@ -57,7 +57,7 @@ export class AdminStaffEditarFicha implements OnInit {
   ];
 
   listaCategorias: CategoriaSimple[] = [];
-  categoriaSeleccionadaId: number | null = null;
+  categoriasSeleccionadasIds: number[] = [];
 
   // Campos de formulario
   dni = '';
@@ -123,7 +123,7 @@ export class AdminStaffEditarFicha implements OnInit {
           nombreCategoria: c.nombreCategoria || c.nombre_categoria
         }));
       },
-      error: (err) => console.error('Error al cargar categorías:', err)
+      error: (err) => console.error('Error al cargar categorías deportivas:', err)
     });
   }
 
@@ -143,7 +143,11 @@ export class AdminStaffEditarFicha implements OnInit {
         const rolObj = this.rolesDisponibles.find(r => r.id === this.idRol);
         this.rol = rolObj ? rolObj.valor : 'DIRECTOR TÉCNICO';
 
-        this.categoriaSeleccionadaId = s.idCategoriaAsignada || null;
+        // Preselección de múltiples categorías
+        this.categoriasSeleccionadasIds = s.categoriasIds || [];
+        if (this.categoriasSeleccionadasIds.length === 0 && s.idCategoriaAsignada) {
+          this.categoriasSeleccionadasIds.push(s.idCategoriaAsignada);
+        }
 
         if (s.fechaDeNacimiento) {
           const date = new Date(s.fechaDeNacimiento);
@@ -159,7 +163,7 @@ export class AdminStaffEditarFicha implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        console.error('Error al cargar la ficha del staff:', err);
+        console.error('Error al cargar ficha de staff:', err);
         alert('No se pudo encontrar al colaborador solicitado.');
         this.cancelar();
       }
@@ -177,8 +181,21 @@ export class AdminStaffEditarFicha implements OnInit {
       this.idRol = rolObj.id;
     }
     if (!this.requiereCategoria()) {
-      this.categoriaSeleccionadaId = null;
+      this.categoriasSeleccionadasIds = [];
     }
+  }
+
+  toggleCategoria(idCat: number): void {
+    const idx = this.categoriasSeleccionadasIds.indexOf(idCat);
+    if (idx > -1) {
+      this.categoriasSeleccionadasIds.splice(idx, 1);
+    } else {
+      this.categoriasSeleccionadasIds.push(idCat);
+    }
+  }
+
+  isCategoriaSeleccionada(idCat: number): boolean {
+    return this.categoriasSeleccionadasIds.includes(idCat);
   }
 
   onFechaNacimientoInput(event: Event): void {
@@ -227,8 +244,8 @@ export class AdminStaffEditarFicha implements OnInit {
       return;
     }
 
-    if (this.requiereCategoria() && !this.categoriaSeleccionadaId) {
-      alert('Debe asignar una categoría deportiva obligatoria para el Director Técnico o Preparador Físico.');
+    if (this.requiereCategoria() && this.categoriasSeleccionadasIds.length === 0) {
+      alert('Debe asignar al menos una categoría deportiva para el Director Técnico o Preparador Físico.');
       return;
     }
 
@@ -251,7 +268,8 @@ export class AdminStaffEditarFicha implements OnInit {
       contrasenia: this.password ? this.password.trim() : null,
       idRol: this.idRol,
       rol: this.rol,
-      idCategoria: this.categoriaSeleccionadaId,
+      categoriasIds: this.categoriasSeleccionadasIds,
+      idCategoria: this.categoriasSeleccionadasIds.length > 0 ? this.categoriasSeleccionadasIds[0] : null,
       activo: this.activo
     };
 
@@ -269,7 +287,8 @@ export class AdminStaffEditarFicha implements OnInit {
         if (err.status === 409) {
           alert('Conflicto: Ya existe otro registro con ese DNI o Email en el club.');
         } else {
-          alert('Error al actualizar: ' + (err.error?.message || 'Error del servidor.'));
+          const det = err.error?.details ? ` (${err.error.details})` : '';
+          alert('Error al actualizar: ' + (err.error?.message || 'Error del servidor.') + det);
         }
       }
     });

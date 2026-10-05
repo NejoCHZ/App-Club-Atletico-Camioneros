@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CACC.DAO
@@ -40,9 +41,9 @@ namespace CACC.DAO
                     IdPersona = reader.GetInt32(reader.GetOrdinal("PK_id_persona")),
                     Genero = reader.IsDBNull(reader.GetOrdinal("genero")) ? null : reader.GetString(reader.GetOrdinal("genero")),
                     FechaDeNacimiento = reader.IsDBNull(reader.GetOrdinal("fecha_de_nacimiento")) ? null : reader.GetDateTime(reader.GetOrdinal("fecha_de_nacimiento")),
-                    Dni = reader.IsDBNull(reader.GetOrdinal("dni")) ? string.Empty : reader.GetString(reader.GetOrdinal("dni")),
-                    Nombre = reader.IsDBNull(reader.GetOrdinal("nombre")) ? string.Empty : reader.GetString(reader.GetOrdinal("nombre")),
-                    Apellido = reader.IsDBNull(reader.GetOrdinal("apellido")) ? string.Empty : reader.GetString(reader.GetOrdinal("apellido"))
+                    Dni = reader.GetString(reader.GetOrdinal("dni")),
+                    Nombre = reader.GetString(reader.GetOrdinal("nombre")),
+                    Apellido = reader.GetString(reader.GetOrdinal("apellido"))
                 });
             }
 
@@ -69,7 +70,7 @@ namespace CACC.DAO
                     u.email AS Email,
                     r.PK_id_rol AS IdRol,
                     r.nombre_rol AS Rol,
-                    (SELECT TOP 1 sc.FK_id_categoria FROM STAFF_CATEGORIAS sc WHERE sc.FK_id_staff = s.PK_id_staff) AS IdCategoriaAsignada,
+                    (SELECT STRING_AGG(CAST(sc.FK_id_categoria AS VARCHAR), ',') FROM STAFF_CATEGORIAS sc WHERE sc.FK_id_staff = s.PK_id_staff) AS CategoriasIdsString,
                     ISNULL((
                         SELECT STRING_AGG(c.nombre_categoria, ', ')
                         FROM STAFF_CATEGORIAS sc
@@ -91,6 +92,11 @@ namespace CACC.DAO
 
             while (await reader.ReadAsync())
             {
+                var catIdsString = reader.IsDBNull(reader.GetOrdinal("CategoriasIdsString")) ? "" : reader.GetString(reader.GetOrdinal("CategoriasIdsString"));
+                var catIds = string.IsNullOrWhiteSpace(catIdsString)
+                    ? new List<int>()
+                    : catIdsString.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
+
                 lista.Add(new StaffDetalle
                 {
                     IdStaff = reader.GetInt32(reader.GetOrdinal("IdStaff")),
@@ -105,7 +111,7 @@ namespace CACC.DAO
                     Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
                     IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
                     Rol = reader.IsDBNull(reader.GetOrdinal("Rol")) ? string.Empty : reader.GetString(reader.GetOrdinal("Rol")),
-                    IdCategoriaAsignada = reader.IsDBNull(reader.GetOrdinal("IdCategoriaAsignada")) ? null : reader.GetInt32(reader.GetOrdinal("IdCategoriaAsignada")),
+                    CategoriasIds = catIds,
                     CategoriaAsignada = reader.IsDBNull(reader.GetOrdinal("CategoriaAsignada")) ? "Todas / General" : reader.GetString(reader.GetOrdinal("CategoriaAsignada")),
                     Activo = reader.IsDBNull(reader.GetOrdinal("Activo")) || reader.GetBoolean(reader.GetOrdinal("Activo"))
                 });
@@ -133,7 +139,7 @@ namespace CACC.DAO
                     u.email AS Email,
                     r.PK_id_rol AS IdRol,
                     r.nombre_rol AS Rol,
-                    (SELECT TOP 1 sc.FK_id_categoria FROM STAFF_CATEGORIAS sc WHERE sc.FK_id_staff = s.PK_id_staff) AS IdCategoriaAsignada,
+                    (SELECT STRING_AGG(CAST(sc.FK_id_categoria AS VARCHAR), ',') FROM STAFF_CATEGORIAS sc WHERE sc.FK_id_staff = s.PK_id_staff) AS CategoriasIdsString,
                     ISNULL((
                         SELECT STRING_AGG(c.nombre_categoria, ', ')
                         FROM STAFF_CATEGORIAS sc
@@ -154,6 +160,11 @@ namespace CACC.DAO
 
             if (await reader.ReadAsync())
             {
+                var catIdsString = reader.IsDBNull(reader.GetOrdinal("CategoriasIdsString")) ? "" : reader.GetString(reader.GetOrdinal("CategoriasIdsString"));
+                var catIds = string.IsNullOrWhiteSpace(catIdsString)
+                    ? new List<int>()
+                    : catIdsString.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
+
                 return new StaffDetalle
                 {
                     IdStaff = reader.GetInt32(reader.GetOrdinal("IdStaff")),
@@ -168,7 +179,7 @@ namespace CACC.DAO
                     Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
                     IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
                     Rol = reader.IsDBNull(reader.GetOrdinal("Rol")) ? string.Empty : reader.GetString(reader.GetOrdinal("Rol")),
-                    IdCategoriaAsignada = reader.IsDBNull(reader.GetOrdinal("IdCategoriaAsignada")) ? null : reader.GetInt32(reader.GetOrdinal("IdCategoriaAsignada")),
+                    CategoriasIds = catIds,
                     CategoriaAsignada = reader.IsDBNull(reader.GetOrdinal("CategoriaAsignada")) ? "Todas / General" : reader.GetString(reader.GetOrdinal("CategoriaAsignada")),
                     Activo = reader.IsDBNull(reader.GetOrdinal("Activo")) || reader.GetBoolean(reader.GetOrdinal("Activo"))
                 };
@@ -185,7 +196,7 @@ namespace CACC.DAO
 
             try
             {
-                // 1. Verificar si la persona ya existe por DNI o insertarla
+                // 1. Verificar persona por DNI o insertarla
                 const string queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @Dni;";
                 using var cmdCheckPersona = new SqlCommand(queryCheckPersona, connection, transaction);
                 cmdCheckPersona.Parameters.AddWithValue("@Dni", staff.Dni.Trim());
@@ -199,9 +210,9 @@ namespace CACC.DAO
                 else
                 {
                     const string queryPersona = @"
-                INSERT INTO PERSONAS (nombre, apellido, dni, fecha_de_nacimiento, genero, domicilio)
-                VALUES (@Nombre, @Apellido, @Dni, @FechaNacimiento, @Genero, @Domicilio);
-                SELECT CAST(SCOPE_IDENTITY() AS INT);";
+                        INSERT INTO PERSONAS (nombre, apellido, dni, fecha_de_nacimiento, genero, domicilio)
+                        VALUES (@Nombre, @Apellido, @Dni, @FechaNacimiento, @Genero, @Domicilio);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
                     using var cmdPersona = new SqlCommand(queryPersona, connection, transaction);
                     cmdPersona.Parameters.AddWithValue("@Nombre", staff.Nombre.Trim());
@@ -217,19 +228,19 @@ namespace CACC.DAO
 
                 // 2. Insertar en USUARIOS contemplando IDENTITY
                 const string queryUsuario = @"
-            IF COLUMNPROPERTY(OBJECT_ID('USUARIOS'), 'PK_id_usuario', 'IsIdentity') = 1
-            BEGIN
-                INSERT INTO USUARIOS (FK_id_persona, FK_id_rol, email, contrasenia, activo)
-                VALUES (@IdPersona, @IdRol, @Email, @Contrasenia, 1);
-                SELECT CAST(SCOPE_IDENTITY() AS INT);
-            END
-            ELSE
-            BEGIN
-                DECLARE @NewIdUsuario INT = (SELECT ISNULL(MAX(PK_id_usuario), 0) + 1 FROM USUARIOS);
-                INSERT INTO USUARIOS (PK_id_usuario, FK_id_persona, FK_id_rol, email, contrasenia, activo)
-                VALUES (@NewIdUsuario, @IdPersona, @IdRol, @Email, @Contrasenia, 1);
-                SELECT @NewIdUsuario;
-            END";
+                    IF COLUMNPROPERTY(OBJECT_ID('USUARIOS'), 'PK_id_usuario', 'IsIdentity') = 1
+                    BEGIN
+                        INSERT INTO USUARIOS (FK_id_persona, FK_id_rol, email, contrasenia, activo)
+                        VALUES (@IdPersona, @IdRol, @Email, @Contrasenia, 1);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);
+                    END
+                    ELSE
+                    BEGIN
+                        DECLARE @NewIdUsuario INT = (SELECT ISNULL(MAX(PK_id_usuario), 0) + 1 FROM USUARIOS);
+                        INSERT INTO USUARIOS (PK_id_usuario, FK_id_persona, FK_id_rol, email, contrasenia, activo)
+                        VALUES (@NewIdUsuario, @IdPersona, @IdRol, @Email, @Contrasenia, 1);
+                        SELECT @NewIdUsuario;
+                    END";
 
                 using var cmdUsuario = new SqlCommand(queryUsuario, connection, transaction);
                 cmdUsuario.Parameters.AddWithValue("@IdPersona", idPersona);
@@ -242,19 +253,19 @@ namespace CACC.DAO
 
                 // 3. Insertar en STAFF contemplando IDENTITY o MAX + 1
                 const string queryStaff = @"
-            IF COLUMNPROPERTY(OBJECT_ID('STAFF'), 'PK_id_staff', 'IsIdentity') = 1
-            BEGIN
-                INSERT INTO STAFF (FK_id_usuario)
-                VALUES (@IdUsuario);
-                SELECT CAST(SCOPE_IDENTITY() AS INT);
-            END
-            ELSE
-            BEGIN
-                DECLARE @NewIdStaff INT = (SELECT ISNULL(MAX(PK_id_staff), 0) + 1 FROM STAFF);
-                INSERT INTO STAFF (PK_id_staff, FK_id_usuario)
-                VALUES (@NewIdStaff, @IdUsuario);
-                SELECT @NewIdStaff;
-            END";
+                    IF COLUMNPROPERTY(OBJECT_ID('STAFF'), 'PK_id_staff', 'IsIdentity') = 1
+                    BEGIN
+                        INSERT INTO STAFF (FK_id_usuario)
+                        VALUES (@IdUsuario);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);
+                    END
+                    ELSE
+                    BEGIN
+                        DECLARE @NewIdStaff INT = (SELECT ISNULL(MAX(PK_id_staff), 0) + 1 FROM STAFF);
+                        INSERT INTO STAFF (PK_id_staff, FK_id_usuario)
+                        VALUES (@NewIdStaff, @IdUsuario);
+                        SELECT @NewIdStaff;
+                    END";
 
                 using var cmdStaff = new SqlCommand(queryStaff, connection, transaction);
                 cmdStaff.Parameters.AddWithValue("@IdUsuario", idUsuario);
@@ -262,26 +273,56 @@ namespace CACC.DAO
                 var scalarStaff = await cmdStaff.ExecuteScalarAsync();
                 int idStaff = Convert.ToInt32(scalarStaff);
 
-                // 4. Asignar categoría en STAFF_CATEGORIAS si fue seleccionada (DT o Preparador Físico)
-                if (staff.IdCategoria.HasValue && staff.IdCategoria.Value > 0)
-                {
-                    const string queryStaffCat = @"
-                IF COLUMNPROPERTY(OBJECT_ID('STAFF_CATEGORIAS'), 'PK_id_staff_categoria', 'IsIdentity') = 1
-                BEGIN
-                    INSERT INTO STAFF_CATEGORIAS (FK_id_staff, FK_id_categoria)
-                    VALUES (@IdStaff, @IdCategoria);
-                END
-                ELSE
-                BEGIN
-                    DECLARE @NewIdStaffCat INT = (SELECT ISNULL(MAX(PK_id_staff_categoria), 0) + 1 FROM STAFF_CATEGORIAS);
-                    INSERT INTO STAFF_CATEGORIAS (PK_id_staff_categoria, FK_id_staff, FK_id_categoria)
-                    VALUES (@NewIdStaffCat, @IdStaff, @IdCategoria);
-                END";
+                // 4. Asignar múltiples categorías en STAFF_CATEGORIAS
+                var distinctCatIds = (staff.CategoriasIds ?? new List<int>())
+                    .Distinct()
+                    .Where(id => id > 0)
+                    .ToList();
 
-                    using var cmdStaffCat = new SqlCommand(queryStaffCat, connection, transaction);
-                    cmdStaffCat.Parameters.AddWithValue("@IdStaff", idStaff);
-                    cmdStaffCat.Parameters.AddWithValue("@IdCategoria", staff.IdCategoria.Value);
-                    await cmdStaffCat.ExecuteNonQueryAsync();
+                if (staff.IdCategoria.HasValue && staff.IdCategoria.Value > 0 && !distinctCatIds.Contains(staff.IdCategoria.Value))
+                {
+                    distinctCatIds.Add(staff.IdCategoria.Value);
+                }
+
+                if (distinctCatIds.Count > 0)
+                {
+                    const string checkIdentityQuery = "SELECT COLUMNPROPERTY(OBJECT_ID('STAFF_CATEGORIAS'), 'PK_id_staff_categoria', 'IsIdentity');";
+                    using var cmdCheck = new SqlCommand(checkIdentityQuery, connection, transaction);
+                    bool isIdentity = Convert.ToInt32(await cmdCheck.ExecuteScalarAsync()) == 1;
+
+                    int nextId = 0;
+                    if (!isIdentity)
+                    {
+                        const string queryMaxStaffCat = "SELECT ISNULL(MAX(PK_id_staff_categoria), 0) FROM STAFF_CATEGORIAS;";
+                        using var cmdMax = new SqlCommand(queryMaxStaffCat, connection, transaction);
+                        nextId = Convert.ToInt32(await cmdMax.ExecuteScalarAsync());
+                    }
+
+                    foreach (var catId in distinctCatIds)
+                    {
+                        if (isIdentity)
+                        {
+                            const string queryInsertCat = @"
+                                INSERT INTO STAFF_CATEGORIAS (FK_id_staff, FK_id_categoria)
+                                VALUES (@IdStaff, @IdCategoria);";
+                            using var cmdInsertCat = new SqlCommand(queryInsertCat, connection, transaction);
+                            cmdInsertCat.Parameters.AddWithValue("@IdStaff", idStaff);
+                            cmdInsertCat.Parameters.AddWithValue("@IdCategoria", catId);
+                            await cmdInsertCat.ExecuteNonQueryAsync();
+                        }
+                        else
+                        {
+                            nextId++;
+                            const string queryInsertCat = @"
+                                INSERT INTO STAFF_CATEGORIAS (PK_id_staff_categoria, FK_id_staff, FK_id_categoria)
+                                VALUES (@IdStaffCat, @IdStaff, @IdCategoria);";
+                            using var cmdInsertCat = new SqlCommand(queryInsertCat, connection, transaction);
+                            cmdInsertCat.Parameters.AddWithValue("@IdStaffCat", nextId);
+                            cmdInsertCat.Parameters.AddWithValue("@IdStaff", idStaff);
+                            cmdInsertCat.Parameters.AddWithValue("@IdCategoria", catId);
+                            await cmdInsertCat.ExecuteNonQueryAsync();
+                        }
+                    }
                 }
 
                 await transaction.CommitAsync();
@@ -318,15 +359,15 @@ namespace CACC.DAO
                     );";
 
                 using var cmdPersona = new SqlCommand(queryPersona, connection, transaction);
-                cmdPersona.Parameters.AddWithValue("@Nombre", staff.Nombre);
-                cmdPersona.Parameters.AddWithValue("@Apellido", staff.Apellido);
-                cmdPersona.Parameters.AddWithValue("@Dni", staff.Dni);
-                cmdPersona.Parameters.AddWithValue("@FechaNacimiento", staff.FechaNacimiento ?? (object)DBNull.Value);
-                cmdPersona.Parameters.AddWithValue("@Domicilio", staff.Domicilio ?? (object)DBNull.Value);
+                cmdPersona.Parameters.AddWithValue("@Nombre", staff.Nombre.Trim());
+                cmdPersona.Parameters.AddWithValue("@Apellido", staff.Apellido.Trim());
+                cmdPersona.Parameters.AddWithValue("@Dni", staff.Dni.Trim());
+                cmdPersona.Parameters.AddWithValue("@FechaNacimiento", staff.FechaNacimiento.HasValue ? (object)staff.FechaNacimiento.Value : DBNull.Value);
+                cmdPersona.Parameters.AddWithValue("@Domicilio", string.IsNullOrWhiteSpace(staff.Domicilio) ? (object)DBNull.Value : staff.Domicilio.Trim());
                 cmdPersona.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
                 await cmdPersona.ExecuteNonQueryAsync();
 
-                // 2. Actualizar USUARIOS (con re-hasheo de contraseña si fue enviada)
+                // 2. Actualizar USUARIOS
                 string queryUsuario = @"
                     UPDATE USUARIOS 
                     SET email = @Email, 
@@ -338,7 +379,7 @@ namespace CACC.DAO
                     );";
 
                 using var cmdUsuario = new SqlCommand(queryUsuario, connection, transaction);
-                cmdUsuario.Parameters.AddWithValue("@Email", staff.Email);
+                cmdUsuario.Parameters.AddWithValue("@Email", staff.Email.Trim());
                 cmdUsuario.Parameters.AddWithValue("@IdRol", staff.IdRol);
                 cmdUsuario.Parameters.AddWithValue("@Activo", staff.Activo);
                 cmdUsuario.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
@@ -348,47 +389,58 @@ namespace CACC.DAO
                 }
                 await cmdUsuario.ExecuteNonQueryAsync();
 
-                // 3. Sincronizar STAFF_CATEGORIAS
-                if (staff.IdCategoria.HasValue && staff.IdCategoria.Value > 0)
+                // 3. Sincronizar múltiples categorías en STAFF_CATEGORIAS
+                // Primero eliminamos las categorías actuales
+                const string queryDeleteCat = "DELETE FROM STAFF_CATEGORIAS WHERE FK_id_staff = @IdStaff;";
+                using var cmdDeleteCat = new SqlCommand(queryDeleteCat, connection, transaction);
+                cmdDeleteCat.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
+                await cmdDeleteCat.ExecuteNonQueryAsync();
+
+                var distinctCatIds = (staff.CategoriasIds ?? new List<int>())
+                    .Distinct()
+                    .Where(id => id > 0)
+                    .ToList();
+
+                if (staff.IdCategoria.HasValue && staff.IdCategoria.Value > 0 && !distinctCatIds.Contains(staff.IdCategoria.Value))
                 {
-                    const string queryCatCheck = "SELECT 1 FROM STAFF_CATEGORIAS WHERE FK_id_staff = @IdStaff;";
-                    using var cmdCatCheck = new SqlCommand(queryCatCheck, connection, transaction);
-                    cmdCatCheck.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
-                    var existeCat = await cmdCatCheck.ExecuteScalarAsync();
-
-                    if (existeCat != null)
-                    {
-                        const string queryUpdateCat = @"
-                            UPDATE STAFF_CATEGORIAS 
-                            SET FK_id_categoria = @IdCategoria 
-                            WHERE FK_id_staff = @IdStaff;";
-                        using var cmdUpdateCat = new SqlCommand(queryUpdateCat, connection, transaction);
-                        cmdUpdateCat.Parameters.AddWithValue("@IdCategoria", staff.IdCategoria.Value);
-                        cmdUpdateCat.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
-                        await cmdUpdateCat.ExecuteNonQueryAsync();
-                    }
-                    else
-                    {
-                        const string queryMaxStaffCat = "SELECT ISNULL(MAX(PK_id_staff_categoria), 0) + 1 FROM STAFF_CATEGORIAS;";
-                        using var cmdMaxStaffCat = new SqlCommand(queryMaxStaffCat, connection, transaction);
-                        int idStaffCat = Convert.ToInt32(await cmdMaxStaffCat.ExecuteScalarAsync());
-
-                        const string queryInsertCat = @"
-                            INSERT INTO STAFF_CATEGORIAS (PK_id_staff_categoria, FK_id_staff, FK_id_categoria)
-                            VALUES (@IdStaffCat, @IdStaff, @IdCategoria);";
-                        using var cmdInsertCat = new SqlCommand(queryInsertCat, connection, transaction);
-                        cmdInsertCat.Parameters.AddWithValue("@IdStaffCat", idStaffCat);
-                        cmdInsertCat.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
-                        cmdInsertCat.Parameters.AddWithValue("@IdCategoria", staff.IdCategoria.Value);
-                        await cmdInsertCat.ExecuteNonQueryAsync();
-                    }
+                    distinctCatIds.Add(staff.IdCategoria.Value);
                 }
-                else
+
+                if (distinctCatIds.Count > 0)
                 {
-                    const string queryDeleteCat = "DELETE FROM STAFF_CATEGORIAS WHERE FK_id_staff = @IdStaff;";
-                    using var cmdDeleteCat = new SqlCommand(queryDeleteCat, connection, transaction);
-                    cmdDeleteCat.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
-                    await cmdDeleteCat.ExecuteNonQueryAsync();
+                    const string checkIdentityQuery = "SELECT COLUMNPROPERTY(OBJECT_ID('STAFF_CATEGORIAS'), 'PK_id_staff_categoria', 'IsIdentity');";
+                    using var cmdCheck = new SqlCommand(checkIdentityQuery, connection, transaction);
+                    bool isIdentity = Convert.ToInt32(await cmdCheck.ExecuteScalarAsync()) == 1;
+
+                    int nextId = 0;
+                    if (!isIdentity)
+                    {
+                        const string queryMaxStaffCat = "SELECT ISNULL(MAX(PK_id_staff_categoria), 0) FROM STAFF_CATEGORIAS;";
+                        using var cmdMax = new SqlCommand(queryMaxStaffCat, connection, transaction);
+                        nextId = Convert.ToInt32(await cmdMax.ExecuteScalarAsync());
+                    }
+
+                    foreach (var catId in distinctCatIds)
+                    {
+                        if (isIdentity)
+                        {
+                            const string queryInsert = "INSERT INTO STAFF_CATEGORIAS (FK_id_staff, FK_id_categoria) VALUES (@IdStaff, @IdCategoria);";
+                            using var cmd = new SqlCommand(queryInsert, connection, transaction);
+                            cmd.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
+                            cmd.Parameters.AddWithValue("@IdCategoria", catId);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+                        else
+                        {
+                            nextId++;
+                            const string queryInsert = "INSERT INTO STAFF_CATEGORIAS (PK_id_staff_categoria, FK_id_staff, FK_id_categoria) VALUES (@Id, @IdStaff, @IdCategoria);";
+                            using var cmd = new SqlCommand(queryInsert, connection, transaction);
+                            cmd.Parameters.AddWithValue("@Id", nextId);
+                            cmd.Parameters.AddWithValue("@IdStaff", staff.IdStaff);
+                            cmd.Parameters.AddWithValue("@IdCategoria", catId);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+                    }
                 }
 
                 await transaction.CommitAsync();
