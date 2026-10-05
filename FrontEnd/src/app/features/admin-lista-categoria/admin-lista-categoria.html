@@ -1,5 +1,5 @@
 <div class="cacc-layout" [class.sidebar-collapsed]="sidebarOculto">
-  <!-- Left Sidebar (Verde Institucional CACC) -->
+  <!-- Sidebar Lateral Institucional -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo-wrapper">
@@ -9,7 +9,7 @@
       <p class="club-subtitle">Sistema de Gestión Integral</p>
     </div>
 
-    <!-- Navigation Menu -->
+    <!-- Navegación Principal -->
     <nav class="sidebar-nav">
       <a *ngFor="let item of navItems"
          class="nav-item"
@@ -25,7 +25,7 @@
       </a>
     </nav>
 
-    <!-- Footer: Selección de Portales arriba de Cerrar Sesión -->
+    <!-- Footer: Selección de Portales y Cerrar Sesión -->
     <div class="sidebar-footer">
       <a class="footer-action-btn portal-btn" (click)="irASeleccionPortales()" title="Volver a Selección de Portales">
         <span class="footer-icon">
@@ -43,7 +43,7 @@
     </div>
   </aside>
 
-  <!-- Main Content Wrapper -->
+  <!-- Contenedor Principal -->
   <div class="main-wrapper">
     <!-- Header Superior -->
     <header class="top-header">
@@ -51,7 +51,7 @@
         <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="header-title">Panel Selector de Categorías</h1>
+        <h1 class="header-title">Panel de Gestión de Categorías</h1>
       </div>
 
       <div class="header-right">
@@ -68,7 +68,6 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </span>
 
-          <!-- Dropdown Flotante -->
           <div class="user-dropdown-menu" *ngIf="menuUsuarioAbierto" (click)="$event.stopPropagation()">
             <button type="button" class="dropdown-item" (click)="irAConfiguracion()">
               <span class="dropdown-icon">⚙️</span> Configuración de cuenta
@@ -82,11 +81,11 @@
       </div>
     </header>
 
-    <!-- Main View Body (Alto Fijo 100vh) -->
+    <!-- Cuerpo Principal -->
     <main class="content-body">
       <h1 class="page-section-title">Categorías</h1>
 
-      <!-- Filter Controls Bar Card -->
+      <!-- Barra de Filtros, Búsqueda y Botón "+ Nueva Categoría" -->
       <section class="filter-bar-card">
         <div class="search-box">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -113,26 +112,36 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </span>
         </div>
+
+        <button type="button" class="btn-alta" (click)="abrirModalCrear()">
+          <span class="plus-icon">+</span> Nueva Categoría
+        </button>
       </section>
 
-      <!-- Category List Main Container Card -->
+      <!-- Lista Principal de Categorías -->
       <section class="list-card">
         <h2 class="list-card-title">LISTA DE CATEGORÍAS</h2>
 
-        <!-- Wrapper con Scroll Interno -->
         <div class="category-list-wrapper">
           <div class="category-item-row" *ngFor="let c of filteredCategorias">
             <div class="category-avatar-ring">
               <div class="category-avatar-circle">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
               </div>
             </div>
 
             <div class="col-info col-name">{{ c.nombre }}</div>
-            <div class="col-info col-count">{{ c.cantidadJugadores }}</div>
+            <div class="col-info col-count">
+              <span class="badge-count">{{ c.cantidadJugadores }}</span>
+            </div>
 
             <div class="col-info col-actions">
-              <button type="button" class="btn-action-outline" (click)="verCategoria(c.id)">Ver categoría</button>
+              <button type="button" class="btn-action-outline" (click)="verCategoria(c)">
+                Ver plantel
+              </button>
+              <button type="button" class="btn-edit-icon" (click)="abrirModalEditar(c)" title="Editar nombre de categoría">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
             </div>
           </div>
 
@@ -142,5 +151,89 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Modal: Crear / Editar Categoría -->
+  <div class="popup-overlay" *ngIf="modalCategoriaVisible" (click)="cerrarModalCategoria()">
+    <div class="popup-card" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <h3>{{ modoEdicion ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
+        <button type="button" class="btn-close" (click)="cerrarModalCategoria()">✕</button>
+      </div>
+      <div class="popup-body">
+        <label class="form-label">Nombre de la división / categoría <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="categoriaFormNombre" placeholder="Ej: Pt AFA 2011" class="form-input" />
+      </div>
+      <div class="popup-footer">
+        <button type="button" class="btn-cancelar" (click)="cerrarModalCategoria()">Cancelar</button>
+        <button type="button" class="btn-guardar" (click)="guardarCategoria()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Plantel de la Categoría y Asignación de Jugador -->
+  <div class="popup-overlay" *ngIf="modalPlantelVisible && categoriaActiva" (click)="cerrarModalPlantel()">
+    <div class="popup-card popup-plantel" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <div class="header-titles">
+          <h3>Plantel: {{ categoriaActiva.nombre }}</h3>
+          <span class="sub-header-count">{{ jugadoresPlantel.length }} jugador(es) inscripto(s)</span>
+        </div>
+        <button type="button" class="btn-close" (click)="cerrarModalPlantel()">✕</button>
+      </div>
+
+      <!-- Sección de Asignación Rápida de Jugador Existente -->
+      <div class="asignar-section">
+        <h4>+ Agregar jugador ya registrado a esta categoría:</h4>
+        <div class="asignar-row">
+          <div class="select-box select-disponibles">
+            <select [(ngModel)]="jugadorSeleccionadoId">
+              <option [ngValue]="null" disabled selected>Seleccione un jugador...</option>
+              <option *ngFor="let j of jugadoresDisponibles" [ngValue]="j.idJugador">
+                {{ j.nombreCompleto }} (DNI: {{ j.dni }})
+              </option>
+            </select>
+          </div>
+          <button type="button" class="btn-guardar btn-add-jugador" (click)="agregarJugador()">
+            Asignar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de Jugadores de la Categoría -->
+      <div class="plantel-table-container">
+        <table class="plantel-table">
+          <thead>
+            <tr>
+              <th>NOMBRE COMPLETO</th>
+              <th>DNI</th>
+              <th>POSICIÓN</th>
+              <th>F. NACIMIENTO</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let j of jugadoresPlantel">
+              <td class="col-bold">{{ j.nombreCompleto }}</td>
+              <td>{{ j.dni }}</td>
+              <td><span class="badge-posicion">{{ j.posicionCancha }}</span></td>
+              <td>{{ j.fechaNacimiento || '-' }}</td>
+              <td>
+                <button type="button" class="btn-quitar" (click)="quitarJugador(j.idJugador)" title="Desvincular de categoría">
+                  Quitar
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="!cargandoPlantel && jugadoresPlantel.length === 0">
+              <td colspan="5" class="no-records">Esta categoría no tiene jugadores asignados actualmente.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="popup-footer">
+        <button type="button" class="btn-guardar" (click)="cerrarModalPlantel()">Listo</button>
+      </div>
+    </div>
   </div>
 </div>

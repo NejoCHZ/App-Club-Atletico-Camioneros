@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CACC.Entities")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+be3c0e0d1b37b95817d6c882ee7cdef734a4a241")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0b960be637739cfb69da8e4d29889bbbfcee71b8")]
 [assembly: System.Reflection.AssemblyProductAttribute("CACC.Entities")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CACC.Entities")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

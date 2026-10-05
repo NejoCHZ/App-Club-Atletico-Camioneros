@@ -12,6 +12,14 @@ export interface CategoriaItem {
   asociacion: string;
 }
 
+export interface JugadorCategoria {
+  idJugador: number;
+  nombreCompleto: string;
+  dni: string;
+  posicionCancha: string;
+  fechaNacimiento?: string;
+}
+
 @Component({
   selector: 'app-admin-lista-categoria',
   standalone: true,
@@ -20,9 +28,9 @@ export interface CategoriaItem {
   styleUrl: './admin-lista-categoria.css',
 })
 export class AdminListaCategoria implements OnInit {
-  private router = inject(Router);
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   usuarioActual = {
     nombre: 'Cargando...',
@@ -34,7 +42,6 @@ export class AdminListaCategoria implements OnInit {
   ordenFiltro = '';
   activeTab = 'Categorias';
 
-  // Control interactivo del Layout
   menuUsuarioAbierto = false;
   sidebarOculto = false;
 
@@ -47,59 +54,68 @@ export class AdminListaCategoria implements OnInit {
 
   categorias: CategoriaItem[] = [];
 
+  // Modales de Gestión de Categoría
+  modalCategoriaVisible = false;
+  modoEdicion = false;
+  categoriaFormId: number = 0;
+  categoriaFormNombre: string = '';
+
+  // Modal de Plantel / Asignación de Jugador a Categoría
+  modalPlantelVisible = false;
+  categoriaActiva: CategoriaItem | null = null;
+  jugadoresPlantel: JugadorCategoria[] = [];
+  jugadoresDisponibles: JugadorCategoria[] = [];
+  busquedaJugadorDisponible = '';
+  jugadorSeleccionadoId: number | null = null;
+  cargandoPlantel = false;
+
   ngOnInit(): void {
     this.cargarUsuario();
     this.cargarDatos();
   }
 
-  private cargarUsuario() {
+  limpiarNombreRol(rol: string): string {
+    if (!rol) return '';
+    let r = rol.replace(/\s*\([^)]*\)/gi, '').trim();
+    if (r.toLowerCase() === 'tesorero') r = 'Administrador';
+    return r;
+  }
+
+  private cargarUsuario(): void {
     const token = this.authService.getToken();
-    const rol = this.authService.getRol() || 'Tesorero';
+    const rol = this.authService.getRol() || 'Administrador';
 
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress']
+          || payload.email
+          || '';
 
         this.usuarioActual = {
-          nombre: rol,
+          nombre: this.limpiarNombreRol(rol),
           email: email
         };
-      } catch (e) {
-        this.usuarioActual = { nombre: rol, email: '' };
+      } catch {
+        this.usuarioActual = { nombre: this.limpiarNombreRol(rol), email: '' };
       }
     }
   }
 
-  private cargarDatos() {
-    // 1. Obtenemos las categorías reales de la base de datos
+  cargarDatos(): void {
     this.http.get<any[]>('http://localhost:5191/api/categorias').subscribe({
-      next: (cats) => {
-        // 2. Consultamos jugadores para calcular la cantidad real por categoría
-        this.http.get<any[]>('http://localhost:5191/api/jugadores').subscribe({
-          next: (players) => {
-            this.mapearCategorias(cats, players);
-          },
-          error: () => {
-            this.mapearCategorias(cats, []);
-          }
+      next: (data) => {
+        this.categorias = data.map(c => {
+          const esAfa = (c.nombreCategoria || '').toUpperCase().includes('AFA');
+          return {
+            id: c.idCategoria,
+            nombre: c.nombreCategoria,
+            cantidadJugadores: `${c.cantidadJugadores || 0} JUGADORES`,
+            asociacion: esAfa ? 'AFA' : 'Liga Cordobesa'
+          };
         });
       },
-      error: (err) => console.error('Error al cargar categorías desde la API', err)
-    });
-  }
-
-  private mapearCategorias(cats: any[], players: any[]) {
-    this.categorias = cats.map(c => {
-      const count = players.filter(p => p.idCategoria === c.idCategoria).length;
-      const esAfa = (c.nombreCategoria || '').toUpperCase().includes('AFA');
-
-      return {
-        id: c.idCategoria,
-        nombre: c.nombreCategoria,
-        cantidadJugadores: `${count} JUGADORES`,
-        asociacion: esAfa ? 'AFA' : 'Liga Cordobesa'
-      };
+      error: (err) => console.error('Error al cargar categorías:', err)
     });
   }
 
@@ -117,49 +133,154 @@ export class AdminListaCategoria implements OnInit {
       });
   }
 
-  // Interacción de UI estandarizada
-  toggleMenuUsuario(event: MouseEvent) {
+  // --- Crear / Editar Categoría ---
+  abrirModalCrear(): void {
+    this.modoEdicion = false;
+    this.categoriaFormId = 0;
+    this.categoriaFormNombre = '';
+    this.modalCategoriaVisible = true;
+  }
+
+  abrirModalEditar(cat: CategoriaItem): void {
+    this.modoEdicion = true;
+    this.categoriaFormId = cat.id;
+    this.categoriaFormNombre = cat.nombre;
+    this.modalCategoriaVisible = true;
+  }
+
+  cerrarModalCategoria(): void {
+    this.modalCategoriaVisible = false;
+  }
+
+  guardarCategoria(): void {
+    if (!this.categoriaFormNombre.trim()) {
+      alert('Ingrese el nombre de la categoría.');
+      return;
+    }
+
+    if (this.modoEdicion) {
+      this.http.put(`http://localhost:5191/api/categorias/${this.categoriaFormId}`, {
+        nombreCategoria: this.categoriaFormNombre.trim()
+      }).subscribe({
+        next: () => {
+          this.cerrarModalCategoria();
+          this.cargarDatos();
+        },
+        error: (err) => alert('Error al actualizar la categoría: ' + (err.error?.message || 'Error del servidor'))
+      });
+    } else {
+      this.http.post('http://localhost:5191/api/categorias', {
+        nombreCategoria: this.categoriaFormNombre.trim()
+      }).subscribe({
+        next: () => {
+          this.cerrarModalCategoria();
+          this.cargarDatos();
+        },
+        error: (err) => alert('Error al crear la categoría: ' + (err.error?.message || 'Error del servidor'))
+      });
+    }
+  }
+
+  // --- Gestión de Plantel y Asignación de Jugador ---
+  verCategoria(cat: CategoriaItem): void {
+    this.categoriaActiva = cat;
+    this.modalPlantelVisible = true;
+    this.cargarPlantel(cat.id);
+    this.cargarJugadoresDisponibles(cat.id);
+  }
+
+  cargarPlantel(idCategoria: number): void {
+    this.cargandoPlantel = true;
+    this.http.get<JugadorCategoria[]>(`http://localhost:5191/api/categorias/${idCategoria}/jugadores`).subscribe({
+      next: (data) => {
+        this.cargandoPlantel = false;
+        this.jugadoresPlantel = data;
+      },
+      error: () => this.cargandoPlantel = false
+    });
+  }
+
+  cargarJugadoresDisponibles(idCategoria: number): void {
+    const q = this.busquedaJugadorDisponible.trim();
+    this.http.get<JugadorCategoria[]>(`http://localhost:5191/api/categorias/${idCategoria}/jugadores-disponibles?q=${q}`).subscribe({
+      next: (data) => {
+        this.jugadoresDisponibles = data;
+      }
+    });
+  }
+
+  agregarJugador(): void {
+    if (!this.categoriaActiva || !this.jugadorSeleccionadoId) {
+      alert('Seleccione un jugador para agregar a la categoría.');
+      return;
+    }
+
+    this.http.post(`http://localhost:5191/api/categorias/${this.categoriaActiva.id}/jugadores`, {
+      idJugador: this.jugadorSeleccionadoId
+    }).subscribe({
+      next: () => {
+        this.jugadorSeleccionadoId = null;
+        this.cargarPlantel(this.categoriaActiva!.id);
+        this.cargarJugadoresDisponibles(this.categoriaActiva!.id);
+        this.cargarDatos(); // refresca conteo en tabla principal
+      },
+      error: (err) => alert('Error al asignar jugador: ' + (err.error?.message || 'Error del servidor'))
+    });
+  }
+
+  quitarJugador(idJugador: number): void {
+    if (!this.categoriaActiva) return;
+    if (!confirm('¿Desea desvincular al jugador de esta categoría?')) return;
+
+    this.http.delete(`http://localhost:5191/api/categorias/${this.categoriaActiva.id}/jugadores/${idJugador}`).subscribe({
+      next: () => {
+        this.cargarPlantel(this.categoriaActiva!.id);
+        this.cargarJugadoresDisponibles(this.categoriaActiva!.id);
+        this.cargarDatos();
+      },
+      error: (err) => alert('Error al desvincular jugador: ' + (err.error?.message || 'Error del servidor'))
+    });
+  }
+
+  cerrarModalPlantel(): void {
+    this.modalPlantelVisible = false;
+    this.categoriaActiva = null;
+  }
+
+  // --- Layout y Navegación ---
+  toggleMenuUsuario(event: MouseEvent): void {
     event.stopPropagation();
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
   }
 
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.sidebarOculto = !this.sidebarOculto;
   }
 
   @HostListener('document:click')
-  cerrarMenus() {
+  cerrarMenus(): void {
     this.menuUsuarioAbierto = false;
   }
 
-  irASeleccionPortales() {
+  irASeleccionPortales(): void {
     this.router.navigate(['/seleccion-portales']);
   }
 
-  irAConfiguracion() {
+  irAConfiguracion(): void {
     alert('Módulo de configuración de cuenta en desarrollo.');
   }
 
-  cerrarSesion() {
+  cerrarSesion(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  selectNav(label: string) {
+  selectNav(label: string): void {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
-    if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
-    } else if (label === 'Jugadores') {
-      this.router.navigate(['/admin/lista-jugadores']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
-    } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
-    }
-  }
-
-  verCategoria(id: number) {
-    this.router.navigate(['/admin/categoria', id, 'jugadores']);
+    if (label === 'Inicio') this.router.navigate(['/admin']);
+    else if (label === 'Jugadores') this.router.navigate(['/admin/lista-jugadores']);
+    else if (label === 'Categorias' || label === 'Categorías') this.router.navigate(['/admin/categorias']);
+    else if (label === 'Staff') this.router.navigate(['/admin/staff']);
   }
 }
