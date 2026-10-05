@@ -10,5 +10,6 @@ namespace CACC.DAO
         Task<IEnumerable<StaffDetalle>> ObtenerTodosAsync(int? rolId = null);
         Task<StaffDetalle?> ObtenerPorIdAsync(int idStaff);
         Task<int> CrearAsync(StaffAlta staff);
+        Task<bool> ActualizarAsync(StaffEdicion staff);
     }
 }
