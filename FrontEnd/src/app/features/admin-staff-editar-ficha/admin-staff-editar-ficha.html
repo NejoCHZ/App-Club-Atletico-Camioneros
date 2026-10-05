@@ -1,8 +1,7 @@
-<div class="cacc-layout">
-  <!-- Left Sidebar (Verde Institucional CACC) -->
+<div class="cacc-layout" [class.sidebar-collapsed]="sidebarOculto">
+  <!-- Sidebar Lateral Institucional -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <!-- CACC Logo Shield Emblem -->
       <div class="logo-wrapper">
         <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
       </div>
@@ -10,224 +9,209 @@
       <p class="club-subtitle">Sistema de Gestión Integral</p>
     </div>
 
-    <!-- Navigation Menu -->
+    <!-- Navegación Principal -->
     <nav class="sidebar-nav">
-      <a *ngFor="let item of navItems" class="nav-item" [class.active]="item.active" (click)="selectNav(item.label)">
+      <a *ngFor="let item of navItems"
+         class="nav-item"
+         [class.active]="item.active"
+         (click)="selectNav(item.label)">
         <span class="nav-icon" [ngSwitch]="item.icon">
-          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-          <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.2">
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-          </svg>
-          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.2">
-            <circle cx="12" cy="5" r="3"></circle>
-            <circle cx="5" cy="19" r="3"></circle>
-            <circle cx="19" cy="19" r="3"></circle>
-            <line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line>
-            <line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line>
-          </svg>
+          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
         </span>
         <span class="nav-label">{{ item.label }}</span>
       </a>
     </nav>
 
-    <!-- Logout at Bottom -->
+    <!-- Footer: Selección de Portales y Cerrar Sesión -->
     <div class="sidebar-footer">
-      <a class="logout-btn" (click)="cancelar()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
+      <a class="footer-action-btn portal-btn" (click)="irASeleccionPortales()" title="Volver a Selección de Portales">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </span>
+        <span>Selección de Portales</span>
+      </a>
+
+      <a class="footer-action-btn logout-btn" (click)="cerrarSesion()" title="Cerrar Sesión">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </span>
         <span>Cerrar Sesión</span>
       </a>
     </div>
   </aside>
 
-  <!-- Main Content Wrapper -->
+  <!-- Contenedor Principal -->
   <div class="main-wrapper">
     <!-- Header Superior -->
     <header class="top-header">
       <div class="header-left">
-        <h1 class="header-title">Panel Texto Ejemplo</h1>
+        <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <h1 class="header-title">Editar Ficha de Staff</h1>
       </div>
 
       <div class="header-right">
-        <div class="admin-profile">
+        <!-- Perfil con Menú Desplegable Flotante (Nombre: Administrador) -->
+        <div class="admin-profile" (click)="toggleMenuUsuario($event)">
           <div class="profile-avatar">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-            </svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
           </div>
           <div class="profile-info">
-            <span class="profile-name">Nombre Usuario</span>
-            <span class="profile-email">ejemplo@myejemplo.com</span>
+            <span class="profile-name">{{ usuarioActual.nombre }}</span>
+            <span class="profile-email">{{ usuarioActual.email }}</span>
           </div>
-          <span class="chevron-down">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+          <span class="chevron-down" [class.rotated]="menuUsuarioAbierto">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </span>
+
+          <!-- Dropdown Flotante -->
+          <div class="user-dropdown-menu" *ngIf="menuUsuarioAbierto" (click)="$event.stopPropagation()">
+            <button type="button" class="dropdown-item" (click)="irAConfiguracion()">
+              <span class="dropdown-icon">⚙️</span> Configuración de cuenta
+            </button>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item text-danger" (click)="cerrarSesion()">
+              <span class="dropdown-icon">↪</span> Cerrar Sesión
+            </button>
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- Main View Body -->
+    <!-- Área de Formulario con Scroll Interno -->
     <main class="content-body">
-      <!-- Centered Staff Profile Card Form -->
-      <section class="staff-centered-card">
-        <!-- Photo Banner Box -->
-        <div class="photo-banner">
-          <svg width="72" height="72" viewBox="0 0 24 24" fill="#007A3D">
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-          </svg>
+      <!-- Toast de Éxito -->
+      <div *ngIf="mensajeExito" class="toast-success">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>¡Ficha de trabajador actualizada con éxito! Redirigiendo a nómina...</span>
+      </div>
+
+      <!-- Tarjeta Principal de Edición -->
+      <div class="single-main-card">
+        <div class="card-header">
+          <div class="icon-badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </div>
+          <h2 class="card-title">Datos Laborales y Personales del Colaborador</h2>
         </div>
 
-        <!-- Form Top Section: Nombre y Apellido + Rol -->
-        <div class="card-form-header">
-          <div class="form-group-block">
-            <label class="form-field-label">Nombre y Apellido</label>
-            <input type="text" placeholder="Ingrese nombre y apellido" [(ngModel)]="nombreCompleto"
-              class="field-input" />
-          </div>
-
-          <div class="form-group-block">
-            <label class="form-field-label">Rol</label>
-            <div class="select-wrapper">
-              <select [(ngModel)]="rol" class="field-select">
-                <option value="">Seleccione rol</option>
-                <option value="DIRECTOR TÉCNICO">Director Técnico</option>
-                <option value="PREPARADOR FÍSICO">Preparador Físico</option>
-                <option value="MÉDICO">Médico</option>
-              </select>
-              <span class="select-chevron">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <hr class="card-divider" />
-
-        <!-- DATOS PERSONALES Section -->
-        <div class="personal-data-section">
-          <h3 class="section-subtitle">DATOS PERSONALES</h3>
-
-          <div class="personal-data-grid">
-            <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D"
-                  stroke-width="2">
-                  <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path>
-                  <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path>
-                  <path d="M2 21h20"></path>
-                  <path d="M7 8v-2"></path>
-                  <path d="M12 8v-2"></path>
-                  <path d="M17 8v-2"></path>
-                </svg></div>
-              <div class="data-label-group">
-                <span class="data-label">Fecha de nacimiento</span>
-                <input type="text" placeholder="DD/MM/AAAA" [(ngModel)]="fechaNacimiento" class="sm-input" />
+        <div class="card-content-grid">
+          <!-- Columna Izquierda: Datos Filiatorios y Laborales -->
+          <div class="column-left">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Nombre <span class="required-asterisk">*</span></label>
+                <input type="text" [(ngModel)]="nombre" placeholder="Nombre" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Apellido <span class="required-asterisk">*</span></label>
+                <input type="text" [(ngModel)]="apellido" placeholder="Apellido" class="form-input" />
               </div>
             </div>
 
-            <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D"
-                  stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg></div>
-              <div class="data-label-group">
-                <span class="data-label">Edad</span>
-                <input type="text" placeholder="Ingrese edad" [(ngModel)]="edad" class="sm-input" />
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>DNI / Identificación <span class="required-asterisk">*</span></label>
+                <input type="text" [(ngModel)]="dni" placeholder="Ej: 25111222" class="form-input" />
               </div>
-            </div>
 
-            <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D"
-                  stroke-width="2">
-                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
-                </svg></div>
-              <div class="data-label-group">
-                <span class="data-label">Grupo sanguineo</span>
-                <div class="select-wrapper-sm">
-                  <select [(ngModel)]="grupoSanguineo" class="sm-select">
-                    <option value="">Seleccione</option>
-                    <option value="0 +">0 +</option>
-                    <option value="0 -">0 -</option>
+              <div class="form-group">
+                <label>Rol Institucional <span class="required-asterisk">*</span></label>
+                <div class="select-wrapper">
+                  <select [(ngModel)]="rol" (ngModelChange)="onRolChange()" class="form-select">
+                    <option *ngFor="let r of rolesDisponibles" [value]="r.valor">
+                      {{ r.texto }}
+                    </option>
                   </select>
-                  <span class="select-chevron-sm">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
+                  <span class="select-arrow">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                   </span>
                 </div>
               </div>
             </div>
 
-            <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D"
-                  stroke-width="2">
-                  <path
-                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                  </path>
-                </svg></div>
-              <div class="data-label-group">
-                <span class="data-label">Telefono tutor</span>
-                <input type="text" placeholder="Ingrese nro celular" [(ngModel)]="telefonoTutor" class="sm-input" />
+            <!-- División deportiva asignada (Visible para DT y Preparador Físico) -->
+            <div class="form-group" *ngIf="requiereCategoria()">
+              <label>Categoría asignada (Plantel a cargo) <span class="required-asterisk">*</span></label>
+              <div class="select-wrapper">
+                <select [(ngModel)]="categoriaSeleccionadaId" class="form-select highlight-select">
+                  <option [ngValue]="null" disabled selected>Seleccionar división deportiva...</option>
+                  <option *ngFor="let cat of listaCategorias" [ngValue]="cat.idCategoria">
+                    {{ cat.nombreCategoria }}
+                  </option>
+                </select>
+                <span class="select-arrow">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Fecha de nacimiento <span class="required-asterisk">*</span></label>
+                <input type="text"
+                       [ngModel]="fechaNacimiento"
+                       (input)="onFechaNacimientoInput($event)"
+                       placeholder="dd/mm/aaaa"
+                       maxlength="10"
+                       class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Edad Calculada</label>
+                <input type="text" [value]="edadCalculada" class="form-input read-only-input" readonly />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Domicilio</label>
+              <input type="text" [(ngModel)]="domicilio" placeholder="Calle, Nro, Barrio" class="form-input" />
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Cuenta de Usuario, Seguridad y Estado -->
+          <div class="column-right">
+            <div class="form-group">
+              <label>Email / Usuario de acceso <span class="required-asterisk">*</span></label>
+              <input type="email" [(ngModel)]="email" placeholder="usuario@cacc.com.ar" class="form-input" />
+            </div>
+
+            <div class="form-group">
+              <label>Actualizar Contraseña</label>
+              <input type="password" [(ngModel)]="password" placeholder="Dejar en blanco para mantener la actual" class="form-input" />
+              <span class="field-hint">Ingresá una nueva contraseña solo si deseás cambiarla.</span>
+            </div>
+
+            <div class="form-group">
+              <label>Estado del Colaborador</label>
+              <div class="select-wrapper">
+                <select [(ngModel)]="activo" class="form-select">
+                  <option [ngValue]="true">Activo (Habilitado)</option>
+                  <option [ngValue]="false">Inactivo (Suspendido / Baja)</option>
+                </select>
+                <span class="select-arrow">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </span>
               </div>
             </div>
           </div>
-
-          <div class="domicilio-box">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <div class="data-label-group flex-fill">
-              <span class="data-label">Domicilio</span>
-              <input type="text" placeholder="Ingrese domicilio" [(ngModel)]="domicilio" class="sm-input" />
-            </div>
-          </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Bottom Actions Footer Row -->
-      <footer class="bottom-actions-row">
-        <div class="right-actions-group">
-          <button class="btn-cancelar-outline" (click)="cancelar()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            <span>Cancelar</span>
-          </button>
+      <!-- Barra Inferior de Acciones -->
+      <footer class="page-footer-actions">
+        <div class="left-note">
+          <span class="required-asterisk">*</span> Campos obligatorios
+        </div>
 
-          <button class="btn-solid-green" (click)="guardar()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-            <span>Guardar</span>
+        <div class="right-buttons">
+          <button type="button" class="btn-cancel-white" (click)="cancelar()">Cancelar</button>
+          <button type="button" class="btn-save-qr" [disabled]="isSaving" (click)="guardar()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
           </button>
         </div>
       </footer>
