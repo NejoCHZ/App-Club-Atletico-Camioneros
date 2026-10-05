@@ -28,7 +28,8 @@ namespace CACC.API.Controllers
             {
                 IdCategoria = c.IdCategoria,
                 NombreCategoria = c.NombreCategoria,
-                CantidadJugadores = c.CantidadJugadores
+                CantidadJugadores = c.CantidadJugadores,
+                CantidadStaff = c.CantidadStaff
             });
 
             return Ok(response);
@@ -88,6 +89,23 @@ namespace CACC.API.Controllers
             return Ok(new { message = "Categoría actualizada con éxito." });
         }
 
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero")]
+        public async Task<IActionResult> EliminarCategoria(int id)
+        {
+            bool ok = await _categoriaDao.EliminarAsync(id);
+            if (!ok)
+            {
+                return NotFound(new { message = $"Categoría con ID {id} no encontrada para eliminar." });
+            }
+
+            return Ok(new { message = "Categoría y sus asignaciones eliminadas con éxito." });
+        }
+
+        // ==========================================
+        // ENDPOINTS: PLANTEL DE JUGADORES
+        // ==========================================
+
         [HttpGet("{id}/jugadores")]
         public async Task<IActionResult> GetJugadoresPlantel(int id)
         {
@@ -141,6 +159,65 @@ namespace CACC.API.Controllers
         {
             await _categoriaDao.QuitarJugadorAsync(id, idJugador);
             return Ok(new { message = "Jugador desvinculado de la categoría." });
+        }
+
+        // ==========================================
+        // ENDPOINTS: CUERPO TÉCNICO (DT / PF)
+        // ==========================================
+
+        [HttpGet("{id}/staff")]
+        public async Task<IActionResult> GetStaffPlantel(int id)
+        {
+            var staff = await _categoriaDao.ObtenerStaffPorCategoriaAsync(id);
+
+            var response = staff.Select(s => new StaffPlantelDto
+            {
+                IdStaff = s.IdStaff,
+                NombreCompleto = s.NombreCompleto,
+                Dni = s.Dni,
+                Rol = s.Rol,
+                Email = s.Email
+            });
+
+            return Ok(response);
+        }
+
+        [HttpGet("{id}/staff-disponibles")]
+        public async Task<IActionResult> GetStaffDisponibles(int id, [FromQuery] string? q)
+        {
+            var disponibles = await _categoriaDao.ObtenerStaffDisponibleAsync(id, q);
+
+            var response = disponibles.Select(s => new StaffPlantelDto
+            {
+                IdStaff = s.IdStaff,
+                NombreCompleto = s.NombreCompleto,
+                Dni = s.Dni,
+                Rol = s.Rol,
+                Email = s.Email
+            });
+
+            return Ok(response);
+        }
+
+        [HttpPost("{id}/staff")]
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero")]
+        public async Task<IActionResult> AsignarStaff(int id, [FromBody] AsignarStaffCategoriaDto dto)
+        {
+            if (dto == null || dto.IdStaff <= 0)
+            {
+                return BadRequest(new { message = "Debe especificar un miembro del staff válido." });
+            }
+
+            await _categoriaDao.AsignarStaffAsync(id, dto.IdStaff);
+            return Ok(new { message = "Miembro del cuerpo técnico asignado a la categoría exitosamente." });
+        }
+
+        [HttpDelete("{id}/staff/{idStaff}")]
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero")]
+        public async Task<IActionResult> QuitarStaff(int id, int idStaff)
+        {
+            await _categoriaDao.QuitarStaffAsync(id, idStaff);
+            return Ok(new { message = "Miembro del cuerpo técnico desvinculado de la categoría." });
         }
     }
 }

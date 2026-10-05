@@ -131,16 +131,23 @@
             </div>
 
             <div class="col-info col-name">{{ c.nombre }}</div>
+
+            <!-- Cantidad de Jugadores y Cuerpo Técnico -->
             <div class="col-info col-count">
               <span class="badge-count">{{ c.cantidadJugadores }}</span>
+              <span class="badge-count badge-staff-count">{{ c.cantidadStaff }}</span>
             </div>
 
+            <!-- Acciones: Gestionar División, Editar Nombre y Eliminar Categoría -->
             <div class="col-info col-actions">
               <button type="button" class="btn-action-outline" (click)="verCategoria(c)">
-                Ver plantel
+                Gestionar División
               </button>
               <button type="button" class="btn-edit-icon" (click)="abrirModalEditar(c)" title="Editar nombre de categoría">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button type="button" class="btn-edit-icon btn-delete-cat-icon" (click)="abrirModalEliminarCategoria(c)" title="Eliminar categoría">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
               </button>
             </div>
           </div>
@@ -171,64 +178,214 @@
     </div>
   </div>
 
-  <!-- Modal: Plantel de la Categoría y Asignación de Jugador -->
+  <!-- Modal: Confirmación de Eliminación de Categoría -->
+  <div class="popup-overlay" *ngIf="modalEliminarVisible && categoriaAEliminar" (click)="cancelarEliminarCategoria()">
+    <div class="popup-card popup-card-small" (click)="$event.stopPropagation()">
+      <div class="popup-card-header header-danger">
+        <div class="popup-header-icon-danger">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h2 class="popup-card-title text-danger-title">Confirmar Eliminación</h2>
+        <button type="button" class="btn-close-popup" (click)="cancelarEliminarCategoria()">✕</button>
+      </div>
+
+      <div class="popup-body">
+        <p class="delete-msg">
+          ¿Estás seguro de que deseás eliminar permanentemente la categoría <strong>{{ categoriaAEliminar.nombre }}</strong>?
+        </p>
+        <p class="delete-warning-note">
+          ⚠️️ Esta acción desvinculará a los jugadores y al cuerpo técnico asignados a esta división deportiva.
+        </p>
+      </div>
+
+      <div class="popup-footer">
+        <button type="button" class="btn-cancel" (click)="cancelarEliminarCategoria()" [disabled]="eliminando">Cancelar</button>
+        <button type="button" class="btn-confirm-delete" (click)="confirmarEliminarCategoria()" [disabled]="eliminando">
+          {{ eliminando ? 'Eliminando...' : 'Eliminar Categoría' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Completo: Gestión de Plantel de Jugadores y Cuerpo Técnico -->
   <div class="popup-overlay" *ngIf="modalPlantelVisible && categoriaActiva" (click)="cerrarModalPlantel()">
     <div class="popup-card popup-plantel" (click)="$event.stopPropagation()">
       <div class="popup-header">
         <div class="header-titles">
-          <h3>Plantel: {{ categoriaActiva.nombre }}</h3>
-          <span class="sub-header-count">{{ jugadoresPlantel.length }} jugador(es) inscripto(s)</span>
+          <h3>{{ categoriaActiva.nombre }}</h3>
+          <span class="sub-header-count">
+            {{ jugadoresPlantel.length }} jugador(es) | {{ staffPlantel.length }} cuerpo técnico
+          </span>
         </div>
         <button type="button" class="btn-close" (click)="cerrarModalPlantel()">✕</button>
       </div>
 
-      <!-- Sección de Asignación Rápida de Jugador Existente -->
-      <div class="asignar-section">
-        <h4>+ Agregar jugador ya registrado a esta categoría:</h4>
-        <div class="asignar-row">
-          <div class="select-box select-disponibles">
-            <select [(ngModel)]="jugadorSeleccionadoId">
-              <option [ngValue]="null" disabled selected>Seleccione un jugador...</option>
-              <option *ngFor="let j of jugadoresDisponibles" [ngValue]="j.idJugador">
-                {{ j.nombreCompleto }} (DNI: {{ j.dni }})
-              </option>
-            </select>
+      <!-- Pestañas internas del Modal -->
+      <div class="modal-tabs-header">
+        <button type="button"
+                class="tab-btn"
+                [class.active]="tabActivaModal === 'jugadores'"
+                (click)="tabActivaModal = 'jugadores'">
+          Jugadores ({{ jugadoresPlantel.length }})
+        </button>
+        <button type="button"
+                class="tab-btn"
+                [class.active]="tabActivaModal === 'staff'"
+                (click)="tabActivaModal = 'staff'">
+          Cuerpo Técnico ({{ staffPlantel.length }})
+        </button>
+      </div>
+
+      <!-- PESTAÑA 1: JUGADORES CON BUSCADOR EN VIVO -->
+      <div *ngIf="tabActivaModal === 'jugadores'" class="tab-content-pane">
+        <div class="asignar-section">
+          <h4>+ Asignar jugador registrado a esta categoría:</h4>
+          <div class="asignar-row">
+            <div class="search-mini-wrapper">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" class="search-mini-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text"
+                     [(ngModel)]="busquedaJugadorTexto"
+                     (input)="onBuscarJugadores()"
+                     (keydown.enter)="agregarJugador()"
+                     placeholder="Buscar por Nombre o DNI..."
+                     class="search-mini-input" />
+              <button *ngIf="busquedaJugadorTexto" type="button" class="btn-clear-search" (click)="limpiarBusquedaJugadores()" title="Borrar filtro">✕</button>
+            </div>
+
+            <div class="select-box select-disponibles">
+              <select [(ngModel)]="jugadorSeleccionadoId">
+                <option [ngValue]="null" disabled selected>
+                  {{ jugadoresDisponibles.length === 0 ? 'Sin resultados para la búsqueda' : 'Seleccione entre los resultados (' + jugadoresDisponibles.length + ')...' }}
+                </option>
+                <option *ngFor="let j of jugadoresDisponibles" [ngValue]="j.idJugador">
+                  {{ j.nombreCompleto }} (DNI: {{ j.dni }}) - {{ j.posicionCancha }}
+                </option>
+              </select>
+              <span class="select-arrow">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </div>
+
+            <button type="button"
+                    class="btn-guardar btn-add-jugador"
+                    [disabled]="!jugadorSeleccionadoId"
+                    (click)="agregarJugador()">
+              Asignar
+            </button>
           </div>
-          <button type="button" class="btn-guardar btn-add-jugador" (click)="agregarJugador()">
-            Asignar
-          </button>
+        </div>
+
+        <div class="plantel-table-container">
+          <table class="plantel-table">
+            <thead>
+              <tr>
+                <th>NOMBRE COMPLETO</th>
+                <th>DNI</th>
+                <th>POSICIÓN</th>
+                <th>F. NACIMIENTO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let j of jugadoresPlantel">
+                <td class="col-bold">{{ j.nombreCompleto }}</td>
+                <td>{{ j.dni }}</td>
+                <td><span class="badge-posicion">{{ j.posicionCancha }}</span></td>
+                <td>{{ j.fechaNacimiento || '-' }}</td>
+                <td>
+                  <button type="button" class="btn-quitar" (click)="quitarJugador(j.idJugador)" title="Desvincular de categoría">
+                    Quitar
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!cargandoPlantel && jugadoresPlantel.length === 0">
+                <td colspan="5" class="no-records">Esta categoría no tiene jugadores inscriptos actualmente.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Tabla de Jugadores de la Categoría -->
-      <div class="plantel-table-container">
-        <table class="plantel-table">
-          <thead>
-            <tr>
-              <th>NOMBRE COMPLETO</th>
-              <th>DNI</th>
-              <th>POSICIÓN</th>
-              <th>F. NACIMIENTO</th>
-              <th>ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let j of jugadoresPlantel">
-              <td class="col-bold">{{ j.nombreCompleto }}</td>
-              <td>{{ j.dni }}</td>
-              <td><span class="badge-posicion">{{ j.posicionCancha }}</span></td>
-              <td>{{ j.fechaNacimiento || '-' }}</td>
-              <td>
-                <button type="button" class="btn-quitar" (click)="quitarJugador(j.idJugador)" title="Desvincular de categoría">
-                  Quitar
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="!cargandoPlantel && jugadoresPlantel.length === 0">
-              <td colspan="5" class="no-records">Esta categoría no tiene jugadores asignados actualmente.</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- PESTAÑA 2: CUERPO TÉCNICO CON BUSCADOR EN VIVO -->
+      <div *ngIf="tabActivaModal === 'staff'" class="tab-content-pane">
+        <div class="asignar-section">
+          <h4>+ Asignar Director Técnico o Preparador Físico a esta división:</h4>
+          <div class="asignar-row">
+            <div class="search-mini-wrapper">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" class="search-mini-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text"
+                     [(ngModel)]="busquedaStaffTexto"
+                     (input)="onBuscarStaff()"
+                     (keydown.enter)="agregarStaff()"
+                     placeholder="Buscar DT/PF por Nombre o DNI..."
+                     class="search-mini-input" />
+              <button *ngIf="busquedaStaffTexto" type="button" class="btn-clear-search" (click)="limpiarBusquedaStaff()" title="Borrar filtro">✕</button>
+            </div>
+
+            <div class="select-box select-disponibles">
+              <select [(ngModel)]="staffSeleccionadoId">
+                <option [ngValue]="null" disabled selected>
+                  {{ staffDisponibles.length === 0 ? 'Sin resultados para la búsqueda' : 'Seleccione colaborador (' + staffDisponibles.length + ')...' }}
+                </option>
+                <option *ngFor="let s of staffDisponibles" [ngValue]="s.idStaff">
+                  [{{ s.rol }}] {{ s.nombreCompleto }} (DNI: {{ s.dni }})
+                </option>
+              </select>
+              <span class="select-arrow">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </span>
+            </div>
+
+            <button type="button"
+                    class="btn-guardar btn-add-jugador"
+                    [disabled]="!staffSeleccionadoId"
+                    (click)="agregarStaff()">
+              Asignar al Cuerpo Técnico
+            </button>
+          </div>
+        </div>
+
+        <div class="plantel-table-container">
+          <table class="plantel-table">
+            <thead>
+              <tr>
+                <th>NOMBRE COMPLETO</th>
+                <th>ROL ASIGNADO</th>
+                <th>DNI</th>
+                <th>EMAIL DE ACCESO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of staffPlantel">
+                <td class="col-bold">{{ s.nombreCompleto }}</td>
+                <td>
+                  <span class="badge-staff-rol" [ngClass]="s.rol.toUpperCase().includes('TÉCNICO') || s.rol.toUpperCase().includes('TECNICO') ? 'badge-dt' : 'badge-pf'">
+                    {{ s.rol }}
+                  </span>
+                </td>
+                <td>{{ s.dni }}</td>
+                <td>{{ s.email }}</td>
+                <td>
+                  <button type="button" class="btn-quitar" (click)="quitarStaff(s.idStaff)" title="Desvincular del cuerpo técnico de esta categoría">
+                    Quitar
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!cargandoStaff && staffPlantel.length === 0">
+                <td colspan="5" class="no-records">Esta categoría no posee Directores Técnicos ni Preparadores Físicos asignados aún.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="popup-footer">

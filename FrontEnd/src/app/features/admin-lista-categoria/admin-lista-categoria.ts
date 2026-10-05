@@ -9,6 +9,7 @@ export interface CategoriaItem {
   id: number;
   nombre: string;
   cantidadJugadores: string;
+  cantidadStaff: string;
   asociacion: string;
 }
 
@@ -18,6 +19,14 @@ export interface JugadorCategoria {
   dni: string;
   posicionCancha: string;
   fechaNacimiento?: string;
+}
+
+export interface StaffCategoria {
+  idStaff: number;
+  nombreCompleto: string;
+  dni: string;
+  rol: string;
+  email: string;
 }
 
 @Component({
@@ -54,20 +63,37 @@ export class AdminListaCategoria implements OnInit {
 
   categorias: CategoriaItem[] = [];
 
-  // Modales de Gestión de Categoría
+  // Modales de Categoría (Crear/Editar)
   modalCategoriaVisible = false;
   modoEdicion = false;
   categoriaFormId: number = 0;
   categoriaFormNombre: string = '';
 
-  // Modal de Plantel / Asignación de Jugador a Categoría
+  // Modal de Confirmación de Eliminación
+  modalEliminarVisible = false;
+  categoriaAEliminar: CategoriaItem | null = null;
+  eliminando = false;
+
+  // Modal de Detalle (Jugadores + Cuerpo Técnico)
   modalPlantelVisible = false;
   categoriaActiva: CategoriaItem | null = null;
+  tabActivaModal: 'jugadores' | 'staff' = 'jugadores';
+
+  // Submódulo: Jugadores con buscador reactivo
   jugadoresPlantel: JugadorCategoria[] = [];
   jugadoresDisponibles: JugadorCategoria[] = [];
-  busquedaJugadorDisponible = '';
+  busquedaJugadorTexto = '';
   jugadorSeleccionadoId: number | null = null;
   cargandoPlantel = false;
+  private debounceJugadorTimer: any;
+
+  // Submódulo: Cuerpo Técnico (DT y PF) con buscador reactivo
+  staffPlantel: StaffCategoria[] = [];
+  staffDisponibles: StaffCategoria[] = [];
+  busquedaStaffTexto = '';
+  staffSeleccionadoId: number | null = null;
+  cargandoStaff = false;
+  private debounceStaffTimer: any;
 
   ngOnInit(): void {
     this.cargarUsuario();
@@ -111,6 +137,7 @@ export class AdminListaCategoria implements OnInit {
             id: c.idCategoria,
             nombre: c.nombreCategoria,
             cantidadJugadores: `${c.cantidadJugadores || 0} JUGADORES`,
+            cantidadStaff: `${c.cantidadStaff || 0} CUERPO TÉCNICO`,
             asociacion: esAfa ? 'AFA' : 'Liga Cordobesa'
           };
         });
@@ -181,12 +208,52 @@ export class AdminListaCategoria implements OnInit {
     }
   }
 
-  // --- Gestión de Plantel y Asignación de Jugador ---
+  // --- Eliminar Categoría ---
+  abrirModalEliminarCategoria(cat: CategoriaItem): void {
+    this.categoriaAEliminar = cat;
+    this.modalEliminarVisible = true;
+  }
+
+  cancelarEliminarCategoria(): void {
+    this.modalEliminarVisible = false;
+    this.categoriaAEliminar = null;
+  }
+
+  confirmarEliminarCategoria(): void {
+    if (!this.categoriaAEliminar) return;
+
+    this.eliminando = true;
+    const id = this.categoriaAEliminar.id;
+
+    this.http.delete(`http://localhost:5191/api/categorias/${id}`).subscribe({
+      next: () => {
+        this.eliminando = false;
+        this.modalEliminarVisible = false;
+        this.categoriaAEliminar = null;
+        this.cargarDatos();
+      },
+      error: (err) => {
+        this.eliminando = false;
+        alert('Error al eliminar la categoría: ' + (err.error?.message || 'Error del servidor'));
+      }
+    });
+  }
+
+  // --- Modal de Gestión (Jugadores + Cuerpo Técnico) ---
   verCategoria(cat: CategoriaItem): void {
     this.categoriaActiva = cat;
+    this.tabActivaModal = 'jugadores';
     this.modalPlantelVisible = true;
+
+    this.busquedaJugadorTexto = '';
+    this.jugadorSeleccionadoId = null;
+    this.busquedaStaffTexto = '';
+    this.staffSeleccionadoId = null;
+
     this.cargarPlantel(cat.id);
     this.cargarJugadoresDisponibles(cat.id);
+    this.cargarStaff(cat.id);
+    this.cargarStaffDisponibles(cat.id);
   }
 
   cargarPlantel(idCategoria: number): void {
@@ -200,13 +267,33 @@ export class AdminListaCategoria implements OnInit {
     });
   }
 
-  cargarJugadoresDisponibles(idCategoria: number): void {
-    const q = this.busquedaJugadorDisponible.trim();
+  cargarJugadoresDisponibles(idCategoria: number, query: string = ''): void {
+    const q = encodeURIComponent(query.trim());
     this.http.get<JugadorCategoria[]>(`http://localhost:5191/api/categorias/${idCategoria}/jugadores-disponibles?q=${q}`).subscribe({
       next: (data) => {
         this.jugadoresDisponibles = data;
+        if (data.length === 1 && query.trim().length > 0) {
+          this.jugadorSeleccionadoId = data[0].idJugador;
+        } else if (!data.some(j => j.idJugador === this.jugadorSeleccionadoId)) {
+          this.jugadorSeleccionadoId = null;
+        }
       }
     });
+  }
+
+  onBuscarJugadores(): void {
+    if (!this.categoriaActiva) return;
+    clearTimeout(this.debounceJugadorTimer);
+    this.debounceJugadorTimer = setTimeout(() => {
+      this.cargarJugadoresDisponibles(this.categoriaActiva!.id, this.busquedaJugadorTexto);
+    }, 250);
+  }
+
+  limpiarBusquedaJugadores(): void {
+    this.busquedaJugadorTexto = '';
+    if (this.categoriaActiva) {
+      this.cargarJugadoresDisponibles(this.categoriaActiva.id, '');
+    }
   }
 
   agregarJugador(): void {
@@ -221,8 +308,8 @@ export class AdminListaCategoria implements OnInit {
       next: () => {
         this.jugadorSeleccionadoId = null;
         this.cargarPlantel(this.categoriaActiva!.id);
-        this.cargarJugadoresDisponibles(this.categoriaActiva!.id);
-        this.cargarDatos(); // refresca conteo en tabla principal
+        this.cargarJugadoresDisponibles(this.categoriaActiva!.id, this.busquedaJugadorTexto);
+        this.cargarDatos();
       },
       error: (err) => alert('Error al asignar jugador: ' + (err.error?.message || 'Error del servidor'))
     });
@@ -235,19 +322,92 @@ export class AdminListaCategoria implements OnInit {
     this.http.delete(`http://localhost:5191/api/categorias/${this.categoriaActiva.id}/jugadores/${idJugador}`).subscribe({
       next: () => {
         this.cargarPlantel(this.categoriaActiva!.id);
-        this.cargarJugadoresDisponibles(this.categoriaActiva!.id);
+        this.cargarJugadoresDisponibles(this.categoriaActiva!.id, this.busquedaJugadorTexto);
         this.cargarDatos();
       },
       error: (err) => alert('Error al desvincular jugador: ' + (err.error?.message || 'Error del servidor'))
     });
   }
 
+  cargarStaff(idCategoria: number): void {
+    this.cargandoStaff = true;
+    this.http.get<StaffCategoria[]>(`http://localhost:5191/api/categorias/${idCategoria}/staff`).subscribe({
+      next: (data) => {
+        this.cargandoStaff = false;
+        this.staffPlantel = data;
+      },
+      error: () => this.cargandoStaff = false
+    });
+  }
+
+  cargarStaffDisponibles(idCategoria: number, query: string = ''): void {
+    const q = encodeURIComponent(query.trim());
+    this.http.get<StaffCategoria[]>(`http://localhost:5191/api/categorias/${idCategoria}/staff-disponibles?q=${q}`).subscribe({
+      next: (data) => {
+        this.staffDisponibles = data;
+        if (data.length === 1 && query.trim().length > 0) {
+          this.staffSeleccionadoId = data[0].idStaff;
+        } else if (!data.some(s => s.idStaff === this.staffSeleccionadoId)) {
+          this.staffSeleccionadoId = null;
+        }
+      }
+    });
+  }
+
+  onBuscarStaff(): void {
+    if (!this.categoriaActiva) return;
+    clearTimeout(this.debounceStaffTimer);
+    this.debounceStaffTimer = setTimeout(() => {
+      this.cargarStaffDisponibles(this.categoriaActiva!.id, this.busquedaStaffTexto);
+    }, 250);
+  }
+
+  limpiarBusquedaStaff(): void {
+    this.busquedaStaffTexto = '';
+    if (this.categoriaActiva) {
+      this.cargarStaffDisponibles(this.categoriaActiva.id, '');
+    }
+  }
+
+  agregarStaff(): void {
+    if (!this.categoriaActiva || !this.staffSeleccionadoId) {
+      alert('Seleccione un Director Técnico o Preparador Físico para asignar.');
+      return;
+    }
+
+    this.http.post(`http://localhost:5191/api/categorias/${this.categoriaActiva.id}/staff`, {
+      idStaff: this.staffSeleccionadoId
+    }).subscribe({
+      next: () => {
+        this.staffSeleccionadoId = null;
+        this.cargarStaff(this.categoriaActiva!.id);
+        this.cargarStaffDisponibles(this.categoriaActiva!.id, this.busquedaStaffTexto);
+        this.cargarDatos();
+      },
+      error: (err) => alert('Error al asignar miembro del staff: ' + (err.error?.message || 'Error del servidor'))
+    });
+  }
+
+  quitarStaff(idStaff: number): void {
+    if (!this.categoriaActiva) return;
+    if (!confirm('¿Desea desvincular a este colaborador del cuerpo técnico de esta categoría?')) return;
+
+    this.http.delete(`http://localhost:5191/api/categorias/${this.categoriaActiva.id}/staff/${idStaff}`).subscribe({
+      next: () => {
+        this.cargarStaff(this.categoriaActiva!.id);
+        this.cargarStaffDisponibles(this.categoriaActiva!.id, this.busquedaStaffTexto);
+        this.cargarDatos();
+      },
+      error: (err) => alert('Error al desvincular staff: ' + (err.error?.message || 'Error del servidor'))
+    });
+  }
+
   cerrarModalPlantel(): void {
     this.modalPlantelVisible = false;
     this.categoriaActiva = null;
+    this.tabActivaModal = 'jugadores';
   }
 
-  // --- Layout y Navegación ---
   toggleMenuUsuario(event: MouseEvent): void {
     event.stopPropagation();
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
