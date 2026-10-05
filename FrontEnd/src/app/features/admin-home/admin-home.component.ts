@@ -53,7 +53,6 @@ export class AdminHomeComponent implements OnInit {
   menuUsuarioAbierto = false;
   sidebarOculto = false;
 
-  // Modal para visualizar datos del tutor
   tutorModalVisible = false;
   jugadorConTutor: Player | null = null;
 
@@ -79,21 +78,27 @@ export class AdminHomeComponent implements OnInit {
     this.cargarCategoriasBd();
   }
 
+  limpiarNombreRol(rol: string): string {
+    if (!rol) return '';
+    let r = rol.replace(/\s*\([^)]*\)/gi, '').trim();
+    if (r.toLowerCase() === 'tesorero') r = 'Administrador';
+    return r;
+  }
+
   private cargarUsuario(): void {
     const token = this.authService.getToken();
-    const rol = this.authService.getRol() || 'Tesorero';
+    const rol = this.authService.getRol() || 'Administrador';
 
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
-
         this.usuarioActual = {
-          nombre: rol,
+          nombre: this.limpiarNombreRol(rol),
           email: email
         };
       } catch {
-        this.usuarioActual = { nombre: rol, email: '' };
+        this.usuarioActual = { nombre: this.limpiarNombreRol(rol), email: '' };
       }
     }
   }
@@ -120,7 +125,6 @@ export class AdminHomeComponent implements OnInit {
         });
 
         const alDia = this.players.filter(p => p.estadoCuota === 'AL DÍA').length;
-
         this.kpiCards[0].value = `+${this.players.length}`;
         this.kpiCards[2].value = `${alDia}/${this.players.length}`;
       },
@@ -145,19 +149,17 @@ export class AdminHomeComponent implements OnInit {
     });
   }
 
-  // Prioridad: 1° Inhabilitado / Adeuda (Rojo), 2° Pendiente (Amarillo), 3° Al Día (Verde)
   private getPrioridadEstadoCuota(estado: string): number {
     const e = (estado || '').trim().toUpperCase();
-    if (e.includes('INHABILITADO') || e.includes('ADEUDA')) {
-      return 1;
-    }
-    if (e.includes('PENDIENTE')) {
-      return 2;
-    }
-    if (e.includes('AL DÍA') || e.includes('AL DIA')) {
-      return 3;
-    }
+    if (e.includes('INHABILITADO') || e.includes('ADEUDA')) return 1;
+    if (e.includes('PENDIENTE')) return 2;
+    if (e.includes('AL DÍA') || e.includes('AL DIA')) return 3;
     return 4;
+  }
+
+  getCategoriasList(categoriaStr: string): string[] {
+    if (!categoriaStr) return ['Sin categoría'];
+    return categoriaStr.split(',').map(c => c.trim()).filter(c => c.length > 0);
   }
 
   get filteredPlayers(): Player[] {
@@ -167,7 +169,10 @@ export class AdminHomeComponent implements OnInit {
         const matchSearch = !term ||
           p.nombreCompleto.toLowerCase().includes(term) ||
           p.dni.includes(term);
-        const matchCat = !this.categoriaFiltro || p.categoria.toUpperCase() === this.categoriaFiltro.toUpperCase();
+
+        const matchCat = !this.categoriaFiltro ||
+          this.getCategoriasList(p.categoria).some(c => c.toUpperCase() === this.categoriaFiltro.toUpperCase());
+
         return matchSearch && matchCat;
       })
       .sort((a, b) => {
@@ -177,16 +182,13 @@ export class AdminHomeComponent implements OnInit {
         if (this.ordenFiltro === 'cuota') {
           const pesoA = this.getPrioridadEstadoCuota(a.estadoCuota);
           const pesoB = this.getPrioridadEstadoCuota(b.estadoCuota);
-          if (pesoA !== pesoB) {
-            return pesoA - pesoB;
-          }
+          if (pesoA !== pesoB) return pesoA - pesoB;
           return a.nombreCompleto.localeCompare(b.nombreCompleto);
         }
         return 0;
       });
   }
 
-  // Validador de existencia de tutor
   tieneTutor(player: Player): boolean {
     if (!player.tutor) return false;
     const t = player.tutor;
@@ -230,15 +232,10 @@ export class AdminHomeComponent implements OnInit {
   selectNav(label: string): void {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
-    if (label === 'Jugadores') {
-      this.router.navigate(['/admin/lista-jugadores']);
-    } else if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
-    } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
-    }
+    if (label === 'Jugadores') this.router.navigate(['/admin/lista-jugadores']);
+    else if (label === 'Inicio') this.router.navigate(['/admin']);
+    else if (label === 'Categorias' || label === 'Categorías') this.router.navigate(['/admin/categorias']);
+    else if (label === 'Staff') this.router.navigate(['/admin/staff']);
   }
 
   getBadgeClass(estado: Player['estadoCuota']): string {

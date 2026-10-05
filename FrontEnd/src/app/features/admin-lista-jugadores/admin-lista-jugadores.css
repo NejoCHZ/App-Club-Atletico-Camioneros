@@ -326,7 +326,7 @@
 .table-controls {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
@@ -334,7 +334,7 @@
 .search-box {
   position: relative;
   flex: 1;
-  min-width: 240px;
+  min-width: 220px;
   display: flex;
   align-items: center;
 }
@@ -367,7 +367,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  min-width: 180px;
+  min-width: 170px;
 }
 
   .select-box select {
@@ -478,9 +478,9 @@
       background-color: #E6F4EA;
     }
 
-/* Anchos de columnas */
+/* Anchos de columnas (8 Columnas en total) */
 .th-avatar, .col-foto {
-  width: 50px;
+  width: 48px;
   text-align: center;
 }
 
@@ -492,22 +492,26 @@
 }
 
 .th-dni, .col-dni {
-  width: 105px;
+  width: 100px;
   font-weight: 600;
   color: #475569;
 }
 
 .th-categoria, .col-categoria {
-  width: 140px;
+  width: 165px;
+}
+
+.th-posicion, .col-posicion {
+  width: 125px;
 }
 
 .th-nacimiento, .col-nacimiento {
-  width: 115px;
+  width: 110px;
   color: #475569;
 }
 
 .th-estado, .col-estado {
-  width: 115px;
+  width: 110px;
   text-align: center;
 }
 
@@ -527,16 +531,39 @@
   justify-content: center;
 }
 
-/* Píldora de Categoría */
+/* Contenedor flexible de múltiples categorías */
+.category-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
 .category-pill {
   display: inline-block;
   background-color: #F1F5F9;
   color: #334155;
   padding: 3px 8px;
   border-radius: 6px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid #E2E8F0;
+}
+
+/* Badge de Posición en Cancha */
+.badge-posicion {
+  display: inline-block;
+  background-color: #F8FAFC;
+  color: #334155;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1px solid #CBD5E1;
+  white-space: nowrap;
 }
 
 /* Badges de Estado */

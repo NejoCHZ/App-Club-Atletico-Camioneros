@@ -68,7 +68,6 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </span>
 
-          <!-- Dropdown Flotante -->
           <div class="user-dropdown-menu" *ngIf="menuUsuarioAbierto" (click)="$event.stopPropagation()">
             <button type="button" class="dropdown-item" (click)="irAConfiguracion()">
               <span class="dropdown-icon">⚙️</span> Configuración de cuenta
@@ -84,7 +83,7 @@
 
     <!-- Cuerpo de Contenido -->
     <main class="content-body">
-      <!-- Tarjeta Principal de la Tabla -->
+      <!-- Tarjeta Principal de la Tabla con Filtros Integrados -->
       <section class="table-card">
         <div class="table-controls">
           <div class="search-box">
@@ -105,6 +104,19 @@
             </span>
           </div>
 
+          <!-- Nuevo: Filtro de Posición en Cancha -->
+          <div class="select-box">
+            <select [(ngModel)]="posicionFiltro">
+              <option value="">Todas las posiciones</option>
+              <option *ngFor="let pos of posicionesDisponibles" [value]="pos">
+                {{ pos }}
+              </option>
+            </select>
+            <span class="select-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </div>
+
           <!-- Ordenar por -->
           <div class="select-box">
             <select [(ngModel)]="ordenFiltro">
@@ -112,6 +124,7 @@
               <option value="nombre">Nombre</option>
               <option value="dni">DNI</option>
               <option value="categoria">Categoría</option>
+              <option value="posicion">Posición</option>
             </select>
             <span class="select-arrow">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -132,6 +145,7 @@
                 <th class="th-nombre">Nombre Completo</th>
                 <th class="th-dni">DNI</th>
                 <th class="th-categoria">Categoría</th>
+                <th class="th-posicion">Posición</th>
                 <th class="th-nacimiento">F. Nacimiento</th>
                 <th class="th-estado">Estado Cuota</th>
                 <th class="th-acciones">Acciones</th>
@@ -146,9 +160,21 @@
                 </td>
                 <td class="col-nombre">{{ p.nombreCompleto }}</td>
                 <td class="col-dni">{{ p.dni }}</td>
+
+                <!-- Múltiples Categorías -->
                 <td class="col-categoria">
-                  <span class="category-pill">{{ p.categoria }}</span>
+                  <div class="category-pills-container">
+                    <span *ngFor="let cat of getCategoriasList(p.categoria)" class="category-pill">
+                      {{ cat }}
+                    </span>
+                  </div>
                 </td>
+
+                <!-- Posición en Cancha -->
+                <td class="col-posicion">
+                  <span class="badge-posicion">{{ p.posicionCancha }}</span>
+                </td>
+
                 <td class="col-nacimiento">{{ p.fechaNacimiento }}</td>
                 <td class="col-estado">
                   <span class="badge-status" [ngClass]="getBadgeClass(p.estadoCuota)">
@@ -178,7 +204,7 @@
               </tr>
 
               <tr *ngIf="filteredPlayers.length === 0">
-                <td colspan="7" class="no-records">
+                <td colspan="8" class="no-records">
                   No se encontraron jugadores que coincidan con los criterios de búsqueda.
                 </td>
               </tr>

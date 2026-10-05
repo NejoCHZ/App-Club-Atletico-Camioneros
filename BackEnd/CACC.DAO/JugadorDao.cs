@@ -12,7 +12,7 @@ namespace CACC.DAO
     {
         private readonly string _connectionString;
 
-        // Consulta base unificada que incluye datos deportivos, persona base, estado de deuda y tutor vinculado
+        // Consulta base que concatena todas las divisiones deportivas asociadas al jugador
         private const string BaseJugadorQuery = @"
             SELECT 
                 j.PK_id_jugador AS IdJugador,
@@ -23,7 +23,15 @@ namespace CACC.DAO
                 p.fecha_de_nacimiento AS FechaDeNacimiento,
                 p.domicilio AS Domicilio,
                 j.FK_id_categoria AS IdCategoria,
-                c.nombre_categoria AS NombreCategoria,
+                ISNULL((
+                    SELECT STRING_AGG(c_sub.nombre_categoria, ', ')
+                    FROM (
+                        SELECT DISTINCT c2.nombre_categoria
+                        FROM JUGADORES_CATEGORIAS jc
+                        INNER JOIN CATEGORIAS c2 ON jc.FK_id_categoria = c2.PK_id_categoria
+                        WHERE jc.FK_id_jugador = j.PK_id_jugador
+                    ) AS c_sub
+                ), ISNULL(c.nombre_categoria, 'Sin categoría')) AS NombreCategoria,
                 j.club_origen AS ClubOrigen,
                 j.ficha_medica_liga AS FichaMedicaLiga,
                 j.posicion_cancha AS PosicionCancha,
@@ -141,7 +149,12 @@ namespace CACC.DAO
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            var query = $"{BaseJugadorQuery} WHERE j.FK_id_categoria = @IdCategoria ORDER BY j.PK_id_jugador ASC;";
+            var query = $@"{BaseJugadorQuery} 
+                WHERE (j.FK_id_categoria = @IdCategoria OR EXISTS (
+                    SELECT 1 FROM JUGADORES_CATEGORIAS jc 
+                    WHERE jc.FK_id_jugador = j.PK_id_jugador AND jc.FK_id_categoria = @IdCategoria
+                ))
+                ORDER BY j.PK_id_jugador ASC;";
 
             using var command = new SqlCommand(query, connection);
             command.Parameters.AddWithValue("@IdCategoria", idCategoria);
@@ -173,7 +186,7 @@ namespace CACC.DAO
                 FechaDeNacimiento = reader.IsDBNull(reader.GetOrdinal("FechaDeNacimiento")) ? null : reader.GetDateTime(reader.GetOrdinal("FechaDeNacimiento")),
                 Domicilio = reader.IsDBNull(reader.GetOrdinal("Domicilio")) ? null : reader.GetString(reader.GetOrdinal("Domicilio")),
                 IdCategoria = reader.IsDBNull(reader.GetOrdinal("IdCategoria")) ? 0 : reader.GetInt32(reader.GetOrdinal("IdCategoria")),
-                NombreCategoria = reader.IsDBNull(reader.GetOrdinal("NombreCategoria")) ? null : reader.GetString(reader.GetOrdinal("NombreCategoria")),
+                NombreCategoria = reader.IsDBNull(reader.GetOrdinal("NombreCategoria")) ? "Sin categoría" : reader.GetString(reader.GetOrdinal("NombreCategoria")),
                 ClubOrigen = reader.IsDBNull(reader.GetOrdinal("ClubOrigen")) ? null : reader.GetString(reader.GetOrdinal("ClubOrigen")),
                 FichaMedicaLiga = !reader.IsDBNull(reader.GetOrdinal("FichaMedicaLiga")) && reader.GetBoolean(reader.GetOrdinal("FichaMedicaLiga")),
                 PosicionCancha = reader.IsDBNull(reader.GetOrdinal("PosicionCancha")) ? null : reader.GetString(reader.GetOrdinal("PosicionCancha")),
@@ -183,7 +196,6 @@ namespace CACC.DAO
                 EstadoCuota = estadoCuota
             };
 
-            // Mapeo condicional del tutor si existe en la base de datos
             int tutorNombreOrdinal = reader.GetOrdinal("TutorNombre");
             if (!reader.IsDBNull(tutorNombreOrdinal))
             {
@@ -208,14 +220,14 @@ namespace CACC.DAO
 
             try
             {
-                // 1. Actualización de datos personales y contacto en PERSONAS
+                // 1. Datos personales en PERSONAS
                 var queryPersonas = @"
                     UPDATE p 
                     SET nombre = @Nombre, 
                         apellido = @Apellido, 
                         dni = @Dni, 
-                        fecha_de_nacimiento = @FechaNacimiento,
-                        genero = @Genero,
+                        fecha_de_nacimiento = @FechaNacimiento, 
+                        genero = @Genero, 
                         domicilio = @Domicilio
                     FROM PERSONAS p 
                     INNER JOIN JUGADORES j ON p.PK_id_persona = j.FK_id_persona
@@ -231,16 +243,25 @@ namespace CACC.DAO
                 cmdPersonas.Parameters.AddWithValue("@Domicilio", (object?)jugador.Domicilio ?? DBNull.Value);
                 await cmdPersonas.ExecuteNonQueryAsync();
 
-                // 2. Actualización de datos deportivos en JUGADORES
+                // 2. Datos deportivos en JUGADORES y sincronización en JUGADORES_CATEGORIAS
                 var queryJugadores = @"
                     UPDATE JUGADORES 
                     SET FK_id_categoria = CASE WHEN @IdCategoria > 0 THEN @IdCategoria ELSE FK_id_categoria END,
                         posicion_cancha = @Posicion, 
-                        club_origen = @ClubOrigen,
+                        club_origen = @ClubOrigen, 
                         peso = @Peso, 
                         altura = @Altura, 
                         pie_habil = @PieHabil
-                    WHERE PK_id_jugador = @Id;";
+                    WHERE PK_id_jugador = @Id;
+
+                    IF @IdCategoria > 0
+                    BEGIN
+                        IF NOT EXISTS (SELECT 1 FROM JUGADORES_CATEGORIAS WHERE FK_id_jugador = @Id AND FK_id_categoria = @IdCategoria)
+                        BEGIN
+                            INSERT INTO JUGADORES_CATEGORIAS (FK_id_jugador, FK_id_categoria)
+                            VALUES (@Id, @IdCategoria);
+                        END
+                    END;";
 
                 using var cmdJugadores = new SqlCommand(queryJugadores, connection, transaction);
                 cmdJugadores.Parameters.AddWithValue("@Id", id);
@@ -284,7 +305,7 @@ namespace CACC.DAO
                             factor = @Factor, 
                             antecedentes_salud = @Patologias, 
                             condiciones_cronicas = @Lesiones, 
-                            observaciones = @Observaciones,
+                            observaciones = @Observaciones, 
                             fecha_actualizacion = GETDATE()
                         WHERE FK_id_jugador = @Id;
                     END
@@ -303,7 +324,7 @@ namespace CACC.DAO
                 cmdFicha.Parameters.AddWithValue("@Observaciones", (object?)jugador.FichaMedica?.Observaciones ?? DBNull.Value);
                 await cmdFicha.ExecuteNonQueryAsync();
 
-                // 5. Actualización de minutos jugados en partidos
+                // 5. Minutos jugados
                 if (jugador.Partidos != null && jugador.Partidos.Count > 0)
                 {
                     var queryPartidos = @"
@@ -365,12 +386,27 @@ namespace CACC.DAO
 
                 using var cmdJugador = new SqlCommand(queryJugador, connection, transaction);
                 cmdJugador.Parameters.AddWithValue("@IdPersona", idPersona);
-                cmdJugador.Parameters.AddWithValue("@IdCategoria", idCategoria);
+                cmdJugador.Parameters.AddWithValue("@IdCategoria", idCategoria > 0 ? (object)idCategoria : DBNull.Value);
                 cmdJugador.Parameters.AddWithValue("@Posicion", dto.Posicion ?? (object)DBNull.Value);
                 cmdJugador.Parameters.AddWithValue("@ClubOrigen", dto.ClubOrigen ?? (object)DBNull.Value);
                 cmdJugador.Parameters.AddWithValue("@AptoFisico", dto.AptoFisico);
 
                 int idJugador = Convert.ToInt32(await cmdJugador.ExecuteScalarAsync());
+
+                // Alta directa en JUGADORES_CATEGORIAS si posee categoría inicial
+                if (idCategoria > 0)
+                {
+                    var queryJugCat = @"
+                        IF NOT EXISTS (SELECT 1 FROM JUGADORES_CATEGORIAS WHERE FK_id_jugador = @IdJugador AND FK_id_categoria = @IdCategoria)
+                        BEGIN
+                            INSERT INTO JUGADORES_CATEGORIAS (FK_id_jugador, FK_id_categoria)
+                            VALUES (@IdJugador, @IdCategoria);
+                        END";
+                    using var cmdJugCat = new SqlCommand(queryJugCat, connection, transaction);
+                    cmdJugCat.Parameters.AddWithValue("@IdJugador", idJugador);
+                    cmdJugCat.Parameters.AddWithValue("@IdCategoria", idCategoria);
+                    await cmdJugCat.ExecuteNonQueryAsync();
+                }
 
                 var queryFicha = @"
                     INSERT INTO FICHAS_MEDICAS (FK_id_jugador)
@@ -467,7 +503,6 @@ namespace CACC.DAO
 
             try
             {
-                // 1. Obtener el FK_id_persona antes de remover el jugador
                 var queryPersona = "SELECT FK_id_persona FROM JUGADORES WHERE PK_id_jugador = @idJugador";
                 int? idPersona = null;
                 using (var cmdPersona = new SqlCommand(queryPersona, connection, transaction))
@@ -486,7 +521,6 @@ namespace CACC.DAO
                     return false;
                 }
 
-                // 2. Limpieza de tablas dependientes por Foreign Key
                 var queriesEliminacion = new[]
                 {
                     "DELETE FROM JUGADORES_PARTIDOS WHERE FK_id_jugador = @idJugador",
@@ -495,6 +529,7 @@ namespace CACC.DAO
                     "DELETE FROM JUGADORES_DESCUENTOS WHERE FK_id_jugador = @idJugador",
                     "DELETE FROM FICHAS_MEDICAS WHERE FK_id_jugador = @idJugador",
                     "DELETE FROM JUGADORES_RESPONSABLES WHERE FK_id_jugador = @idJugador",
+                    "DELETE FROM JUGADORES_CATEGORIAS WHERE FK_id_jugador = @idJugador",
                     "DELETE FROM JUGADORES WHERE PK_id_jugador = @idJugador"
                 };
 
@@ -505,7 +540,6 @@ namespace CACC.DAO
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-                // 3. Eliminar la persona base solo si no está asociada como usuario staff ni como responsable de otro jugador
                 var queryVerificarStaff = "SELECT COUNT(*) FROM USUARIOS WHERE FK_id_persona = @idPersona";
                 int usuariosVinculados = 0;
                 using (var cmdVerif = new SqlCommand(queryVerificarStaff, connection, transaction))
@@ -551,7 +585,6 @@ namespace CACC.DAO
 
             try
             {
-                // 1. Validar que el jugador exista
                 var checkJugadorSql = "SELECT COUNT(1) FROM JUGADORES WHERE PK_id_jugador = @idJugador";
                 using (var cmdCheckJug = new SqlCommand(checkJugadorSql, connection, transaction))
                 {
@@ -564,7 +597,6 @@ namespace CACC.DAO
                     }
                 }
 
-                // 2. Verificar si el jugador ya tiene responsable asignado
                 var sqlCheck = @"
                     SELECT jr.FK_id_responsable, r.FK_id_persona
                     FROM JUGADORES_RESPONSABLES jr
@@ -589,7 +621,6 @@ namespace CACC.DAO
 
                 if (existe)
                 {
-                    // Actualizar datos existentes
                     var updatePersona = "UPDATE PERSONAS SET nombre = @nombre, apellido = @apellido WHERE PK_id_persona = @idPersona";
                     using (var cmdUpP = new SqlCommand(updatePersona, connection, transaction))
                     {
@@ -619,7 +650,6 @@ namespace CACC.DAO
                 }
                 else
                 {
-                    // Insertar nueva persona para el tutor
                     var insertPersona = @"
                         INSERT INTO PERSONAS (nombre, apellido) 
                         OUTPUT INSERTED.PK_id_persona
@@ -632,7 +662,6 @@ namespace CACC.DAO
                         idPersonaTutor = Convert.ToInt32(await cmdInP.ExecuteScalarAsync());
                     }
 
-                    // Calcular nuevo PK_id_responsable (la tabla no es identity)
                     var sqlNextRespId = "SELECT ISNULL(MAX(PK_id_responsable), 0) + 1 FROM RESPONSABLES";
                     using (var cmdIdR = new SqlCommand(sqlNextRespId, connection, transaction))
                     {
@@ -651,7 +680,6 @@ namespace CACC.DAO
                         await cmdInR.ExecuteNonQueryAsync();
                     }
 
-                    // Calcular nuevo PK_id_jugador_responsable (la tabla no es identity)
                     var sqlNextJugRespId = "SELECT ISNULL(MAX(PK_id_jugador_responsable), 0) + 1 FROM JUGADORES_RESPONSABLES";
                     int idJugResp = 0;
                     using (var cmdIdJR = new SqlCommand(sqlNextJugRespId, connection, transaction))
