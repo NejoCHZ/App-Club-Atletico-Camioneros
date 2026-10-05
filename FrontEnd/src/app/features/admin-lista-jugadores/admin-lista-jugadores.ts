@@ -18,6 +18,7 @@ export interface Player {
   nombreCompleto: string;
   dni: string;
   categoria: string;
+  posicionCancha: string;
   fechaNacimiento: string;
   estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | string;
   tutor?: TutorInfo | null;
@@ -47,13 +48,14 @@ export class AdminListaJugadores implements OnInit {
 
   searchTerm = '';
   categoriaFiltro = '';
+  posicionFiltro = '';
   ordenFiltro = '';
   activeTab = 'Jugadores';
 
   menuUsuarioAbierto = false;
   sidebarOculto = false;
 
-  // Estados de los Modales
+  // Modales
   modalEliminarVisible = false;
   jugadorAEliminar: Player | null = null;
   eliminando = false;
@@ -79,15 +81,30 @@ export class AdminListaJugadores implements OnInit {
   players: Player[] = [];
   listaCategorias: Categoria[] = [];
 
+  // Posiciones estándar del CACC
+  posicionesDisponibles: string[] = [
+    'Arquero',
+    'Defensor',
+    'Mediocampista',
+    'Delantero'
+  ];
+
   ngOnInit(): void {
     this.cargarUsuario();
     this.cargarJugadores();
     this.cargarCategorias();
   }
 
+  limpiarNombreRol(rol: string): string {
+    if (!rol) return '';
+    let r = rol.replace(/\s*\([^)]*\)/gi, '').trim();
+    if (r.toLowerCase() === 'tesorero') r = 'Administrador';
+    return r;
+  }
+
   private cargarUsuario(): void {
     const token = this.authService.getToken();
-    const rol = this.authService.getRol() || 'Tesorero';
+    const rol = this.authService.getRol() || 'Administrador';
 
     if (token) {
       try {
@@ -95,13 +112,23 @@ export class AdminListaJugadores implements OnInit {
         const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
 
         this.usuarioActual = {
-          nombre: rol,
+          nombre: this.limpiarNombreRol(rol),
           email: email
         };
       } catch {
-        this.usuarioActual = { nombre: rol, email: '' };
+        this.usuarioActual = { nombre: this.limpiarNombreRol(rol), email: '' };
       }
     }
+  }
+
+  formatearPosicion(pos?: string): string {
+    if (!pos) return 'Sin definir';
+    const p = pos.trim().toUpperCase();
+    if (p.includes('ARQUER')) return 'Arquero';
+    if (p.includes('DEFENS')) return 'Defensor';
+    if (p.includes('MEDIO') || p.includes('VOLANTE')) return 'Mediocampista';
+    if (p.includes('DELANT')) return 'Delantero';
+    return pos.trim();
   }
 
   cargarJugadores(): void {
@@ -119,6 +146,7 @@ export class AdminListaJugadores implements OnInit {
             nombreCompleto: `${j.nombre} ${j.apellido}`.trim(),
             dni: j.dni,
             categoria: j.nombreCategoria || 'Sin categoría',
+            posicionCancha: this.formatearPosicion(j.posicionCancha || j.posicion),
             fechaNacimiento: fechaFormateada,
             estadoCuota: j.estadoCuota || 'AL DÍA',
             tutor: j.tutor || j.Tutor || null
@@ -142,6 +170,11 @@ export class AdminListaJugadores implements OnInit {
     });
   }
 
+  getCategoriasList(categoriaStr: string): string[] {
+    if (!categoriaStr) return ['Sin categoría'];
+    return categoriaStr.split(',').map(c => c.trim()).filter(c => c.length > 0);
+  }
+
   get filteredPlayers(): Player[] {
     return this.players
       .filter(p => {
@@ -149,18 +182,26 @@ export class AdminListaJugadores implements OnInit {
         const matchSearch = !term ||
           p.nombreCompleto.toLowerCase().includes(term) ||
           p.dni.includes(term);
-        const matchCat = !this.categoriaFiltro || p.categoria.toUpperCase() === this.categoriaFiltro.toUpperCase();
-        return matchSearch && matchCat;
+
+        // Filtro inclusivo de múltiples categorías
+        const matchCat = !this.categoriaFiltro ||
+          this.getCategoriasList(p.categoria).some(c => c.toUpperCase() === this.categoriaFiltro.toUpperCase());
+
+        // Filtro por posición en la cancha
+        const matchPos = !this.posicionFiltro ||
+          p.posicionCancha.toUpperCase() === this.posicionFiltro.toUpperCase();
+
+        return matchSearch && matchCat && matchPos;
       })
       .sort((a, b) => {
         if (this.ordenFiltro === 'nombre') return a.nombreCompleto.localeCompare(b.nombreCompleto);
         if (this.ordenFiltro === 'dni') return a.dni.localeCompare(b.dni);
         if (this.ordenFiltro === 'categoria') return a.categoria.localeCompare(b.categoria);
+        if (this.ordenFiltro === 'posicion') return a.posicionCancha.localeCompare(b.posicionCancha);
         return 0;
       });
   }
 
-  // Control UI: Sidebar y Menú Usuario
   toggleMenuUsuario(event: MouseEvent): void {
     event.stopPropagation();
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
@@ -175,7 +216,6 @@ export class AdminListaJugadores implements OnInit {
     this.menuUsuarioAbierto = false;
   }
 
-  // Navegación
   irAAltaJugador(): void {
     this.router.navigate(['/admin/alta-jugador']);
   }
@@ -210,7 +250,6 @@ export class AdminListaJugadores implements OnInit {
     this.router.navigate(['/admin/editar-perfil', id]);
   }
 
-  // Acciones de Eliminación
   abrirModalEliminar(player: Player): void {
     this.jugadorAEliminar = player;
     this.modalEliminarVisible = true;
@@ -241,7 +280,6 @@ export class AdminListaJugadores implements OnInit {
     });
   }
 
-  // Acciones de Gestión de Tutor
   abrirModalTutor(player: Player): void {
     this.jugadorTutor = player;
     if (player.tutor) {

@@ -160,7 +160,11 @@
                 <td class="col-nombre">{{ p.nombreCompleto }}</td>
                 <td class="col-dni">{{ p.dni }}</td>
                 <td class="col-categoria">
-                  <span class="category-pill">{{ p.categoria }}</span>
+                  <div class="category-pills-container">
+                    <span *ngFor="let cat of getCategoriasList(p.categoria)" class="category-pill">
+                      {{ cat }}
+                    </span>
+                  </div>
                 </td>
                 <td class="col-nacimiento">{{ p.fechaNacimiento }}</td>
                 <td class="col-estado">
