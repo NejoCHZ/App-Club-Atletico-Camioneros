@@ -478,7 +478,7 @@
       background-color: #E6F4EA;
     }
 
-/* Anchos de columnas (8 Columnas en total) */
+/* Anchos de columnas */
 .th-avatar, .col-foto {
   width: 48px;
   text-align: center;
@@ -857,11 +857,11 @@
 
 .modal-form-control {
   width: 100%;
-  height: 36px;
+  height: 38px;
   padding: 0 10px;
   border: 1px solid #CBD5E1;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 8px;
+  font-size: 13.5px;
   color: #1E293B;
   outline: none;
   box-sizing: border-box;
@@ -872,3 +872,49 @@
   .modal-form-control:focus {
     border-color: #007A3D;
   }
+
+/* Grupo de Búsqueda de Tutor por DNI */
+.search-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-input-field {
+  flex: 1;
+}
+
+.btn-search-tutor {
+  width: 38px;
+  height: 38px;
+  background-color: #007A3D;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+  .btn-search-tutor:hover:not(:disabled) {
+    background-color: #006633;
+  }
+
+  .btn-search-tutor:disabled {
+    background-color: #94A3B8;
+    cursor: not-allowed;
+  }
+
+.tutor-found-badge {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #15803D;
+  background-color: #DCFCE7;
+  border: 1px solid #86EFAC;
+  padding: 3px 8px;
+  border-radius: 6px;
+}

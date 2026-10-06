@@ -247,36 +247,54 @@ namespace CACC.API.Controllers
         }
 
         [HttpPut("{id}/tutor")]
-        [Authorize(Roles = "Tesorero")]
-        public async Task<IActionResult> GuardarTutor(int id, [FromBody] TutorDto dto)
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero,Coordinador")]
+        public async Task<IActionResult> GuardarTutor(int id, [FromBody] GuardarTutorDto dto)
         {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Telefono))
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Dni) || string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Apellido) || string.IsNullOrWhiteSpace(dto.Telefono))
             {
-                return BadRequest(new { message = "Nombre y teléfono del tutor son requeridos." });
+                return BadRequest(new { message = "DNI, nombre, apellido y teléfono del tutor son obligatorios." });
             }
 
-            try
-            {
-                var guardado = await _jugadorDao.GuardarTutorAsync(
-                    id,
-                    dto.Nombre,
-                    dto.Apellido,
-                    dto.Parentesco ?? "Padre",
-                    dto.Telefono,
-                    dto.Email
-                );
+            bool ok = await _jugadorDao.GuardarTutorAsync(
+                id,
+                dto.Dni.Trim(),
+                dto.Nombre.Trim(),
+                dto.Apellido.Trim(),
+                string.IsNullOrWhiteSpace(dto.Parentesco) ? "Padre" : dto.Parentesco.Trim(),
+                dto.Telefono.Trim(),
+                dto.Email?.Trim()
+            );
 
-                if (!guardado)
-                {
-                    return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
-                }
-
-                return Ok(new { message = "Datos del tutor guardados correctamente." });
-            }
-            catch (Exception ex)
+            if (!ok)
             {
-                return StatusCode(500, new { message = "Error interno al guardar los datos del tutor.", details = ex.Message });
+                return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
             }
+
+            return Ok(new { message = "Tutor guardado y vinculado con éxito." });
+        }
+        [HttpGet("tutores/{dni}")]
+        public async Task<IActionResult> BuscarTutorPorDni(string dni)
+        {
+            if (string.IsNullOrWhiteSpace(dni))
+            {
+                return BadRequest(new { message = "El DNI del tutor es obligatorio." });
+            }
+
+            var tutor = await _jugadorDao.BuscarTutorPorDniAsync(dni.Trim());
+            if (tutor == null)
+            {
+                return NotFound(new { message = "No se encontró ningún tutor registrado con ese DNI." });
+            }
+
+            return Ok(new TutorDto
+            {
+                Dni = tutor.Dni,
+                Nombre = tutor.Nombre,
+                Apellido = tutor.Apellido,
+                Telefono = tutor.Telefono,
+                Email = tutor.Email,
+                Parentesco = tutor.Parentesco
+            });
         }
     }
 }

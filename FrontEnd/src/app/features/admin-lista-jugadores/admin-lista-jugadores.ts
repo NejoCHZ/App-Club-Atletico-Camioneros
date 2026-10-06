@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 
 export interface TutorInfo {
+  dni?: string;
   nombre?: string;
   apellido?: string;
   telefono?: string;
@@ -63,12 +64,15 @@ export class AdminListaJugadores implements OnInit {
   modalTutorVisible = false;
   jugadorTutor: Player | null = null;
   tutorForm: TutorInfo = {
+    dni: '',
     nombre: '',
     apellido: '',
     parentesco: 'Padre',
     telefono: '',
     email: ''
   };
+  buscandoTutor = false;
+  tutorEncontradoMensaje = '';
   guardandoTutor = false;
 
   navItems = [
@@ -81,7 +85,6 @@ export class AdminListaJugadores implements OnInit {
   players: Player[] = [];
   listaCategorias: Categoria[] = [];
 
-  // Posiciones estándar del CACC
   posicionesDisponibles: string[] = [
     'Arquero',
     'Defensor',
@@ -141,6 +144,7 @@ export class AdminListaJugadores implements OnInit {
             fechaFormateada = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
           }
 
+          const t = j.tutor || j.Tutor;
           return {
             id: j.idJugador,
             nombreCompleto: `${j.nombre} ${j.apellido}`.trim(),
@@ -149,7 +153,14 @@ export class AdminListaJugadores implements OnInit {
             posicionCancha: this.formatearPosicion(j.posicionCancha || j.posicion),
             fechaNacimiento: fechaFormateada,
             estadoCuota: j.estadoCuota || 'AL DÍA',
-            tutor: j.tutor || j.Tutor || null
+            tutor: t ? {
+              dni: t.dni || t.Dni || '',
+              nombre: t.nombre || t.Nombre || '',
+              apellido: t.apellido || t.Apellido || '',
+              telefono: t.telefono || t.Telefono || '',
+              email: t.email || t.Email || '',
+              parentesco: t.parentesco || t.Parentesco || ''
+            } : null
           };
         });
       },
@@ -183,11 +194,9 @@ export class AdminListaJugadores implements OnInit {
           p.nombreCompleto.toLowerCase().includes(term) ||
           p.dni.includes(term);
 
-        // Filtro inclusivo de múltiples categorías
         const matchCat = !this.categoriaFiltro ||
           this.getCategoriasList(p.categoria).some(c => c.toUpperCase() === this.categoriaFiltro.toUpperCase());
 
-        // Filtro por posición en la cancha
         const matchPos = !this.posicionFiltro ||
           p.posicionCancha.toUpperCase() === this.posicionFiltro.toUpperCase();
 
@@ -231,15 +240,10 @@ export class AdminListaJugadores implements OnInit {
   selectNav(label: string): void {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
-    if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
-    } else if (label === 'Jugadores') {
-      this.router.navigate(['/admin/lista-jugadores']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
-    } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
-    }
+    if (label === 'Inicio') this.router.navigate(['/admin']);
+    else if (label === 'Jugadores') this.router.navigate(['/admin/lista-jugadores']);
+    else if (label === 'Categorias' || label === 'Categorías') this.router.navigate(['/admin/categorias']);
+    else if (label === 'Staff') this.router.navigate(['/admin/staff']);
   }
 
   verFicha(id: number): void {
@@ -280,10 +284,13 @@ export class AdminListaJugadores implements OnInit {
     });
   }
 
+  // --- Modal Tutor con DNI y Búsqueda Reutilizable ---
   abrirModalTutor(player: Player): void {
     this.jugadorTutor = player;
+    this.tutorEncontradoMensaje = '';
     if (player.tutor) {
       this.tutorForm = {
+        dni: player.tutor.dni || '',
         nombre: player.tutor.nombre || '',
         apellido: player.tutor.apellido || '',
         parentesco: player.tutor.parentesco || 'Padre',
@@ -292,6 +299,7 @@ export class AdminListaJugadores implements OnInit {
       };
     } else {
       this.tutorForm = {
+        dni: '',
         nombre: '',
         apellido: '',
         parentesco: 'Padre',
@@ -305,13 +313,44 @@ export class AdminListaJugadores implements OnInit {
   cancelarTutor(): void {
     this.modalTutorVisible = false;
     this.jugadorTutor = null;
+    this.tutorEncontradoMensaje = '';
+  }
+
+  buscarTutorModal(): void {
+    const dni = (this.tutorForm.dni || '').trim();
+    if (!dni) {
+      alert('Por favor ingrese el DNI del tutor para realizar la búsqueda.');
+      return;
+    }
+
+    this.buscandoTutor = true;
+    this.tutorEncontradoMensaje = '';
+
+    this.http.get<any>(`http://localhost:5191/api/jugadores/tutores/${dni}`).subscribe({
+      next: (data) => {
+        this.buscandoTutor = false;
+        this.tutorForm.nombre = data.nombre || '';
+        this.tutorForm.apellido = data.apellido || '';
+        this.tutorForm.telefono = data.telefono || '';
+        this.tutorForm.email = data.email || '';
+        if (data.parentesco) {
+          this.tutorForm.parentesco = data.parentesco;
+        }
+        this.tutorEncontradoMensaje = `Tutor existente encontrado: ${data.nombre} ${data.apellido}. Datos autocompletados.`;
+      },
+      error: () => {
+        this.buscandoTutor = false;
+        this.tutorEncontradoMensaje = '';
+        alert('No se encontró ningún tutor previamente registrado con ese DNI. Puede completar los datos manualmente para darlo de alta.');
+      }
+    });
   }
 
   guardarTutor(): void {
     if (!this.jugadorTutor) return;
 
-    if (!this.tutorForm.nombre || !this.tutorForm.apellido || !this.tutorForm.telefono) {
-      alert('Nombre, apellido y teléfono del tutor son obligatorios.');
+    if (!this.tutorForm.dni?.trim() || !this.tutorForm.nombre?.trim() || !this.tutorForm.apellido?.trim() || !this.tutorForm.telefono?.trim()) {
+      alert('DNI, nombre, apellido y teléfono del tutor son obligatorios.');
       return;
     }
 
@@ -326,6 +365,7 @@ export class AdminListaJugadores implements OnInit {
         this.guardandoTutor = false;
         this.modalTutorVisible = false;
         this.jugadorTutor = null;
+        this.cargarJugadores();
       },
       error: (err) => {
         this.guardandoTutor = false;

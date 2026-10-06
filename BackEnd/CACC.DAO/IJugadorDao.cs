@@ -12,6 +12,7 @@ namespace CACC.DAO
         Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador);
         Task<int> CrearAsync(JugadorAlta dto);
         Task<bool> EliminarAsync(int idJugador);
-        Task<bool> GuardarTutorAsync(int idJugador, string nombre, string apellido, string parentesco, string telefono, string? email);
+        Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni);
+        Task<bool> GuardarTutorAsync(int idJugador, string dni, string nombre, string apellido, string parentesco, string telefono, string? email);
     }
 }

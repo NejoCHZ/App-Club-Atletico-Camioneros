@@ -39,6 +39,7 @@ namespace CACC.DAO
                 j.altura AS Altura,
                 j.pie_habil AS PieHabil,
                 ISNULL(v.cantidad_cuotas_vencidas, 0) AS CuotasVencidas,
+                pt.dni AS TutorDni,
                 pt.nombre AS TutorNombre,
                 pt.apellido AS TutorApellido,
                 r.telefono AS TutorTelefono,
@@ -213,6 +214,7 @@ namespace CACC.DAO
             {
                 jugador.Tutor = new TutorDetalle
                 {
+                    Dni = reader.IsDBNull(reader.GetOrdinal("TutorDni")) ? string.Empty : reader.GetString(reader.GetOrdinal("TutorDni")),
                     Nombre = reader.GetString(tutorNombreOrdinal),
                     Apellido = reader.IsDBNull(reader.GetOrdinal("TutorApellido")) ? string.Empty : reader.GetString(reader.GetOrdinal("TutorApellido")),
                     Telefono = reader.IsDBNull(reader.GetOrdinal("TutorTelefono")) ? null : reader.GetString(reader.GetOrdinal("TutorTelefono")),
@@ -437,13 +439,23 @@ namespace CACC.DAO
                 {
                     var queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @TutorDni;";
                     using var cmdCheckPersona = new SqlCommand(queryCheckPersona, connection, transaction);
-                    cmdCheckPersona.Parameters.AddWithValue("@TutorDni", dto.Tutor.Dni);
+                    cmdCheckPersona.Parameters.AddWithValue("@TutorDni", dto.Tutor.Dni.Trim());
                     var resultPersona = await cmdCheckPersona.ExecuteScalarAsync();
 
                     int idPersonaTutor;
-                    if (resultPersona != null)
+                    if (resultPersona != null && resultPersona != DBNull.Value)
                     {
                         idPersonaTutor = Convert.ToInt32(resultPersona);
+                        // Actualizar datos del tutor si ya existía
+                        var queryUpdateP = @"
+                            UPDATE PERSONAS 
+                            SET nombre = @TutorNombre, apellido = @TutorApellido 
+                            WHERE PK_id_persona = @IdPersonaTutor;";
+                        using var cmdUpP = new SqlCommand(queryUpdateP, connection, transaction);
+                        cmdUpP.Parameters.AddWithValue("@TutorNombre", dto.Tutor.Nombre.Trim());
+                        cmdUpP.Parameters.AddWithValue("@TutorApellido", dto.Tutor.Apellido.Trim());
+                        cmdUpP.Parameters.AddWithValue("@IdPersonaTutor", idPersonaTutor);
+                        await cmdUpP.ExecuteNonQueryAsync();
                     }
                     else
                     {
@@ -452,9 +464,9 @@ namespace CACC.DAO
                             OUTPUT INSERTED.PK_id_persona
                             VALUES (@TutorNombre, @TutorApellido, @TutorDni);";
                         using var cmdInsertPersonaTutor = new SqlCommand(queryInsertPersonaTutor, connection, transaction);
-                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorNombre", dto.Tutor.Nombre);
-                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorApellido", dto.Tutor.Apellido);
-                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorDni", dto.Tutor.Dni);
+                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorNombre", dto.Tutor.Nombre.Trim());
+                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorApellido", dto.Tutor.Apellido.Trim());
+                        cmdInsertPersonaTutor.Parameters.AddWithValue("@TutorDni", dto.Tutor.Dni.Trim());
                         idPersonaTutor = Convert.ToInt32(await cmdInsertPersonaTutor.ExecuteScalarAsync());
                     }
 
@@ -464,9 +476,18 @@ namespace CACC.DAO
                     var resultResp = await cmdCheckResp.ExecuteScalarAsync();
 
                     int idResponsable;
-                    if (resultResp != null)
+                    if (resultResp != null && resultResp != DBNull.Value)
                     {
                         idResponsable = Convert.ToInt32(resultResp);
+                        var queryUpdateResp = @"
+                            UPDATE RESPONSABLES 
+                            SET email = @Email, telefono = @Telefono 
+                            WHERE PK_id_responsable = @IdResponsable;";
+                        using var cmdUpR = new SqlCommand(queryUpdateResp, connection, transaction);
+                        cmdUpR.Parameters.AddWithValue("@Email", dto.Tutor.Email ?? (object)DBNull.Value);
+                        cmdUpR.Parameters.AddWithValue("@Telefono", dto.Tutor.Telefono ?? (object)DBNull.Value);
+                        cmdUpR.Parameters.AddWithValue("@IdResponsable", idResponsable);
+                        await cmdUpR.ExecuteNonQueryAsync();
                     }
                     else
                     {
@@ -594,7 +615,48 @@ namespace CACC.DAO
             }
         }
 
-        public async Task<bool> GuardarTutorAsync(int idJugador, string nombre, string apellido, string parentesco, string telefono, string? email)
+        public async Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"
+                SELECT TOP 1
+                    p.dni AS Dni,
+                    p.nombre AS Nombre,
+                    p.apellido AS Apellido,
+                    ISNULL(r.telefono, '') AS Telefono,
+                    ISNULL(r.email, '') AS Email,
+                    ISNULL((
+                        SELECT TOP 1 jr.parentesco 
+                        FROM JUGADORES_RESPONSABLES jr 
+                        WHERE jr.FK_id_responsable = r.PK_id_responsable
+                    ), 'Padre') AS Parentesco
+                FROM PERSONAS p
+                INNER JOIN RESPONSABLES r ON p.PK_id_persona = r.FK_id_persona
+                WHERE p.dni = @Dni;";
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Dni", dni.Trim());
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new TutorDetalle
+                {
+                    Dni = reader.GetString(reader.GetOrdinal("Dni")),
+                    Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
+                    Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
+                    Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? string.Empty : reader.GetString(reader.GetOrdinal("Telefono")),
+                    Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
+                    Parentesco = reader.IsDBNull(reader.GetOrdinal("Parentesco")) ? "Padre" : reader.GetString(reader.GetOrdinal("Parentesco"))
+                };
+            }
+
+            return null;
+        }
+
+        public async Task<bool> GuardarTutorAsync(int idJugador, string dni, string nombre, string apellido, string parentesco, string telefono, string? email)
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -602,7 +664,8 @@ namespace CACC.DAO
 
             try
             {
-                var checkJugadorSql = "SELECT COUNT(1) FROM JUGADORES WHERE PK_id_jugador = @idJugador";
+                // 1. Verificar existencia del jugador
+                const string checkJugadorSql = "SELECT COUNT(1) FROM JUGADORES WHERE PK_id_jugador = @idJugador";
                 using (var cmdCheckJug = new SqlCommand(checkJugadorSql, connection, transaction))
                 {
                     cmdCheckJug.Parameters.AddWithValue("@idJugador", idJugador);
@@ -614,106 +677,114 @@ namespace CACC.DAO
                     }
                 }
 
-                var sqlCheck = @"
-                    SELECT jr.FK_id_responsable, r.FK_id_persona
-                    FROM JUGADORES_RESPONSABLES jr
-                    INNER JOIN RESPONSABLES r ON jr.FK_id_responsable = r.PK_id_responsable
-                    WHERE jr.FK_id_jugador = @idJugador";
-
-                int idResponsable = 0;
-                int idPersonaTutor = 0;
-                bool existe = false;
-
-                using (var cmdCheck = new SqlCommand(sqlCheck, connection, transaction))
+                // 2. Buscar si la persona ya existe por DNI
+                int idPersonaTutor;
+                const string queryCheckPersona = "SELECT PK_id_persona FROM PERSONAS WHERE dni = @Dni;";
+                using (var cmdCheckPersona = new SqlCommand(queryCheckPersona, connection, transaction))
                 {
-                    cmdCheck.Parameters.AddWithValue("@idJugador", idJugador);
-                    using var reader = await cmdCheck.ExecuteReaderAsync();
-                    if (await reader.ReadAsync())
+                    cmdCheckPersona.Parameters.AddWithValue("@Dni", dni.Trim());
+                    var resPersona = await cmdCheckPersona.ExecuteScalarAsync();
+                    if (resPersona != null && resPersona != DBNull.Value)
                     {
-                        existe = true;
-                        idResponsable = reader.GetInt32(0);
-                        idPersonaTutor = reader.GetInt32(1);
-                    }
-                }
-
-                if (existe)
-                {
-                    var updatePersona = "UPDATE PERSONAS SET nombre = @nombre, apellido = @apellido WHERE PK_id_persona = @idPersona";
-                    using (var cmdUpP = new SqlCommand(updatePersona, connection, transaction))
-                    {
-                        cmdUpP.Parameters.AddWithValue("@nombre", nombre.Trim());
-                        cmdUpP.Parameters.AddWithValue("@apellido", apellido.Trim());
-                        cmdUpP.Parameters.AddWithValue("@idPersona", idPersonaTutor);
+                        idPersonaTutor = Convert.ToInt32(resPersona);
+                        const string queryUpP = "UPDATE PERSONAS SET nombre = @Nombre, apellido = @Apellido WHERE PK_id_persona = @IdPersona;";
+                        using var cmdUpP = new SqlCommand(queryUpP, connection, transaction);
+                        cmdUpP.Parameters.AddWithValue("@Nombre", nombre.Trim());
+                        cmdUpP.Parameters.AddWithValue("@Apellido", apellido.Trim());
+                        cmdUpP.Parameters.AddWithValue("@IdPersona", idPersonaTutor);
                         await cmdUpP.ExecuteNonQueryAsync();
                     }
-
-                    var updateResp = "UPDATE RESPONSABLES SET telefono = @telefono, email = @email WHERE PK_id_responsable = @idResp";
-                    using (var cmdUpR = new SqlCommand(updateResp, connection, transaction))
+                    else
                     {
-                        cmdUpR.Parameters.AddWithValue("@telefono", telefono.Trim());
-                        cmdUpR.Parameters.AddWithValue("@email", (object?)email?.Trim() ?? DBNull.Value);
-                        cmdUpR.Parameters.AddWithValue("@idResp", idResponsable);
-                        await cmdUpR.ExecuteNonQueryAsync();
-                    }
-
-                    var updateParentesco = "UPDATE JUGADORES_RESPONSABLES SET parentesco = @parentesco WHERE FK_id_responsable = @idResp AND FK_id_jugador = @idJugador";
-                    using (var cmdUpPr = new SqlCommand(updateParentesco, connection, transaction))
-                    {
-                        cmdUpPr.Parameters.AddWithValue("@parentesco", parentesco.Trim());
-                        cmdUpPr.Parameters.AddWithValue("@idResp", idResponsable);
-                        cmdUpPr.Parameters.AddWithValue("@idJugador", idJugador);
-                        await cmdUpPr.ExecuteNonQueryAsync();
-                    }
-                }
-                else
-                {
-                    var insertPersona = @"
-                        INSERT INTO PERSONAS (nombre, apellido) 
-                        OUTPUT INSERTED.PK_id_persona
-                        VALUES (@nombre, @apellido);";
-
-                    using (var cmdInP = new SqlCommand(insertPersona, connection, transaction))
-                    {
-                        cmdInP.Parameters.AddWithValue("@nombre", nombre.Trim());
-                        cmdInP.Parameters.AddWithValue("@apellido", apellido.Trim());
+                        const string queryInP = @"
+                            INSERT INTO PERSONAS (nombre, apellido, dni)
+                            OUTPUT INSERTED.PK_id_persona
+                            VALUES (@Nombre, @Apellido, @Dni);";
+                        using var cmdInP = new SqlCommand(queryInP, connection, transaction);
+                        cmdInP.Parameters.AddWithValue("@Nombre", nombre.Trim());
+                        cmdInP.Parameters.AddWithValue("@Apellido", apellido.Trim());
+                        cmdInP.Parameters.AddWithValue("@Dni", dni.Trim());
                         idPersonaTutor = Convert.ToInt32(await cmdInP.ExecuteScalarAsync());
                     }
+                }
 
-                    var sqlNextRespId = "SELECT ISNULL(MAX(PK_id_responsable), 0) + 1 FROM RESPONSABLES";
-                    using (var cmdIdR = new SqlCommand(sqlNextRespId, connection, transaction))
+                // 3. Buscar si ya existe el registro en RESPONSABLES para esa persona (reutilización relacional)
+                int idResponsable;
+                const string queryCheckResp = "SELECT PK_id_responsable FROM RESPONSABLES WHERE FK_id_persona = @IdPersona;";
+                using (var cmdCheckResp = new SqlCommand(queryCheckResp, connection, transaction))
+                {
+                    cmdCheckResp.Parameters.AddWithValue("@IdPersona", idPersonaTutor);
+                    var resResp = await cmdCheckResp.ExecuteScalarAsync();
+                    if (resResp != null && resResp != DBNull.Value)
                     {
-                        idResponsable = Convert.ToInt32(await cmdIdR.ExecuteScalarAsync());
+                        idResponsable = Convert.ToInt32(resResp);
+                        const string queryUpR = "UPDATE RESPONSABLES SET telefono = @Telefono, email = @Email WHERE PK_id_responsable = @IdResp;";
+                        using var cmdUpR = new SqlCommand(queryUpR, connection, transaction);
+                        cmdUpR.Parameters.AddWithValue("@Telefono", telefono.Trim());
+                        cmdUpR.Parameters.AddWithValue("@Email", (object?)email?.Trim() ?? DBNull.Value);
+                        cmdUpR.Parameters.AddWithValue("@IdResp", idResponsable);
+                        await cmdUpR.ExecuteNonQueryAsync();
                     }
-
-                    var insertResp = @"
-                        INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, email, telefono)
-                        VALUES (@idResp, @idPersona, @telefono, @email)";
-                    using (var cmdInR = new SqlCommand(insertResp, connection, transaction))
+                    else
                     {
-                        cmdInR.Parameters.AddWithValue("@idResp", idResponsable);
-                        cmdInR.Parameters.AddWithValue("@idPersona", idPersonaTutor);
-                        cmdInR.Parameters.AddWithValue("@telefono", telefono.Trim());
-                        cmdInR.Parameters.AddWithValue("@email", (object?)email?.Trim() ?? DBNull.Value);
+                        const string sqlNextRespId = "SELECT ISNULL(MAX(PK_id_responsable), 0) + 1 FROM RESPONSABLES;";
+                        int nextRespId;
+                        using (var cmdNextId = new SqlCommand(sqlNextRespId, connection, transaction))
+                        {
+                            nextRespId = Convert.ToInt32(await cmdNextId.ExecuteScalarAsync());
+                        }
+
+                        const string queryInR = @"
+                            INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, telefono, email)
+                            VALUES (@IdResp, @IdPersona, @Telefono, @Email);";
+                        using var cmdInR = new SqlCommand(queryInR, connection, transaction);
+                        cmdInR.Parameters.AddWithValue("@IdResp", nextRespId);
+                        cmdInR.Parameters.AddWithValue("@IdPersona", idPersonaTutor);
+                        cmdInR.Parameters.AddWithValue("@Telefono", telefono.Trim());
+                        cmdInR.Parameters.AddWithValue("@Email", (object?)email?.Trim() ?? DBNull.Value);
                         await cmdInR.ExecuteNonQueryAsync();
-                    }
 
-                    var sqlNextJugRespId = "SELECT ISNULL(MAX(PK_id_jugador_responsable), 0) + 1 FROM JUGADORES_RESPONSABLES";
-                    int idJugResp = 0;
-                    using (var cmdIdJR = new SqlCommand(sqlNextJugRespId, connection, transaction))
-                    {
-                        idJugResp = Convert.ToInt32(await cmdIdJR.ExecuteScalarAsync());
+                        idResponsable = nextRespId;
                     }
+                }
 
-                    var insertJugResp = @"
-                        INSERT INTO JUGADORES_RESPONSABLES (PK_id_jugador_responsable, FK_id_responsable, FK_id_jugador, parentesco)
-                        VALUES (@idJugResp, @idResp, @idJugador, @parentesco)";
-                    using (var cmdInJR = new SqlCommand(insertJugResp, connection, transaction))
+                // 4. Vincular al jugador en JUGADORES_RESPONSABLES (actualizar o crear nuevo vínculo)
+                const string queryCheckVinculo = "SELECT PK_id_jugador_responsable FROM JUGADORES_RESPONSABLES WHERE FK_id_jugador = @IdJugador;";
+                using (var cmdCheckV = new SqlCommand(queryCheckVinculo, connection, transaction))
+                {
+                    cmdCheckV.Parameters.AddWithValue("@IdJugador", idJugador);
+                    var resVinculo = await cmdCheckV.ExecuteScalarAsync();
+                    if (resVinculo != null && resVinculo != DBNull.Value)
                     {
-                        cmdInJR.Parameters.AddWithValue("@idJugador", idJugador);
-                        cmdInJR.Parameters.AddWithValue("@idJugResp", idJugResp);
-                        cmdInJR.Parameters.AddWithValue("@idResp", idResponsable);
-                        cmdInJR.Parameters.AddWithValue("@parentesco", parentesco.Trim());
-                        await cmdInJR.ExecuteNonQueryAsync();
+                        int idVinculoExistente = Convert.ToInt32(resVinculo);
+                        const string queryUpV = @"
+                            UPDATE JUGADORES_RESPONSABLES 
+                            SET FK_id_responsable = @IdResp, parentesco = @Parentesco 
+                            WHERE PK_id_jugador_responsable = @IdVinculo;";
+                        using var cmdUpV = new SqlCommand(queryUpV, connection, transaction);
+                        cmdUpV.Parameters.AddWithValue("@IdResp", idResponsable);
+                        cmdUpV.Parameters.AddWithValue("@Parentesco", parentesco.Trim());
+                        cmdUpV.Parameters.AddWithValue("@IdVinculo", idVinculoExistente);
+                        await cmdUpV.ExecuteNonQueryAsync();
+                    }
+                    else
+                    {
+                        const string sqlNextVinculoId = "SELECT ISNULL(MAX(PK_id_jugador_responsable), 0) + 1 FROM JUGADORES_RESPONSABLES;";
+                        int nextVinculoId;
+                        using (var cmdNextVId = new SqlCommand(sqlNextVinculoId, connection, transaction))
+                        {
+                            nextVinculoId = Convert.ToInt32(await cmdNextVId.ExecuteScalarAsync());
+                        }
+
+                        const string queryInV = @"
+                            INSERT INTO JUGADORES_RESPONSABLES (PK_id_jugador_responsable, FK_id_responsable, FK_id_jugador, parentesco)
+                            VALUES (@IdVinculo, @IdResp, @IdJugador, @Parentesco);";
+                        using var cmdInV = new SqlCommand(queryInV, connection, transaction);
+                        cmdInV.Parameters.AddWithValue("@IdVinculo", nextVinculoId);
+                        cmdInV.Parameters.AddWithValue("@IdResp", idResponsable);
+                        cmdInV.Parameters.AddWithValue("@IdJugador", idJugador);
+                        cmdInV.Parameters.AddWithValue("@Parentesco", parentesco.Trim());
+                        await cmdInV.ExecuteNonQueryAsync();
                     }
                 }
 

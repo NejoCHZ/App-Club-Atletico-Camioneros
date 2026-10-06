@@ -70,7 +70,7 @@
 
           <div class="user-dropdown-menu" *ngIf="menuUsuarioAbierto" (click)="$event.stopPropagation()">
             <button type="button" class="dropdown-item" (click)="irAConfiguracion()">
-              <span class="dropdown-icon">⚙️</span> Configuración de cuenta
+              <span class="dropdown-icon">⚙️️</span> Configuración de cuenta
             </button>
             <div class="dropdown-divider"></div>
             <button type="button" class="dropdown-item text-danger" (click)="cerrarSesion()">
@@ -104,7 +104,7 @@
             </span>
           </div>
 
-          <!-- Nuevo: Filtro de Posición en Cancha -->
+          <!-- Filtro de Posición en Cancha -->
           <div class="select-box">
             <select [(ngModel)]="posicionFiltro">
               <option value="">Todas las posiciones</option>
@@ -245,7 +245,7 @@
     </div>
   </div>
 
-  <!-- POPUP 2: Modal de Agregar / Editar Tutor -->
+  <!-- POPUP 2: Modal de Agregar / Editar Tutor con DNI y Búsqueda -->
   <div class="popup-overlay" *ngIf="modalTutorVisible" (click)="cancelarTutor()">
     <div class="popup-card" (click)="$event.stopPropagation()">
       <div class="popup-card-header">
@@ -268,6 +268,31 @@
         </div>
 
         <form (ngSubmit)="guardarTutor()" class="tutor-form-grid">
+          <!-- Campo DNI del Tutor con Búsqueda -->
+          <div class="form-group">
+            <label class="form-label">DNI del Tutor <span class="req">*</span></label>
+            <div class="search-input-group">
+              <input type="text"
+                     [(ngModel)]="tutorForm.dni"
+                     name="dniTutor"
+                     required
+                     placeholder="Ingresá el DNI del tutor"
+                     class="modal-form-control search-input-field"
+                     (keyup.enter)="buscarTutorModal()" />
+              <button type="button"
+                      class="btn-search-tutor"
+                      (click)="buscarTutorModal()"
+                      [disabled]="buscandoTutor"
+                      title="Buscar si ya está registrado en el sistema">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </button>
+            </div>
+            <span *ngIf="tutorEncontradoMensaje" class="tutor-found-badge">✓ {{ tutorEncontradoMensaje }}</span>
+          </div>
+
           <div class="form-row-2">
             <div class="form-group">
               <label class="form-label">Nombre del Tutor <span class="req">*</span></label>
