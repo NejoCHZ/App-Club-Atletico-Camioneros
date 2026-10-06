@@ -30,15 +30,6 @@ namespace CACC.Entities
         public string EstadoCuota { get; set; } = "AL DÍA";
     }
 
-    public class PartidoDetalle
-    {
-        public DateTime Fecha { get; set; }
-        public string Rival { get; set; } = string.Empty;
-        public string Resultado { get; set; } = string.Empty;
-        public string? Condicion { get; set; }
-        public int Minutos { get; set; }
-    }
-
     public class FichaMedicaDetalle
     {
         public string? GrupoSanguineo { get; set; }

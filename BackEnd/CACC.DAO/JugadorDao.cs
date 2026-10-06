@@ -86,11 +86,20 @@ namespace CACC.DAO
                 {BaseJugadorQuery}
                 WHERE j.PK_id_jugador = @Id;
 
-                SELECT hp.fecha_partido AS Fecha, hp.rival AS Rival, hp.resultado AS Resultado, hp.condicion_localia AS Condicion, jp.minutos_jugados AS Minutos
+                SELECT 
+                    hp.PK_id_partido AS IdPartido,
+                    hp.FK_id_categoria AS IdCategoria,
+                    ISNULL(c.nombre_categoria, 'Sin categoría') AS Categoria,
+                    hp.fecha_partido AS Fecha, 
+                    hp.rival AS Rival, 
+                    hp.resultado AS Resultado, 
+                    hp.condicion_localia AS Condicion, 
+                    ISNULL(jp.minutos_jugados, 0) AS Minutos
                 FROM JUGADORES_PARTIDOS jp
                 INNER JOIN HISTORIAL_PARTIDOS hp ON jp.FK_id_partido = hp.PK_id_partido
+                LEFT JOIN CATEGORIAS c ON hp.FK_id_categoria = c.PK_id_categoria
                 WHERE jp.FK_id_jugador = @Id
-                ORDER BY hp.fecha_partido ASC;
+                ORDER BY hp.fecha_partido DESC;
 
                 SELECT antecedentes_salud AS Patologias, condiciones_cronicas AS HistorialLesiones, observaciones AS Observaciones, grupo_sanguineo AS GrupoSanguineo, factor AS Factor
                 FROM FICHAS_MEDICAS
@@ -116,6 +125,9 @@ namespace CACC.DAO
                     {
                         jugador.Partidos.Add(new PartidoDetalle
                         {
+                            IdPartido = reader.GetInt32(reader.GetOrdinal("IdPartido")),
+                            IdCategoria = reader.IsDBNull(reader.GetOrdinal("IdCategoria")) ? 0 : reader.GetInt32(reader.GetOrdinal("IdCategoria")),
+                            Categoria = reader.IsDBNull(reader.GetOrdinal("Categoria")) ? string.Empty : reader.GetString(reader.GetOrdinal("Categoria")),
                             Fecha = reader.GetDateTime(reader.GetOrdinal("Fecha")),
                             Rival = reader.GetString(reader.GetOrdinal("Rival")),
                             Resultado = reader.GetString(reader.GetOrdinal("Resultado")),
@@ -324,7 +336,7 @@ namespace CACC.DAO
                 cmdFicha.Parameters.AddWithValue("@Observaciones", (object?)jugador.FichaMedica?.Observaciones ?? DBNull.Value);
                 await cmdFicha.ExecuteNonQueryAsync();
 
-                // 5. Minutos jugados
+                // 5. Minutos jugados en partidos usando IdPartido o fecha/rival
                 if (jugador.Partidos != null && jugador.Partidos.Count > 0)
                 {
                     var queryPartidos = @"
@@ -332,12 +344,17 @@ namespace CACC.DAO
                         SET jp.minutos_jugados = @Minutos
                         FROM JUGADORES_PARTIDOS jp 
                         INNER JOIN HISTORIAL_PARTIDOS hp ON jp.FK_id_partido = hp.PK_id_partido
-                        WHERE jp.FK_id_jugador = @Id AND hp.fecha_partido = @Fecha AND hp.rival = @Rival;";
+                        WHERE jp.FK_id_jugador = @Id 
+                          AND (
+                              (@IdPartido > 0 AND jp.FK_id_partido = @IdPartido)
+                              OR (@IdPartido <= 0 AND hp.fecha_partido = @Fecha AND hp.rival = @Rival)
+                          );";
 
                     foreach (var partido in jugador.Partidos)
                     {
                         using var cmdPartido = new SqlCommand(queryPartidos, connection, transaction);
                         cmdPartido.Parameters.AddWithValue("@Id", id);
+                        cmdPartido.Parameters.AddWithValue("@IdPartido", partido.IdPartido);
                         cmdPartido.Parameters.AddWithValue("@Minutos", partido.Minutos);
                         cmdPartido.Parameters.AddWithValue("@Fecha", partido.Fecha);
                         cmdPartido.Parameters.AddWithValue("@Rival", partido.Rival);
@@ -669,7 +686,7 @@ namespace CACC.DAO
                     }
 
                     var insertResp = @"
-                        INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, telefono, email)
+                        INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, email, telefono)
                         VALUES (@idResp, @idPersona, @telefono, @email)";
                     using (var cmdInR = new SqlCommand(insertResp, connection, transaction))
                     {
@@ -692,9 +709,9 @@ namespace CACC.DAO
                         VALUES (@idJugResp, @idResp, @idJugador, @parentesco)";
                     using (var cmdInJR = new SqlCommand(insertJugResp, connection, transaction))
                     {
+                        cmdInJR.Parameters.AddWithValue("@idJugador", idJugador);
                         cmdInJR.Parameters.AddWithValue("@idJugResp", idJugResp);
                         cmdInJR.Parameters.AddWithValue("@idResp", idResponsable);
-                        cmdInJR.Parameters.AddWithValue("@idJugador", idJugador);
                         cmdInJR.Parameters.AddWithValue("@parentesco", parentesco.Trim());
                         await cmdInJR.ExecuteNonQueryAsync();
                     }
