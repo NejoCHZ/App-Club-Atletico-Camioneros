@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CACC.Entities")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+807d7aa2a51f5a9a8ddcf6ed787edcf3e07bf17e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+781addbef311772ff5896cb1c96ac858b5a4e5ce")]
 [assembly: System.Reflection.AssemblyProductAttribute("CACC.Entities")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CACC.Entities")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -8,6 +8,8 @@ import { AuthService } from '../../shared/services/auth.service';
 export interface CategoriaItem {
   id: number;
   nombre: string;
+  cantidadJugadoresNum: number;
+  cantidadStaffNum: number;
   cantidadJugadores: string;
   cantidadStaff: string;
   asociacion: string;
@@ -19,6 +21,7 @@ export interface JugadorCategoria {
   dni: string;
   posicionCancha: string;
   fechaNacimiento?: string;
+  minutosJugados?: number;
 }
 
 export interface StaffCategoria {
@@ -27,6 +30,14 @@ export interface StaffCategoria {
   dni: string;
   rol: string;
   email: string;
+}
+
+export interface PartidoItem {
+  idPartido: number;
+  fecha: string;
+  rival: string;
+  condicion: string;
+  resultado: string;
 }
 
 @Component({
@@ -68,16 +79,17 @@ export class AdminListaCategoria implements OnInit {
   modoEdicion = false;
   categoriaFormId: number = 0;
   categoriaFormNombre: string = '';
+  categoriaFormAsociacion: string = 'Liga Cordobesa';
 
   // Modal de Confirmación de Eliminación
   modalEliminarVisible = false;
   categoriaAEliminar: CategoriaItem | null = null;
   eliminando = false;
 
-  // Modal de Detalle (Jugadores + Cuerpo Técnico)
+  // Modal de Detalle (Jugadores, Cuerpo Técnico y Partidos)
   modalPlantelVisible = false;
   categoriaActiva: CategoriaItem | null = null;
-  tabActivaModal: 'jugadores' | 'staff' = 'jugadores';
+  tabActivaModal: 'jugadores' | 'staff' | 'partidos' = 'jugadores';
 
   // Submódulo: Jugadores con buscador reactivo
   jugadoresPlantel: JugadorCategoria[] = [];
@@ -87,13 +99,30 @@ export class AdminListaCategoria implements OnInit {
   cargandoPlantel = false;
   private debounceJugadorTimer: any;
 
-  // Submódulo: Cuerpo Técnico (DT y PF) con buscador reactivo
+  // Submódulo: Cuerpo Técnico con buscador reactivo
   staffPlantel: StaffCategoria[] = [];
   staffDisponibles: StaffCategoria[] = [];
   busquedaStaffTexto = '';
   staffSeleccionadoId: number | null = null;
   cargandoStaff = false;
   private debounceStaffTimer: any;
+
+  // Submódulo: Partidos
+  partidosCategoria: PartidoItem[] = [];
+  cargandoPartidos = false;
+  mostrarFormPartido = false;
+  guardandoPartido = false;
+
+  tipoResultadoSeleccionado: string = 'G'; // 'G' | 'E' | 'P'
+  marcadorResultado: string = ''; // ej. "2-1"
+
+  partidoForm = {
+    fechaPartido: '',
+    rival: '',
+    condicionLocalia: 'Local',
+    resultado: '',
+    observaciones: ''
+  };
 
   ngOnInit(): void {
     this.cargarUsuario();
@@ -132,13 +161,17 @@ export class AdminListaCategoria implements OnInit {
     this.http.get<any[]>('http://localhost:5191/api/categorias').subscribe({
       next: (data) => {
         this.categorias = data.map(c => {
-          const esAfa = (c.nombreCategoria || '').toUpperCase().includes('AFA');
+          const cantJug = c.cantidadJugadores || 0;
+          const cantStf = c.cantidadStaff || 0;
+          const asoc = c.asociacion || ((c.nombreCategoria || '').toUpperCase().includes('AFA') ? 'AFA' : 'Liga Cordobesa');
           return {
             id: c.idCategoria,
             nombre: c.nombreCategoria,
-            cantidadJugadores: `${c.cantidadJugadores || 0} JUGADORES`,
-            cantidadStaff: `${c.cantidadStaff || 0} CUERPO TÉCNICO`,
-            asociacion: esAfa ? 'AFA' : 'Liga Cordobesa'
+            cantidadJugadoresNum: cantJug,
+            cantidadStaffNum: cantStf,
+            cantidadJugadores: `${cantJug} JUGADORES`,
+            cantidadStaff: `${cantStf} CUERPO TÉCNICO`,
+            asociacion: asoc
           };
         });
       },
@@ -151,20 +184,32 @@ export class AdminListaCategoria implements OnInit {
       .filter(c => {
         const term = this.searchTerm.trim().toLowerCase();
         const matchSearch = !term || c.nombre.toLowerCase().includes(term);
-        const matchAso = !this.asociacionFiltro || c.asociacion === this.asociacionFiltro;
+        const matchAso = !this.asociacionFiltro || c.asociacion.toLowerCase() === this.asociacionFiltro.toLowerCase();
         return matchSearch && matchAso;
       })
       .sort((a, b) => {
-        if (this.ordenFiltro === 'nombre') return a.nombre.localeCompare(b.nombre);
+        if (this.ordenFiltro === 'nombre') {
+          return a.nombre.localeCompare(b.nombre);
+        }
+        if (this.ordenFiltro === 'jugadores_desc') {
+          return b.cantidadJugadoresNum - a.cantidadJugadoresNum;
+        }
+        if (this.ordenFiltro === 'jugadores_asc') {
+          return a.cantidadJugadoresNum - b.cantidadJugadoresNum;
+        }
+        if (this.ordenFiltro === 'staff_desc') {
+          return b.cantidadStaffNum - a.cantidadStaffNum;
+        }
         return 0;
       });
   }
 
-  // --- Crear / Editar Categoría ---
+  // --- Crear / Editar Categoría con Asociación ---
   abrirModalCrear(): void {
     this.modoEdicion = false;
     this.categoriaFormId = 0;
     this.categoriaFormNombre = '';
+    this.categoriaFormAsociacion = 'Liga Cordobesa';
     this.modalCategoriaVisible = true;
   }
 
@@ -172,6 +217,7 @@ export class AdminListaCategoria implements OnInit {
     this.modoEdicion = true;
     this.categoriaFormId = cat.id;
     this.categoriaFormNombre = cat.nombre;
+    this.categoriaFormAsociacion = cat.asociacion || 'Liga Cordobesa';
     this.modalCategoriaVisible = true;
   }
 
@@ -185,10 +231,13 @@ export class AdminListaCategoria implements OnInit {
       return;
     }
 
+    const payload = {
+      nombreCategoria: this.categoriaFormNombre.trim(),
+      asociacion: this.categoriaFormAsociacion || 'Liga Cordobesa'
+    };
+
     if (this.modoEdicion) {
-      this.http.put(`http://localhost:5191/api/categorias/${this.categoriaFormId}`, {
-        nombreCategoria: this.categoriaFormNombre.trim()
-      }).subscribe({
+      this.http.put(`http://localhost:5191/api/categorias/${this.categoriaFormId}`, payload).subscribe({
         next: () => {
           this.cerrarModalCategoria();
           this.cargarDatos();
@@ -196,9 +245,7 @@ export class AdminListaCategoria implements OnInit {
         error: (err) => alert('Error al actualizar la categoría: ' + (err.error?.message || 'Error del servidor'))
       });
     } else {
-      this.http.post('http://localhost:5191/api/categorias', {
-        nombreCategoria: this.categoriaFormNombre.trim()
-      }).subscribe({
+      this.http.post('http://localhost:5191/api/categorias', payload).subscribe({
         next: () => {
           this.cerrarModalCategoria();
           this.cargarDatos();
@@ -239,11 +286,12 @@ export class AdminListaCategoria implements OnInit {
     });
   }
 
-  // --- Modal de Gestión (Jugadores + Cuerpo Técnico) ---
+  // --- Modal de Gestión (Jugadores, Cuerpo Técnico y Partidos) ---
   verCategoria(cat: CategoriaItem): void {
     this.categoriaActiva = cat;
     this.tabActivaModal = 'jugadores';
     this.modalPlantelVisible = true;
+    this.mostrarFormPartido = false;
 
     this.busquedaJugadorTexto = '';
     this.jugadorSeleccionadoId = null;
@@ -254,6 +302,7 @@ export class AdminListaCategoria implements OnInit {
     this.cargarJugadoresDisponibles(cat.id);
     this.cargarStaff(cat.id);
     this.cargarStaffDisponibles(cat.id);
+    this.cargarPartidos(cat.id);
   }
 
   cargarPlantel(idCategoria: number): void {
@@ -261,7 +310,7 @@ export class AdminListaCategoria implements OnInit {
     this.http.get<JugadorCategoria[]>(`http://localhost:5191/api/categorias/${idCategoria}/jugadores`).subscribe({
       next: (data) => {
         this.cargandoPlantel = false;
-        this.jugadoresPlantel = data;
+        this.jugadoresPlantel = data.map(j => ({ ...j, minutosJugados: 90 }));
       },
       error: () => this.cargandoPlantel = false
     });
@@ -402,10 +451,93 @@ export class AdminListaCategoria implements OnInit {
     });
   }
 
+  cargarPartidos(idCategoria: number): void {
+    this.cargandoPartidos = true;
+    this.http.get<any[]>(`http://localhost:5191/api/categorias/${idCategoria}/partidos`).subscribe({
+      next: (data) => {
+        this.cargandoPartidos = false;
+        this.partidosCategoria = data.map(p => {
+          const d = new Date(p.fecha);
+          return {
+            idPartido: p.idPartido,
+            fecha: d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+            rival: p.rival,
+            condicion: p.condicion || 'Local',
+            resultado: p.resultado
+          };
+        });
+      },
+      error: () => this.cargandoPartidos = false
+    });
+  }
+
+  abrirNuevoPartido(): void {
+    this.mostrarFormPartido = true;
+    const hoy = new Date().toISOString().split('T')[0];
+    this.tipoResultadoSeleccionado = 'G';
+    this.marcadorResultado = '';
+    this.partidoForm = {
+      fechaPartido: hoy,
+      rival: '',
+      condicionLocalia: 'Local',
+      resultado: '',
+      observaciones: ''
+    };
+    this.jugadoresPlantel.forEach(j => j.minutosJugados = 90);
+  }
+
+  cancelarNuevoPartido(): void {
+    this.mostrarFormPartido = false;
+  }
+
+  guardarPartido(): void {
+    if (!this.categoriaActiva) return;
+
+    if (!this.partidoForm.fechaPartido || !this.partidoForm.rival.trim() || !this.marcadorResultado.trim()) {
+      alert('Complete la fecha, el rival y el marcador del partido (ej. 2-1).');
+      return;
+    }
+
+    const resultadoFinal = `${this.tipoResultadoSeleccionado} ${this.marcadorResultado.trim()}`.trim();
+
+    const payload = {
+      fechaPartido: this.partidoForm.fechaPartido,
+      rival: this.partidoForm.rival.trim(),
+      condicionLocalia: this.partidoForm.condicionLocalia,
+      resultado: resultadoFinal,
+      observaciones: this.partidoForm.observaciones.trim() || null,
+      jugadoresMinutos: this.jugadoresPlantel.map(j => ({
+        idJugador: j.idJugador,
+        minutosJugados: Number(j.minutosJugados) || 0
+      }))
+    };
+
+    this.guardandoPartido = true;
+    this.http.post(`http://localhost:5191/api/categorias/${this.categoriaActiva.id}/partidos`, payload).subscribe({
+      next: () => {
+        this.guardandoPartido = false;
+        this.mostrarFormPartido = false;
+        this.cargarPartidos(this.categoriaActiva!.id);
+      },
+      error: (err) => {
+        this.guardandoPartido = false;
+        alert('Error al registrar el partido: ' + (err.error?.message || 'Error del servidor'));
+      }
+    });
+  }
+
+  irAPartidosCategoria(): void {
+    if (!this.categoriaActiva) return;
+    const idCat = this.categoriaActiva.id;
+    this.cerrarModalPlantel();
+    this.router.navigate(['/admin/categorias', idCat, 'partidos']);
+  }
+
   cerrarModalPlantel(): void {
     this.modalPlantelVisible = false;
     this.categoriaActiva = null;
     this.tabActivaModal = 'jugadores';
+    this.mostrarFormPartido = false;
   }
 
   toggleMenuUsuario(event: MouseEvent): void {

@@ -163,6 +163,10 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'admin/categorias/:id/partidos',
+    loadComponent: () => import('./features/admin-partidos-categoria/admin-partidos-categoria').then(m => m.AdminPartidosCategoria)
+  },
+  {
     path: 'admin/staff/ver-ficha/:id',
     loadComponent: () =>
       import('./features/admin-staff-ver-ficha/admin-staff-ver-ficha').then(

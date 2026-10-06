@@ -49,16 +49,17 @@ namespace CACC.DAO
             await connection.OpenAsync();
 
             const string query = @"
-                SELECT 
-                    c.PK_id_categoria, 
-                    ISNULL(c.nombre_categoria, '') AS nombre_categoria,
-                    ISNULL(COUNT(DISTINCT jc.FK_id_jugador), 0) AS cantidad_jugadores,
-                    ISNULL(COUNT(DISTINCT sc.FK_id_staff), 0) AS cantidad_staff
-                FROM CATEGORIAS c
-                LEFT JOIN JUGADORES_CATEGORIAS jc ON c.PK_id_categoria = jc.FK_id_categoria
-                LEFT JOIN STAFF_CATEGORIAS sc ON c.PK_id_categoria = sc.FK_id_categoria
-                GROUP BY c.PK_id_categoria, c.nombre_categoria
-                ORDER BY c.nombre_categoria ASC;";
+        SELECT 
+            c.PK_id_categoria, 
+            ISNULL(c.nombre_categoria, '') AS nombre_categoria,
+            ISNULL(c.asociacion, CASE WHEN c.nombre_categoria LIKE '%AFA%' THEN 'AFA' ELSE 'Liga Cordobesa' END) AS asociacion,
+            ISNULL(COUNT(DISTINCT jc.FK_id_jugador), 0) AS cantidad_jugadores,
+            ISNULL(COUNT(DISTINCT sc.FK_id_staff), 0) AS cantidad_staff
+        FROM CATEGORIAS c
+        LEFT JOIN JUGADORES_CATEGORIAS jc ON c.PK_id_categoria = jc.FK_id_categoria
+        LEFT JOIN STAFF_CATEGORIAS sc ON c.PK_id_categoria = sc.FK_id_categoria
+        GROUP BY c.PK_id_categoria, c.nombre_categoria, c.asociacion
+        ORDER BY c.nombre_categoria ASC;";
 
             using var command = new SqlCommand(query, connection);
             using var reader = await command.ExecuteReaderAsync();
@@ -69,6 +70,7 @@ namespace CACC.DAO
                 {
                     IdCategoria = reader.GetInt32(reader.GetOrdinal("PK_id_categoria")),
                     NombreCategoria = reader.GetString(reader.GetOrdinal("nombre_categoria")),
+                    Asociacion = reader.GetString(reader.GetOrdinal("asociacion")),
                     CantidadJugadores = reader.GetInt32(reader.GetOrdinal("cantidad_jugadores")),
                     CantidadStaff = reader.GetInt32(reader.GetOrdinal("cantidad_staff"))
                 });
@@ -101,29 +103,45 @@ namespace CACC.DAO
             return null;
         }
 
-        public async Task<int> CrearAsync(string nombreCategoria)
+        public async Task<int> CrearAsync(string nombreCategoria, string asociacion)
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
             const string query = @"
-                IF COLUMNPROPERTY(OBJECT_ID('CATEGORIAS'), 'PK_id_categoria', 'IsIdentity') = 1
-                BEGIN
-                    INSERT INTO CATEGORIAS (nombre_categoria) VALUES (@Nombre);
-                    SELECT CAST(SCOPE_IDENTITY() AS INT);
-                END
-                ELSE
-                BEGIN
-                    DECLARE @NewId INT = (SELECT ISNULL(MAX(PK_id_categoria), 0) + 1 FROM CATEGORIAS);
-                    INSERT INTO CATEGORIAS (PK_id_categoria, nombre_categoria) VALUES (@NewId, @Nombre);
-                    SELECT @NewId;
-                END";
+        IF COLUMNPROPERTY(OBJECT_ID('CATEGORIAS'), 'PK_id_categoria', 'IsIdentity') = 1
+        BEGIN
+            INSERT INTO CATEGORIAS (nombre_categoria, asociacion) VALUES (@Nombre, @Asociacion);
+            SELECT CAST(SCOPE_IDENTITY() AS INT);
+        END
+        ELSE
+        BEGIN
+            DECLARE @NewId INT = (SELECT ISNULL(MAX(PK_id_categoria), 0) + 1 FROM CATEGORIAS);
+            INSERT INTO CATEGORIAS (PK_id_categoria, nombre_categoria, asociacion) VALUES (@NewId, @Nombre, @Asociacion);
+            SELECT @NewId;
+        END";
 
             using var command = new SqlCommand(query, connection);
             command.Parameters.AddWithValue("@Nombre", nombreCategoria.Trim());
+            command.Parameters.AddWithValue("@Asociacion", string.IsNullOrWhiteSpace(asociacion) ? "Liga Cordobesa" : asociacion.Trim());
 
             var scalar = await command.ExecuteScalarAsync();
             return Convert.ToInt32(scalar);
+        }
+
+        public async Task<bool> ActualizarAsync(int idCategoria, string nombreCategoria, string asociacion)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = "UPDATE CATEGORIAS SET nombre_categoria = @Nombre, asociacion = @Asociacion WHERE PK_id_categoria = @Id;";
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@Nombre", nombreCategoria.Trim());
+            command.Parameters.AddWithValue("@Asociacion", string.IsNullOrWhiteSpace(asociacion) ? "Liga Cordobesa" : asociacion.Trim());
+            command.Parameters.AddWithValue("@Id", idCategoria);
+
+            int filas = await command.ExecuteNonQueryAsync();
+            return filas > 0;
         }
 
         public async Task<bool> ActualizarAsync(int idCategoria, string nombreCategoria)
@@ -472,6 +490,260 @@ namespace CACC.DAO
 
             int filas = await command.ExecuteNonQueryAsync();
             return filas > 0;
+        }
+        public async Task<IEnumerable<PartidoDetalle>> ObtenerPartidosPorCategoriaAsync(int idCategoria)
+        {
+            var partidos = new List<PartidoDetalle>();
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"
+        SELECT 
+            hp.PK_id_partido AS IdPartido,
+            hp.FK_id_categoria AS IdCategoria,
+            ISNULL(c.nombre_categoria, '') AS Categoria,
+            hp.fecha_partido AS Fecha,
+            hp.rival AS Rival,
+            hp.resultado AS Resultado,
+            hp.condicion_localia AS Condicion
+        FROM HISTORIAL_PARTIDOS hp
+        LEFT JOIN CATEGORIAS c ON hp.FK_id_categoria = c.PK_id_categoria
+        WHERE hp.FK_id_categoria = @IdCategoria
+        ORDER BY hp.fecha_partido DESC;";
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@IdCategoria", idCategoria);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                partidos.Add(new PartidoDetalle
+                {
+                    IdPartido = reader.GetInt32(reader.GetOrdinal("IdPartido")),
+                    IdCategoria = reader.GetInt32(reader.GetOrdinal("IdCategoria")),
+                    Categoria = reader.GetString(reader.GetOrdinal("Categoria")),
+                    Fecha = reader.GetDateTime(reader.GetOrdinal("Fecha")),
+                    Rival = reader.GetString(reader.GetOrdinal("Rival")),
+                    Resultado = reader.GetString(reader.GetOrdinal("Resultado")),
+                    Condicion = reader.IsDBNull(reader.GetOrdinal("Condicion")) ? null : reader.GetString(reader.GetOrdinal("Condicion"))
+                });
+            }
+
+            return partidos;
+        }
+
+        public async Task<int> RegistrarPartidoAsync(PartidoAlta partido)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                const string queryPartido = @"
+            INSERT INTO HISTORIAL_PARTIDOS (FK_id_categoria, fecha_partido, rival, condicion_localia, resultado, observaciones)
+            VALUES (@IdCategoria, @FechaPartido, @Rival, @CondicionLocalia, @Resultado, @Observaciones);
+            SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+                using var cmdPartido = new SqlCommand(queryPartido, connection, transaction);
+                cmdPartido.Parameters.AddWithValue("@IdCategoria", partido.IdCategoria);
+                cmdPartido.Parameters.AddWithValue("@FechaPartido", partido.FechaPartido);
+                cmdPartido.Parameters.AddWithValue("@Rival", partido.Rival.Trim());
+                cmdPartido.Parameters.AddWithValue("@CondicionLocalia", partido.CondicionLocalia.Trim());
+                cmdPartido.Parameters.AddWithValue("@Resultado", partido.Resultado.Trim());
+                cmdPartido.Parameters.AddWithValue("@Observaciones", (object?)partido.Observaciones ?? DBNull.Value);
+
+                int idPartido = Convert.ToInt32(await cmdPartido.ExecuteScalarAsync());
+
+                if (partido.JugadoresMinutos != null && partido.JugadoresMinutos.Count > 0)
+                {
+                    const string queryMinutos = @"
+                INSERT INTO JUGADORES_PARTIDOS (FK_id_partido, FK_id_jugador, minutos_jugados)
+                VALUES (@IdPartido, @IdJugador, @Minutos);";
+
+                    foreach (var jm in partido.JugadoresMinutos)
+                    {
+                        using var cmdMinutos = new SqlCommand(queryMinutos, connection, transaction);
+                        cmdMinutos.Parameters.AddWithValue("@IdPartido", idPartido);
+                        cmdMinutos.Parameters.AddWithValue("@IdJugador", jm.IdJugador);
+                        cmdMinutos.Parameters.AddWithValue("@Minutos", jm.MinutosJugados);
+                        await cmdMinutos.ExecuteNonQueryAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return idPartido;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+        public async Task<PartidoDetalle?> ObtenerPartidoPorIdAsync(int idPartido)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"
+        SELECT 
+            hp.PK_id_partido AS IdPartido,
+            hp.FK_id_categoria AS IdCategoria,
+            ISNULL(c.nombre_categoria, '') AS Categoria,
+            hp.fecha_partido AS Fecha,
+            hp.rival AS Rival,
+            hp.resultado AS Resultado,
+            hp.condicion_localia AS Condicion,
+            hp.observaciones AS Observaciones
+        FROM HISTORIAL_PARTIDOS hp
+        LEFT JOIN CATEGORIAS c ON hp.FK_id_categoria = c.PK_id_categoria
+        WHERE hp.PK_id_partido = @IdPartido;
+
+        SELECT 
+            jp.FK_id_jugador AS IdJugador,
+            CONCAT(p.nombre, ' ', p.apellido) AS NombreCompleto,
+            p.dni AS Dni,
+            ISNULL(jp.minutos_jugados, 0) AS MinutosJugados
+        FROM JUGADORES_PARTIDOS jp
+        INNER JOIN JUGADORES j ON jp.FK_id_jugador = j.PK_id_jugador
+        INNER JOIN PERSONAS p ON j.FK_id_persona = p.PK_id_persona
+        WHERE jp.FK_id_partido = @IdPartido
+        ORDER BY p.apellido ASC, p.nombre ASC;";
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@IdPartido", idPartido);
+
+            using var reader = await command.ExecuteReaderAsync();
+            PartidoDetalle? partido = null;
+
+            if (await reader.ReadAsync())
+            {
+                partido = new PartidoDetalle
+                {
+                    IdPartido = reader.GetInt32(reader.GetOrdinal("IdPartido")),
+                    IdCategoria = reader.GetInt32(reader.GetOrdinal("IdCategoria")),
+                    Categoria = reader.GetString(reader.GetOrdinal("Categoria")),
+                    Fecha = reader.GetDateTime(reader.GetOrdinal("Fecha")),
+                    Rival = reader.GetString(reader.GetOrdinal("Rival")),
+                    Resultado = reader.GetString(reader.GetOrdinal("Resultado")),
+                    Condicion = reader.IsDBNull(reader.GetOrdinal("Condicion")) ? null : reader.GetString(reader.GetOrdinal("Condicion")),
+                    Observaciones = reader.IsDBNull(reader.GetOrdinal("Observaciones")) ? null : reader.GetString(reader.GetOrdinal("Observaciones"))
+                };
+            }
+
+            if (partido != null && await reader.NextResultAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    partido.JugadoresMinutos.Add(new JugadorMinutoDetalle
+                    {
+                        IdJugador = reader.GetInt32(reader.GetOrdinal("IdJugador")),
+                        NombreCompleto = reader.GetString(reader.GetOrdinal("NombreCompleto")),
+                        Dni = reader.IsDBNull(reader.GetOrdinal("Dni")) ? "-" : reader.GetString(reader.GetOrdinal("Dni")),
+                        MinutosJugados = reader.GetInt32(reader.GetOrdinal("MinutosJugados"))
+                    });
+                }
+            }
+
+            return partido;
+        }
+
+        public async Task<bool> ActualizarPartidoAsync(PartidoEdicion partido)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                const string queryUpdate = @"
+            UPDATE HISTORIAL_PARTIDOS
+            SET fecha_partido = @FechaPartido,
+                rival = @Rival,
+                condicion_localia = @CondicionLocalia,
+                resultado = @Resultado,
+                observaciones = @Observaciones
+            WHERE PK_id_partido = @IdPartido;";
+
+                using var cmdUpdate = new SqlCommand(queryUpdate, connection, transaction);
+                cmdUpdate.Parameters.AddWithValue("@IdPartido", partido.IdPartido);
+                cmdUpdate.Parameters.AddWithValue("@FechaPartido", partido.FechaPartido);
+                cmdUpdate.Parameters.AddWithValue("@Rival", partido.Rival.Trim());
+                cmdUpdate.Parameters.AddWithValue("@CondicionLocalia", partido.CondicionLocalia.Trim());
+                cmdUpdate.Parameters.AddWithValue("@Resultado", partido.Resultado.Trim());
+                cmdUpdate.Parameters.AddWithValue("@Observaciones", (object?)partido.Observaciones ?? DBNull.Value);
+
+                int rows = await cmdUpdate.ExecuteNonQueryAsync();
+                if (rows == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+
+                // Reemplazar minutos de los jugadores para mantener consistencia
+                const string queryDeleteMin = "DELETE FROM JUGADORES_PARTIDOS WHERE FK_id_partido = @IdPartido;";
+                using var cmdDeleteMin = new SqlCommand(queryDeleteMin, connection, transaction);
+                cmdDeleteMin.Parameters.AddWithValue("@IdPartido", partido.IdPartido);
+                await cmdDeleteMin.ExecuteNonQueryAsync();
+
+                if (partido.JugadoresMinutos != null && partido.JugadoresMinutos.Count > 0)
+                {
+                    const string queryInsertMin = @"
+                INSERT INTO JUGADORES_PARTIDOS (FK_id_partido, FK_id_jugador, minutos_jugados)
+                VALUES (@IdPartido, @IdJugador, @Minutos);";
+
+                    foreach (var jm in partido.JugadoresMinutos)
+                    {
+                        using var cmdInsertMin = new SqlCommand(queryInsertMin, connection, transaction);
+                        cmdInsertMin.Parameters.AddWithValue("@IdPartido", partido.IdPartido);
+                        cmdInsertMin.Parameters.AddWithValue("@IdJugador", jm.IdJugador);
+                        cmdInsertMin.Parameters.AddWithValue("@Minutos", jm.MinutosJugados);
+                        await cmdInsertMin.ExecuteNonQueryAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> EliminarPartidoAsync(int idPartido)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                const string queryDeleteMin = "DELETE FROM JUGADORES_PARTIDOS WHERE FK_id_partido = @IdPartido;";
+                using var cmdDeleteMin = new SqlCommand(queryDeleteMin, connection, transaction);
+                cmdDeleteMin.Parameters.AddWithValue("@IdPartido", idPartido);
+                await cmdDeleteMin.ExecuteNonQueryAsync();
+
+                const string queryDeletePartido = "DELETE FROM HISTORIAL_PARTIDOS WHERE PK_id_partido = @IdPartido;";
+                using var cmdDeletePartido = new SqlCommand(queryDeletePartido, connection, transaction);
+                cmdDeletePartido.Parameters.AddWithValue("@IdPartido", idPartido);
+                int rows = await cmdDeletePartido.ExecuteNonQueryAsync();
+
+                if (rows == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }

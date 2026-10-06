@@ -1,7 +1,10 @@
 using CACC.API.DTOs;
 using CACC.DAO;
+using CACC.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,6 +31,7 @@ namespace CACC.API.Controllers
             {
                 IdCategoria = c.IdCategoria,
                 NombreCategoria = c.NombreCategoria,
+                Asociacion = c.Asociacion,
                 CantidadJugadores = c.CantidadJugadores,
                 CantidadStaff = c.CantidadStaff
             });
@@ -67,8 +71,8 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "El nombre de la categoría es obligatorio." });
             }
 
-            int idNueva = await _categoriaDao.CrearAsync(dto.NombreCategoria);
-            return StatusCode(201, new { idCategoria = idNueva, nombreCategoria = dto.NombreCategoria.Trim() });
+            int idNueva = await _categoriaDao.CrearAsync(dto.NombreCategoria, dto.Asociacion);
+            return StatusCode(201, new { idCategoria = idNueva, nombreCategoria = dto.NombreCategoria.Trim(), asociacion = dto.Asociacion });
         }
 
         [HttpPut("{id}")]
@@ -80,7 +84,7 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "El nombre de la categoría es obligatorio." });
             }
 
-            bool actualizado = await _categoriaDao.ActualizarAsync(id, dto.NombreCategoria);
+            bool actualizado = await _categoriaDao.ActualizarAsync(id, dto.NombreCategoria, dto.Asociacion);
             if (!actualizado)
             {
                 return NotFound(new { message = $"Categoría con ID {id} no encontrada." });
@@ -218,6 +222,117 @@ namespace CACC.API.Controllers
         {
             await _categoriaDao.QuitarStaffAsync(id, idStaff);
             return Ok(new { message = "Miembro del cuerpo técnico desvinculado de la categoría." });
+        }
+
+        // ==========================================
+        // ENDPOINTS: HISTORIAL DE PARTIDOS
+        // ==========================================
+
+        [HttpGet("{id}/partidos")]
+        public async Task<IActionResult> GetPartidos(int id)
+        {
+            var partidos = await _categoriaDao.ObtenerPartidosPorCategoriaAsync(id);
+            var response = partidos.Select(p => new PartidoResponseDto
+            {
+                IdPartido = p.IdPartido,
+                IdCategoria = p.IdCategoria,
+                Categoria = p.Categoria,
+                Fecha = p.Fecha,
+                Rival = p.Rival,
+                Resultado = p.Resultado,
+                Condicion = p.Condicion
+            });
+            return Ok(response);
+        }
+
+        [HttpPost("{id}/partidos")]
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero,Director Técnico,Coordinador")]
+        public async Task<IActionResult> CrearPartido(int id, [FromBody] PartidoCreateDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Rival) || string.IsNullOrWhiteSpace(dto.Resultado) || string.IsNullOrWhiteSpace(dto.FechaPartido))
+            {
+                return BadRequest(new { message = "Fecha, rival y resultado son obligatorios." });
+            }
+
+            if (!DateTime.TryParse(dto.FechaPartido, out var fecha))
+            {
+                return BadRequest(new { message = "Formato de fecha inválido." });
+            }
+
+            var partidoAlta = new PartidoAlta
+            {
+                IdCategoria = id,
+                FechaPartido = fecha,
+                Rival = dto.Rival.Trim(),
+                CondicionLocalia = dto.CondicionLocalia.Trim(),
+                Resultado = dto.Resultado.Trim(),
+                Observaciones = dto.Observaciones?.Trim(),
+                JugadoresMinutos = dto.JugadoresMinutos?.Select(jm => new JugadorMinutoAlta
+                {
+                    IdJugador = jm.IdJugador,
+                    MinutosJugados = jm.MinutosJugados
+                }).ToList() ?? new List<JugadorMinutoAlta>()
+            };
+
+            int nuevoId = await _categoriaDao.RegistrarPartidoAsync(partidoAlta);
+            return StatusCode(201, new { idPartido = nuevoId, message = "Partido registrado con éxito." });
+        }
+        [HttpGet("{id}/partidos/{idPartido}")]
+        public async Task<IActionResult> GetPartidoPorId(int id, int idPartido)
+        {
+            var p = await _categoriaDao.ObtenerPartidoPorIdAsync(idPartido);
+            if (p == null)
+                return NotFound(new { message = $"Partido con ID {idPartido} no encontrado." });
+
+            return Ok(p);
+        }
+
+        [HttpPut("{id}/partidos/{idPartido}")]
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero,Director Técnico,Coordinador")]
+        public async Task<IActionResult> ActualizarPartido(int id, int idPartido, [FromBody] PartidoCreateDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Rival) || string.IsNullOrWhiteSpace(dto.Resultado) || string.IsNullOrWhiteSpace(dto.FechaPartido))
+            {
+                return BadRequest(new { message = "Fecha, rival y resultado son obligatorios." });
+            }
+
+            if (!DateTime.TryParse(dto.FechaPartido, out var fecha))
+            {
+                return BadRequest(new { message = "Formato de fecha inválido." });
+            }
+
+            var partidoEdicion = new PartidoEdicion
+            {
+                IdPartido = idPartido,
+                IdCategoria = id,
+                FechaPartido = fecha,
+                Rival = dto.Rival.Trim(),
+                CondicionLocalia = dto.CondicionLocalia.Trim(),
+                Resultado = dto.Resultado.Trim(),
+                Observaciones = dto.Observaciones?.Trim(),
+                JugadoresMinutos = dto.JugadoresMinutos?.Select(jm => new JugadorMinutoAlta
+                {
+                    IdJugador = jm.IdJugador,
+                    MinutosJugados = jm.MinutosJugados
+                }).ToList() ?? new List<JugadorMinutoAlta>()
+            };
+
+            bool ok = await _categoriaDao.ActualizarPartidoAsync(partidoEdicion);
+            if (!ok)
+                return NotFound(new { message = "No se pudo actualizar el partido especificado." });
+
+            return Ok(new { message = "Partido actualizado con éxito." });
+        }
+
+        [HttpDelete("{id}/partidos/{idPartido}")]
+        [Authorize(Roles = "Administrador (Tesorero),Tesorero,Director Técnico,Coordinador")]
+        public async Task<IActionResult> EliminarPartido(int id, int idPartido)
+        {
+            bool ok = await _categoriaDao.EliminarPartidoAsync(idPartido);
+            if (!ok)
+                return NotFound(new { message = "No se encontró el partido a eliminar." });
+
+            return Ok(new { message = "Partido eliminado exitosamente." });
         }
     }
 }
