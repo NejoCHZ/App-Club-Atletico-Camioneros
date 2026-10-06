@@ -1,0 +1,166 @@
+/* Layout Principal */
+.portal-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #014322; /* Verde oscuro del fondo */
+  background-image: linear-gradient(135deg, #013a1d 0%, #02592d 100%);
+  font-family: 'Segoe UI', sans-serif;
+  color: #FFFFFF;
+  padding: 0 40px;
+}
+
+/* Encabezado */
+.portal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 0;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  width: 40px;
+  height: auto;
+}
+
+.club-name {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+  .btn-logout:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+/* Contenido Central */
+.portal-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 40px;
+}
+
+.main-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: #FFFFFF;
+  text-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Contenedor de Tarjetas */
+.cards-container {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 1200px;
+}
+
+/* Tarjeta Individual */
+.portal-card {
+  background: #F8F9FA;
+  border-radius: 16px;
+  padding: 32px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.25);
+  color: #333333;
+}
+
+  .portal-card h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 12px 0;
+  }
+
+  .portal-card p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #6B7280;
+    margin: 0 0 24px 0;
+    flex-grow: 1;
+  }
+
+/* Grilla de Etiquetas (Features) */
+.tags-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.tag {
+  background: #F0FDF4;
+  border: 1px solid #D1FAE5;
+  color: #065F46;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+  .tag::before {
+    content: '✓'; /* Espacio para el ícono de Angular/SVG */
+    color: #059669;
+    font-weight: bold;
+  }
+
+/* Botón de Ingreso */
+.btn-enter {
+  background: #007A3D;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  width: 100%;
+}
+
+  .btn-enter:hover {
+    background: #006030;
+  }
+
+  .btn-enter:active {
+    transform: scale(0.98);
+  }
+
+/* Pie de página */
+.portal-footer {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}

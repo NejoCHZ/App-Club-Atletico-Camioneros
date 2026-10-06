@@ -1,0 +1,313 @@
+<div class="cacc-layout" [class.sidebar-collapsed]="sidebarOculto">
+  <!-- Sidebar Lateral Institucional -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrapper">
+        <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
+      </div>
+      <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
+      <p class="club-subtitle">Sistema de Gestión Integral</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems"
+         class="nav-item"
+         [class.active]="item.active"
+         (click)="selectNav(item.label)">
+        <span class="nav-icon" [ngSwitch]="item.icon">
+          <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="footer-action-btn portal-btn" (click)="irASeleccionPortales()" title="Volver a Selección de Portales">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </span>
+        <span>Selección de Portales</span>
+      </a>
+
+      <a class="footer-action-btn logout-btn" (click)="cerrarSesion()" title="Cerrar Sesión">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </span>
+        <span>Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Contenedor Principal -->
+  <div class="main-wrapper">
+    <!-- Header Superior -->
+    <header class="top-header">
+      <div class="header-left">
+        <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <h1 class="header-title">Historial Oficial de Partidos — {{ categoriaNombre }}</h1>
+      </div>
+
+      <div class="header-right">
+        <div class="admin-profile" (click)="toggleMenuUsuario($event)">
+          <div class="profile-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+          </div>
+          <div class="profile-info">
+            <span class="profile-name">{{ usuarioActual.nombre }}</span>
+            <span class="profile-email">{{ usuarioActual.email }}</span>
+          </div>
+          <span class="chevron-down" [class.rotated]="menuUsuarioAbierto">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+
+          <div class="user-dropdown-menu" *ngIf="menuUsuarioAbierto" (click)="$event.stopPropagation()">
+            <button type="button" class="dropdown-item" (click)="irAConfiguracion()">
+              <span class="dropdown-icon">⚙️</span> Configuración de cuenta
+            </button>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item text-danger" (click)="cerrarSesion()">
+              <span class="dropdown-icon">↪</span> Cerrar Sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Área de Contenido Unificada -->
+    <main class="content-body">
+      <section class="table-card">
+        <!-- Barra de Controles: Botón Volver + Buscar + Filtros + Botón Cargar + Balance Deportivo a la derecha -->
+        <div class="table-controls">
+          <button type="button" class="btn-action-outline btn-volver" (click)="volver()" title="Volver a Categorías">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Volver a Categorías
+          </button>
+
+          <div class="search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Buscar por equipo rival..." [(ngModel)]="searchTerm" class="search-input" />
+          </div>
+
+          <div class="select-box">
+            <select [(ngModel)]="condicionFiltro">
+              <option value="">Todas las condiciones</option>
+              <option value="Local">Local</option>
+              <option value="Visitante">Visitante</option>
+            </select>
+            <span class="select-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </div>
+
+          <div class="select-box">
+            <select [(ngModel)]="resultadoFiltro">
+              <option value="">Todos los resultados</option>
+              <option value="G">Ganados (G)</option>
+              <option value="E">Empatados (E)</option>
+              <option value="P">Perdidos (P)</option>
+            </select>
+            <span class="select-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </div>
+
+          <!-- Botón Cargar Nuevo Partido (Ubicado antes del resumen) -->
+          <button type="button" class="btn-add-player" (click)="abrirNuevoPartido()">
+            <span class="plus-icon">+</span> Cargar Nuevo Partido
+          </button>
+
+          <!-- Píldoras con Colores Institucionales a la derecha -->
+          <div class="stats-pills-row">
+            <span class="badge-count badge-partidos-total">{{ stats.total }} PARTIDOS</span>
+            <span class="badge-count badge-res-g">{{ stats.ganados }} G</span>
+            <span class="badge-count badge-res-e">{{ stats.empatados }} E</span>
+            <span class="badge-count badge-res-p">{{ stats.perdidos }} P</span>
+          </div>
+        </div>
+
+        <!-- Grilla Oficial de Partidos (Sin columna de foto) -->
+        <div class="table-responsive">
+          <table class="cacc-table">
+            <thead>
+              <tr>
+                <th class="th-fecha">FECHA</th>
+                <th class="th-rival">RIVAL</th>
+                <th class="th-condicion">CONDICIÓN</th>
+                <th class="th-resultado">RESULTADO</th>
+                <th class="th-obs">OBSERVACIONES</th>
+                <th class="th-acciones">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of filteredPartidos">
+                <td class="col-bold">{{ p.fecha }}</td>
+                <td class="col-rival">{{ p.rival }}</td>
+                <td class="col-condicion">
+                  <span class="badge-posicion">{{ p.condicion }}</span>
+                </td>
+                <td class="col-resultado">
+                  <span class="badge-status"
+                        [class.badge-aldia]="p.resultado.toUpperCase().startsWith('G')"
+                        [class.badge-pendiente]="p.resultado.toUpperCase().startsWith('E')"
+                        [class.badge-adeuda]="p.resultado.toUpperCase().startsWith('P')">
+                    {{ p.resultado }}
+                  </span>
+                </td>
+                <td class="col-obs">{{ p.observaciones || '-' }}</td>
+                <td class="col-acciones">
+                  <div class="actions-wrapper">
+                    <button type="button" class="action-btn view-btn" (click)="verDetalle(p)" title="Ver minutos jugados">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                    <button type="button" class="action-btn edit-btn" (click)="abrirEditarPartido(p)" title="Editar partido">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <button type="button" class="action-btn delete-btn" (click)="abrirEliminar(p)" title="Eliminar partido">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!cargando && filteredPartidos.length === 0">
+                <td colspan="6" class="no-records">
+                  No se encontraron partidos registrados para esta división.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Crear / Editar Partido -->
+  <div class="popup-overlay" *ngIf="modalFormVisible" (click)="modalFormVisible = false">
+    <div class="popup-card popup-partido" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <div class="header-titles">
+          <h3>{{ modoEdicion ? 'Editar Ficha del Partido' : 'Registrar Nuevo Partido Oficial' }}</h3>
+          <span class="sub-header-count">{{ categoriaNombre }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="modalFormVisible = false">✕</button>
+      </div>
+
+      <div class="popup-body">
+        <div class="partido-form-grid">
+          <div class="form-group">
+            <label class="form-label">Fecha del Partido <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="fechaPartido" class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Equipo Rival <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="rival" placeholder="Ej: General Paz Juniors" class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Condición <span class="required">*</span></label>
+            <select [(ngModel)]="condicionLocalia" class="form-input">
+              <option value="Local">Local</option>
+              <option value="Visitante">Visitante</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Resultado Final <span class="required">*</span></label>
+            <div class="resultado-input-group">
+              <select [(ngModel)]="tipoResultado" class="select-res-tipo">
+                <option value="G">Ganado (G)</option>
+                <option value="E">Empatado (E)</option>
+                <option value="P">Perdido (P)</option>
+              </select>
+              <input type="text" [(ngModel)]="marcador" placeholder="2-1" class="form-input input-marcador" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observaciones generales</label>
+          <input type="text" [(ngModel)]="observaciones" placeholder="Incidencias o notas del encuentro..." class="form-input" />
+        </div>
+
+        <div class="minutos-section">
+          <h5>Participación del plantel en el partido (Minutos jugados):</h5>
+          <div class="minutos-grid">
+            <div class="minuto-item" *ngFor="let j of jugadoresMinutos">
+              <span class="minuto-jugador-name">{{ j.nombreCompleto }} (DNI: {{ j.dni }})</span>
+              <div class="minuto-input-wrapper">
+                <input type="number" [(ngModel)]="j.minutosJugados" min="0" max="120" class="input-minutos" />
+                <span class="min-unit">min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup-footer">
+        <button type="button" class="btn-cancel" (click)="modalFormVisible = false" [disabled]="guardando">Cancelar</button>
+        <button type="button" class="btn-solid-green" (click)="guardarPartido()" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : (modoEdicion ? 'Actualizar Partido' : 'Registrar Partido') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Ver Detalle de Minutos Disputados -->
+  <div class="popup-overlay" *ngIf="modalDetalleVisible && partidoDetalle" (click)="modalDetalleVisible = false">
+    <div class="popup-card" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <div class="header-titles">
+          <h3>Ficha Técnica: vs {{ partidoDetalle.rival }}</h3>
+          <span class="sub-header-count">Resultado: {{ partidoDetalle.resultado }} | Condición: {{ partidoDetalle.condicion }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="modalDetalleVisible = false">✕</button>
+      </div>
+      <div class="popup-body">
+        <p class="detalle-sub"><strong>Fecha:</strong> {{ partidoDetalle.fecha | date:'dd/MM/yyyy' }}</p>
+        <p class="detalle-sub" *ngIf="partidoDetalle.observaciones"><strong>Notas:</strong> {{ partidoDetalle.observaciones }}</p>
+
+        <h5 class="minutos-title">Minutos disputados por los futbolistas:</h5>
+        <div class="detalle-minutos-list">
+          <div class="minuto-row" *ngFor="let jm of partidoDetalle.jugadoresMinutos">
+            <span>{{ jm.nombreCompleto }}</span>
+            <strong class="badge-posicion">{{ jm.minutosJugados }} min</strong>
+          </div>
+          <div *ngIf="partidoDetalle.jugadoresMinutos?.length === 0" class="no-records">
+            No se cargaron minutos individuales para este encuentro.
+          </div>
+        </div>
+      </div>
+      <div class="popup-footer">
+        <button type="button" class="btn-solid-green" (click)="modalDetalleVisible = false">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirmar Eliminación -->
+  <div class="popup-overlay" *ngIf="modalEliminarVisible && partidoAEliminar" (click)="modalEliminarVisible = false">
+    <div class="popup-card popup-card-small" (click)="$event.stopPropagation()">
+      <div class="popup-card-header header-danger">
+        <div class="popup-header-icon-danger">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h2 class="text-danger-title">Confirmar Eliminación</h2>
+        <button type="button" class="btn-close-popup" (click)="modalEliminarVisible = false">✕</button>
+      </div>
+      <div class="popup-body">
+        <p class="delete-msg">¿Desea eliminar el partido contra <strong>{{ partidoAEliminar.rival }}</strong> disputado el {{ partidoAEliminar.fecha }}?</p>
+        <p class="delete-warning-note">⚠️ Esta acción removerá el registro del historial oficial y los minutos computados en los perfiles de los jugadores.</p>
+      </div>
+      <div class="popup-footer">
+        <button type="button" class="btn-cancel" (click)="modalEliminarVisible = false" [disabled]="eliminando">Cancelar</button>
+        <button type="button" class="btn-confirm-delete" (click)="confirmarEliminar()" [disabled]="eliminando">
+          {{ eliminando ? 'Eliminando...' : 'Eliminar Partido' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

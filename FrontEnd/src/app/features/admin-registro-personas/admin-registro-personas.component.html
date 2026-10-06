@@ -1,0 +1,57 @@
+<div class="registro-layout">
+  <!-- Encabezado simple con botón de volver -->
+  <header class="registro-header">
+    <button class="btn-back" (click)="volver()">
+      <span>❮</span> Volver a Portales
+    </button>
+    <div class="logo-container">
+      <img src="cacc-logo.png" alt="Escudo CACC" class="logo" />
+      <span class="club-name">CACC - Módulo de Personas</span>
+    </div>
+  </header>
+
+  <!-- Contenido Central -->
+  <main class="registro-main">
+    <h1 class="main-title">¿A quién deseás registrar?</h1>
+    <p class="subtitle">Seleccioná el tipo de perfil para iniciar el proceso de alta en el sistema.</p>
+
+    <div class="cards-container">
+
+      <!-- Opción: Jugador -->
+      <div class="registro-card" (click)="navegar('jugador')">
+        <div class="icon-wrapper jugador-icon">
+          <!-- Icono SVG de Jugador -->
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h2>Nuevo Jugador</h2>
+        <p>Inscripción de deportistas, asignación de categoría, carga de apto físico y registro de tutores.</p>
+        <div class="card-footer">
+          <span>Ir al formulario</span>
+          <span class="arrow">➔</span>
+        </div>
+      </div>
+
+      <!-- Opción: Staff -->
+      <div class="registro-card" (click)="navegar('staff')">
+        <div class="icon-wrapper staff-icon">
+          <!-- Icono SVG de Staff/Usuario -->
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <polyline points="17 11 19 13 23 9"></polyline>
+          </svg>
+        </div>
+        <h2>Nuevo Staff</h2>
+        <p>Alta de coordinadores, directores técnicos, médicos y personal administrativo con acceso al sistema.</p>
+        <div class="card-footer">
+          <span>Ir al formulario</span>
+          <span class="arrow">➔</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

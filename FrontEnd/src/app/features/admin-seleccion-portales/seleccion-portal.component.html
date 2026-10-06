@@ -1,0 +1,70 @@
+<div class="portal-layout">
+  <!-- Encabezado -->
+  <header class="portal-header">
+    <div class="logo-container">
+      <img src="cacc-logo.png" alt="Escudo CACC" class="logo" />
+      <span class="club-name">Club Atlético Camioneros de Córdoba</span>
+    </div>
+    <button type="button" class="btn-logout" (click)="cerrarSesion()">
+      <span class="icon-logout">↪</span> Cerrar sesión
+    </button>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="portal-main">
+    <h1 class="main-title">¿A qué portal querés ingresar?</h1>
+
+    <div class="cards-container">
+
+      <!-- 1. Portal Administrativo -->
+      <div class="portal-card">
+        <h2>Portal Administrativo</h2>
+        <p>Acceso para personal administrativo y directivos. Gestión de socios, cuotas, documentación y reportes financieros.</p>
+
+        <div class="tags-grid">
+          <span class="tag">Gestión de socios</span>
+          <span class="tag">Cuotas y pagos</span>
+          <span class="tag">Documentación</span>
+          <span class="tag">Reportes</span>
+        </div>
+
+        <button type="button" class="btn-enter" (click)="navegar('administrativo')">Ingresar al Portal Administrativo ›</button>
+      </div>
+
+      <!-- 2. Portal Deportivo -->
+      <div class="portal-card">
+        <h2>Portal Deportivo</h2>
+        <p>Acceso para profesores, entrenadores y gestión de jugadores. Categorías, asistencia y seguimiento deportivo.</p>
+
+        <div class="tags-grid">
+          <span class="tag">Jugadores</span>
+          <span class="tag">Profesores</span>
+          <span class="tag">Categorías</span>
+          <span class="tag">Seguimiento</span>
+        </div>
+
+        <button type="button" class="btn-enter" (click)="navegar('deportivo')">Ingresar al Portal Deportivo ›</button>
+      </div>
+
+      <!-- 3. Registro de Personas -->
+      <div class="portal-card">
+        <h2>Registro de Personas</h2>
+        <p>Módulo de gestión de altas, registros y control centralizado de usuarios e individuos del sistema.</p>
+
+        <div class="tags-grid">
+          <span class="tag">Alta de usuarios</span>
+          <span class="tag">Edición de datos</span>
+          <span class="tag">Consultas</span>
+        </div>
+
+        <button type="button" class="btn-enter" (click)="navegar('personas')">Ingresar a Registro de Personas ›</button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Pie de página -->
+  <footer class="portal-footer">
+    CACC © 2026 — Todos los derechos reservados
+  </footer>
+</div>
