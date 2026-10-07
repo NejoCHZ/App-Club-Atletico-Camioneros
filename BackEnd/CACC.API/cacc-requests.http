@@ -1,0 +1,79 @@
+@baseUrl = http://localhost:5191
+# Reemplazá este token con el que obtengas al hacer login
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoibXphcmF0ZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlRlc29yZXJvIiwiY2F0ZWdvcmlhcyI6IltdIiwiZXhwIjoxNzg5OTY2NzI5LCJpc3MiOiJDQUNDX0FQSSIsImF1ZCI6IkNBQ0NfQW5ndWxhciJ9.wWcl_GBjCUJBwm2gEwvItoJe79yhfsehZeGG0KOsYhw
+
+### ==========================================
+### 1. AUTENTICACIÓN
+### ==========================================
+
+### Iniciar sesión (Obtener token JWT y roles)
+POST http://localhost:5191/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "mzarate",
+  "password": "password123"
+}
+
+
+### ==========================================
+### 2. CATEGORÍAS Y STAFF
+### ==========================================
+
+### Obtener todas las categorías (Requiere Autenticación)
+GET {{baseUrl}}/api/categorias
+Authorization: Bearer {{token}}
+
+### Listar Staff general (Requiere rol Tesorero o Coordinador)
+GET {{baseUrl}}/api/staff
+Authorization: Bearer {{token}}
+
+
+### ==========================================
+### 3. JUGADORES Y PLANTEL
+### ==========================================
+
+### Listar todos los jugadores
+GET {{baseUrl}}/api/jugadores
+Authorization: Bearer {{token}}
+
+### Listar jugadores filtrados por categoría (ej: categoría 1)
+GET {{baseUrl}}/api/jugadores?categoriaId=1
+Authorization: Bearer {{token}}
+
+### Obtener detalle de un jugador específico por ID
+GET {{baseUrl}}/api/jugadores/11
+Authorization: Bearer {{token}}
+
+
+### ==========================================
+### 4. FICHA MÉDICA
+### ==========================================
+
+### Obtener ficha médica de un jugador por su ID de jugador
+GET {{baseUrl}}/api/fichas-medicas/jugador/1
+Authorization: Bearer {{token}}
+
+
+### ==========================================
+### 5. SEMÁFORO QR Y ASISTENCIAS
+### ==========================================
+
+### Registrar asistencia y verificar estado de deuda por DNI (Don QR / Admin)
+POST {{baseUrl}}/api/asistencias/verificar-y-registrar
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dni": "38123456",
+  "observaciones": "Ingreso a entrenamiento matutino"
+}
+
+
+### ==========================================
+### 6. CREDENCIALES PDF
+### ==========================================
+
+### Descargar credencial en PDF de un jugador (Devuelve archivo binario PDF)
+GET {{baseUrl}}/api/credenciales/jugador/11/pdf
+Authorization: Bearer {{token}}
