@@ -515,3 +515,11 @@
   color: #334155;
   font-weight: 600;
 }
+
+/* Figma personal-data icon color */
+.data-icon,
+.item-icon-box,
+.domicilio-box > svg,
+.domicilio-card > svg {
+  color: #007A3D;
+}

@@ -1,16 +1,39 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './features/login/login.component';
 
 export const routes: Routes = [
+  // 1. Redirección inicial: Si entran a la raíz, los mandamos al login
   {
     path: '',
-    redirectTo: 'admin',
+    redirectTo: 'login',
     pathMatch: 'full'
+  },
+  // 2. Ruta del componente Login
+  {
+    path: 'login',
+    component: LoginComponent
+  },
+
+  // --- RESTO DE TUS RUTAS INTACTAS ---
+  {
+    path: 'seleccion-portales',
+    loadComponent: () =>
+      import('./features/admin-seleccion-portales/seleccion-portal.component').then(
+        (m) => m.SeleccionPortalComponent
+      )
   },
   {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin-home/admin-home.component').then(
         (m) => m.AdminHomeComponent
+      )
+  },
+  {
+    path: 'admin/registro-personas',
+    loadComponent: () =>
+      import('./features/admin-registro-personas/admin-registro-personas.component').then(
+        (m) => m.AdminRegistroPersonasComponent
       )
   },
   {
@@ -138,6 +161,10 @@ export const routes: Routes = [
       import('./features/admin-lista-categoria/admin-lista-categoria').then(
         (m) => m.AdminListaCategoria
       )
+  },
+  {
+    path: 'admin/categorias/:id/partidos',
+    loadComponent: () => import('./features/admin-partidos-categoria/admin-partidos-categoria').then(m => m.AdminPartidosCategoria)
   },
   {
     path: 'admin/staff/ver-ficha/:id',

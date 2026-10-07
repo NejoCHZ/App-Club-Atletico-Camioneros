@@ -461,3 +461,11 @@
 .lesiones-list li {
   margin-bottom: 0.1rem;
 }
+
+/* Figma personal-data icon color */
+.data-icon,
+.item-icon-box,
+.domicilio-box > svg,
+.domicilio-card > svg {
+  color: #007A3D;
+}

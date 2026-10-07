@@ -434,3 +434,12 @@
   color: #64748b;
   font-size: 1rem;
 }
+
+/* Figma category avatar icon color */
+.user-avatar-circle,
+.category-avatar-circle {
+  color: #007A3D;
+}
+.category-avatar-circle {
+  color: #FFFFFF;
+}

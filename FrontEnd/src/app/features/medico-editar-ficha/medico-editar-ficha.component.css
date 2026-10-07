@@ -592,3 +592,11 @@
   background-color: #006030;
   border-color: #006030;
 }
+
+/* Figma personal-data icon color */
+.data-icon,
+.item-icon-box,
+.domicilio-box > svg,
+.domicilio-card > svg {
+  color: #007A3D;
+}

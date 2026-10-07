@@ -1,23 +1,6 @@
-@Cacc.Api_HostAddress = http://localhost:5031
+@CACC.API_HostAddress = http://localhost:5191
 
-GET {{Cacc.Api_HostAddress}}/api/jugadores
+GET {{CACC.API_HostAddress}}/weatherforecast/
 Accept: application/json
-
-###
-
-POST {{Cacc.Api_HostAddress}}/api/jugadores
-Content-Type: application/json
-
-{
-  "dni": "40.123.456",
-  "nombre": "Juan",
-  "apellido": "Pérez",
-  "fechaNacimiento": "2000-01-01",
-  "categoria": "Primera",
-  "posicion": "DELANTERO",
-  "clubOrigen": null,
-  "aptoFisico": true,
-  "tutor": null
-}
 
 ###

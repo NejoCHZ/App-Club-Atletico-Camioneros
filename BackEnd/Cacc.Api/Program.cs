@@ -1,52 +1,70 @@
-using Cacc.Dao;
-using Cacc.Api.Development;
-using Microsoft.OpenApi;
+using CACC.DAO;
+using CACC.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using QuestPDF.Infrastructure;
+
+// Configuramos la licencia Community de QuestPDF 
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddProblemDetails();
-builder.Services.AddControllers();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "CACC API",
-        Version = "v1",
-        Description = "API REST para la gestión deportiva del Club Atlético Camioneros de Córdoba."
-    });
-});
-builder.Services.AddSingleton<IJugadorRepository, JugadorRepository>();
+// Configurar CORS (Para que Angular no sea bloqueado)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("FrontendAngular", policy =>
+    options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:4200",
-                "http://127.0.0.1:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.WithOrigins("http://localhost:4200") // URL oficial de nuestro frontend Angular
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
+
+//Inyección de Dependencias 
+builder.Services.AddScoped<IUsuarioDao, UsuarioDao>();
+builder.Services.AddScoped<ICategoriaDao, CategoriaDao>();
+builder.Services.AddScoped<IStaffDao, StaffDao>();
+builder.Services.AddScoped<IJugadorDao, JugadorDao>();
+builder.Services.AddScoped<IFichaMedicaDao, FichaMedicaDao>();
+builder.Services.AddScoped<IAsistenciaDao, AsistenciaDao>();
+builder.Services.AddScoped<IQrService, QrService>();
+
+//  Agregar soporte para los Controllers
+builder.Services.AddControllers();
+
+//  Configurar el validador de JWT
+var jwtKey = builder.Configuration["JwtSettings:Key"]
+    ?? throw new InvalidOperationException("Falta la clave JWT en appsettings.");
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 var app = builder.Build();
 
-app.UseExceptionHandler();
-app.UseCors("FrontendAngular");
+//  Configurar el Pipeline HTTP
+app.UseCors("AllowAngular");
 
-if (app.Environment.IsDevelopment())
-{
-    DatosIniciales.Cargar(app.Services);
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("v1/swagger.json", "CACC API v1");
-        options.DocumentTitle = "CACC API - Swagger";
-    });
-    app.MapGet("/", () => Results.Redirect("/swagger"));
-}
+app.UseAuthentication(); // Primero validamos quién sos
+app.UseAuthorization();  // Después validamos qué podés hacer
 
 app.MapControllers();
 
 app.Run();
-
-public partial class Program;

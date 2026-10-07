@@ -1,8 +1,7 @@
-<div class="cacc-layout">
-  <!-- Left Sidebar (Verde Institucional CACC) -->
+<div class="cacc-layout" [class.sidebar-collapsed]="sidebarOculto">
+  <!-- Sidebar Lateral Institucional -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <!-- CACC Logo Shield Emblem -->
       <div class="logo-wrapper">
         <img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" />
       </div>
@@ -10,117 +9,183 @@
       <p class="club-subtitle">Sistema de Gestión Integral</p>
     </div>
 
-    <!-- Navigation Menu -->
+    <!-- Navegación Principal -->
     <nav class="sidebar-nav">
-      <a *ngFor="let item of navItems" 
-         class="nav-item" 
+      <a *ngFor="let item of navItems"
+         class="nav-item"
          [class.active]="item.active"
          (click)="selectNav(item.label)">
         <span class="nav-icon" [ngSwitch]="item.icon">
           <svg *ngSwitchCase="'home'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
+          <svg *ngSwitchCase="'category'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3"></circle><circle cx="5" cy="9" r="2"></circle><circle cx="19" cy="9" r="2"></circle><path d="M6 20v-1a6 6 0 0 1 12 0v1"></path><path d="M1 20v-1a4 4 0 0 1 4-4"></path><path d="M23 20v-1a4 4 0 0 0-4-4"></path></svg>
         </span>
         <span class="nav-label">{{ item.label }}</span>
       </a>
     </nav>
 
-    <!-- Logout at Bottom -->
+    <!-- Footer: Selección de Portales y Cerrar Sesión -->
     <div class="sidebar-footer">
-      <a class="logout-btn" (click)="volver()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      <a class="footer-action-btn portal-btn" (click)="irASeleccionPortales()" title="Volver a Selección de Portales">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </span>
+        <span>Selección de Portales</span>
+      </a>
+
+      <a class="footer-action-btn logout-btn" (click)="cerrarSesion()" title="Cerrar Sesión">
+        <span class="footer-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </span>
         <span>Cerrar Sesión</span>
       </a>
     </div>
   </aside>
 
-  <!-- Main Content Wrapper -->
+  <!-- Contenedor Principal -->
   <div class="main-wrapper">
     <!-- Header Superior -->
     <header class="top-header">
       <div class="header-left">
-        <h1 class="header-title">Panel Texto Ejemplo</h1>
+        <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <h1 class="header-title">Ficha Institucional de Staff</h1>
       </div>
 
       <div class="header-right">
-        <div class="admin-profile">
+        <!-- Perfil con Menú Desplegable Flotante (Nombre: Administrador) -->
+        <div class="admin-profile" (click)="toggleMenuUsuario($event)">
           <div class="profile-avatar">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
           </div>
           <div class="profile-info">
-            <span class="profile-name">Nombre Usuario</span>
-            <span class="profile-email">ejemplo@myejemplo.com</span>
+            <span class="profile-name">Administrador</span>
+            <span class="profile-email">{{ usuarioActual.email }}</span>
           </div>
-          <span class="chevron-down">
+          <span class="chevron-down" [class.rotated]="menuUsuarioAbierto">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </span>
+
+          <!-- Dropdown Flotante -->
+          <div class="user-dropdown-menu" *ngIf="menuUsuarioAbierto" (click)="$event.stopPropagation()">
+            <button type="button" class="dropdown-item" (click)="irAConfiguracion()">
+              <span class="dropdown-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.08A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.08A1.65 1.65 0 0 0 20.91 10H21a2 2 0 1 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"></path></svg></span> Configuración de cuenta
+            </button>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item text-danger" (click)="cerrarSesion()">
+              <span class="dropdown-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></span> Cerrar Sesión
+            </button>
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- Main View Body -->
+    <!-- Área de Visualización Central -->
     <main class="content-body">
-      <!-- Centered Staff Profile Card -->
-      <section class="staff-centered-card">
-        <!-- Photo Banner Box -->
+      <!-- Tarjeta Centrada de Visualización de Staff -->
+      <section class="staff-centered-card" *ngIf="!isLoading">
+        <!-- Banner con Ícono de Avatar -->
         <div class="photo-banner">
-          <svg width="72" height="72" viewBox="0 0 24 24" fill="#007A3D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          <svg width="68" height="68" viewBox="0 0 24 24" fill="#007A3D">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+          </svg>
         </div>
 
-        <!-- Name, Role & Pencil Edit Icon Header -->
+        <!-- Encabezado con Nombre, Rol y Botón de Edición Rápida -->
         <div class="profile-header-row">
-          <button class="pencil-edit-btn" (click)="editarPerfil()" title="Editar perfil">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          <button type="button" class="pencil-edit-btn" (click)="editarPerfil()" title="Editar ficha del colaborador">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
           </button>
           <div class="name-role-text">
             <h2 class="staff-name">{{ nombreCompleto }}</h2>
-            <span class="staff-role">{{ rol }}</span>
+            <span class="staff-role-badge">{{ rol }}</span>
           </div>
         </div>
 
         <hr class="card-divider" />
 
-        <!-- DATOS PERSONALES Section -->
+        <!-- Sección: DATOS FILIATORIOS Y LABORALES -->
         <div class="personal-data-section">
-          <h3 class="section-subtitle">DATOS PERSONALES</h3>
+          <h3 class="section-subtitle">INFORMACIÓN GENERAL Y DEPORTIVA</h3>
 
           <div class="personal-data-grid">
+            <!-- Fecha de Nacimiento -->
             <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path><path d="M2 21h20"></path><path d="M7 8v-2"></path><path d="M12 8v-2"></path><path d="M17 8v-2"></path></svg></div>
+              <div class="data-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path><path d="M2 21h20"></path><path d="M7 8v-2"></path><path d="M12 8v-2"></path><path d="M17 8v-2"></path></svg>
+              </div>
               <div class="data-label-group">
                 <span class="data-label">Fecha de nacimiento</span>
                 <span class="data-value">{{ fechaNacimiento }}</span>
               </div>
             </div>
 
+            <!-- Edad Calculada -->
             <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+              <div class="data-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </div>
               <div class="data-label-group">
                 <span class="data-label">Edad</span>
                 <span class="data-value">{{ edad }}</span>
               </div>
             </div>
 
+            <!-- DNI -->
             <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
+              <div class="data-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><circle cx="8" cy="16" r="1"></circle></svg>
+              </div>
               <div class="data-label-group">
-                <span class="data-label">Grupo sanguineo</span>
-                <span class="data-value">{{ grupoSanguineo }}</span>
+                <span class="data-label">DNI / Documento</span>
+                <span class="data-value">{{ dni }}</span>
               </div>
             </div>
 
+            <!-- Categoría / Plantel Asignado -->
             <div class="data-item">
-              <div class="data-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div>
+              <div class="data-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><circle cx="12" cy="5" r="3"></circle><circle cx="5" cy="19" r="3"></circle><circle cx="19" cy="19" r="3"></circle><line x1="8.5" y1="16.5" x2="10.5" y2="7.5"></line><line x1="15.5" y1="16.5" x2="13.5" y2="7.5"></line></svg>
+              </div>
               <div class="data-label-group">
-                <span class="data-label">Telefono tutor</span>
-                <span class="data-value">{{ telefonoTutor }}</span>
+                <span class="data-label">Plantel / Categoría Asignada</span>
+                <span class="data-value">{{ categoriaAsignada }}</span>
+              </div>
+            </div>
+
+            <!-- Email de Acceso -->
+            <div class="data-item">
+              <div class="data-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </div>
+              <div class="data-label-group">
+                <span class="data-label">Email / Usuario de acceso</span>
+                <span class="data-value">{{ email }}</span>
+              </div>
+            </div>
+
+            <!-- Estado de Actividad Institucional -->
+            <div class="data-item">
+              <div class="data-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </div>
+              <div class="data-label-group">
+                <span class="data-label">Estado</span>
+                <span class="badge-status" [ngClass]="activo ? 'badge-aldia' : 'badge-adeuda'">
+                  {{ activo ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
               </div>
             </div>
           </div>
 
+          <!-- Domicilio Declarado -->
           <div class="domicilio-box">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
             <div class="data-label-group flex-fill">
               <span class="data-label">Domicilio</span>
               <span class="data-value">{{ domicilio }}</span>
@@ -129,29 +194,34 @@
         </div>
       </section>
 
-      <!-- Bottom Action Footer Row -->
+      <!-- Estado de Carga -->
+      <div *ngIf="isLoading" class="loading-state">
+        Cargando ficha institucional del colaborador...
+      </div>
+
+      <!-- Barra Inferior de Acciones -->
       <footer class="bottom-actions-row">
         <div class="right-actions-group">
-          <button class="btn-volver-outline" (click)="volver()">
+          <button type="button" class="btn-volver-outline" (click)="volver()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            <span>Volver</span>
+            <span>Volver a Nómina</span>
           </button>
 
-          <button class="btn-solid-green" (click)="generarCredencial()">
+          <button type="button" class="btn-solid-green" (click)="generarCredencial()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            <span>Generar credencial</span>
+            <span>Generar credencial QR</span>
           </button>
         </div>
       </footer>
     </main>
   </div>
 
-  <!-- Popup Modal Credencial -->
-  <app-admin-popup-credencial 
-    [isVisible]="mostrarPopupCredencial" 
-    [nombre]="nombreCompleto" 
-    [documento]="'Documento Nro'" 
-    (close)="mostrarPopupCredencial = false"
-    (descargar)="descargarCredencial()">
+  <!-- Modal Emergente de Credencial Oficial con Código QR -->
+  <app-admin-popup-credencial [isVisible]="mostrarPopupCredencial"
+                              [nombre]="nombreCompleto"
+                              [documento]="dni ? ('DNI: ' + dni) : 'Documento Nro'"
+                              (close)="mostrarPopupCredencial = false"
+                              (descargar)="descargarCredencial()">
   </app-admin-popup-credencial>
 </div>
+

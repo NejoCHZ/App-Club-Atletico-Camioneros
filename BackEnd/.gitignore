@@ -1,2 +1,8 @@
 **/bin/
 **/obj/
+
+.vs/
+*.dll
+*.pdb
+*.exe
+*.cache

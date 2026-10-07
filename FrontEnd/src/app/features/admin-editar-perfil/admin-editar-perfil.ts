@@ -1,54 +1,35 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-
-export interface PartidoEditable {
-  dia: string;
-  fecha: string;
-  rival: string;
-  golesFavor: string;
-  golesContra: string;
-  minutos: string;
-}
+import { JugadorService } from '../../shared/services/jugador.service';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-admin-editar-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-editar-perfil.html',
-  styleUrl: './admin-editar-perfil.css',
+  styleUrl: './admin-editar-perfil.css'
 })
 export class AdminEditarPerfil implements OnInit {
-  playerId = 1;
-  nombreCompleto = '';
-  posicion = '';
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly jugadorService = inject(JugadorService);
+  private readonly authService = inject(AuthService);
 
-  fechaNacimiento = '';
-  edad = '';
-  peso = '';
-  altura = '';
-  pieHabil = '';
-  grupoSanguineo = '';
-  tutor = '';
-  telefonoTutor = '';
-  domicilio = '';
+  jugadorId = '';
+  cargando = true;
+  guardando = false;
+  errorCarga = '';
 
-  totalMinutosJugados = "00'";
+  usuarioActual = {
+    nombre: 'Cargando...',
+    email: '...'
+  };
 
-  partidos: PartidoEditable[] = Array.from({ length: 20 }, () => ({
-    dia: '',
-    fecha: '',
-    rival: '',
-    golesFavor: '',
-    golesContra: '',
-    minutos: ''
-  }));
-
-  patologias = '';
-  lesiones: string[] = ['Lesion 1', 'Lesion 2', 'Lesion 3'];
-  observacionesMedicas = '';
-
+  menuUsuarioAbierto = false;
+  sidebarOculto = false;
   activeTab = 'Jugadores';
 
   navItems = [
@@ -58,22 +39,168 @@ export class AdminEditarPerfil implements OnInit {
     { label: 'Categorias', icon: 'category', active: false }
   ];
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private location: Location
-  ) {}
+  perfil: any = {};
+  lesiones: string[] = [];
+  nuevaLesion = '';
+  usarFechaHoy = true;
+
+  posiciones = ['ARQUERO', 'DEFENSOR', 'VOLANTE', 'DELANTERO'];
+  pies = ['Derecho', 'Izquierdo', 'Ambidiestro'];
+  gruposSanguineos = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      const idParam = params['id'];
-      if (idParam) {
-        this.playerId = Number(idParam);
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.volver();
+      return;
+    }
+    this.jugadorId = id;
+    this.cargarUsuario();
+    this.cargarDatos();
+  }
+
+  private cargarUsuario(): void {
+    const token = this.authService.getToken();
+    const rol = this.authService.getRol() || 'Tesorero';
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || payload.email || '';
+        this.usuarioActual = { nombre: rol, email: email };
+      } catch {
+        this.usuarioActual = { nombre: rol, email: '' };
+      }
+    }
+  }
+
+  cargarDatos(): void {
+    this.cargando = true;
+    this.jugadorService.obtenerPorId(this.jugadorId).subscribe({
+      next: (data: any) => {
+        const fechaRaw = data.fechaDeNacimiento || data.FechaDeNacimiento || '';
+        const fechaCorta = fechaRaw ? fechaRaw.split('T')[0] : '';
+
+        this.perfil = {
+          id: data.idJugador || data.IdJugador,
+          nombre: data.nombre || data.Nombre,
+          apellido: data.apellido || data.Apellido,
+          dni: data.dni || data.Dni,
+          genero: data.genero || data.Genero || 'Masculino',
+          fechaNacimiento: fechaCorta,
+          posicion: data.posicionCancha || data.PosicionCancha,
+          idCategoria: data.idCategoria || data.IdCategoria || 0,
+          categoria: data.nombreCategoria || data.NombreCategoria,
+          clubOrigen: data.clubOrigen || data.ClubOrigen || 'Club Local',
+          peso: data.peso || data.Peso,
+          altura: data.altura || data.Altura,
+          pieHabil: data.pieHabil || data.PieHabil,
+          domicilio: data.domicilio || data.Domicilio || '',
+          tutor: data.tutor || data.Tutor || { nombre: '', apellido: '', telefono: '', email: '' },
+          fichaMedica: data.fichaMedica || data.FichaMedica || { patologias: '', historialLesiones: '', observaciones: '', grupoSanguineo: '' },
+          partidos: (data.partidos || data.Partidos || []).map((p: any) => ({
+            fecha: p.fecha || p.Fecha,
+            rival: p.rival || p.Rival,
+            condicion: p.condicion || p.Condicion || 'Local',
+            resultado: p.resultado || p.Resultado,
+            minutos: p.minutos || p.Minutos || 0
+          }))
+        };
+
+        const historialString = this.perfil.fichaMedica.historialLesiones || '';
+        this.lesiones = historialString
+          .split('.')
+          .map((l: string) => l.trim())
+          .filter((l: string) => l.length > 0);
+
+        this.cargando = false;
+      },
+      error: () => {
+        this.errorCarga = 'Error al cargar los datos para edición.';
+        this.cargando = false;
       }
     });
   }
 
-  selectNav(label: string) {
+  get edadCalculada(): string {
+    if (!this.perfil.fechaNacimiento) return '-';
+    const [anio, mes, dia] = this.perfil.fechaNacimiento.split('-').map(Number);
+    if (!anio) return '-';
+
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - anio;
+    if (hoy.getMonth() + 1 < mes || (hoy.getMonth() + 1 === mes && hoy.getDate() < dia)) {
+      edad--;
+    }
+    return `${edad} años`;
+  }
+
+  agregarLesion(): void {
+    let textoFinal = this.nuevaLesion.trim();
+
+    if (textoFinal) {
+      if (this.usarFechaHoy && !textoFinal.includes('(')) {
+        const hoy = new Date();
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const anio = hoy.getFullYear();
+        textoFinal += ` (${dia}/${mes}/${anio})`;
+      }
+
+      this.lesiones.push(textoFinal);
+      this.nuevaLesion = '';
+      this.sincronizarLesionesSQL();
+    }
+  }
+
+  eliminarLesion(index: number): void {
+    this.lesiones.splice(index, 1);
+    this.sincronizarLesionesSQL();
+  }
+
+  sincronizarLesionesSQL(): void {
+    this.perfil.fichaMedica.historialLesiones = this.lesiones.join('. ') + (this.lesiones.length > 0 ? '.' : '');
+  }
+
+  guardar(): void {
+    this.guardando = true;
+
+    this.jugadorService.actualizarPerfil(this.jugadorId, this.perfil).subscribe({
+      next: () => {
+        alert('¡Cambios guardados exitosamente en la base de datos!');
+        this.volver();
+      },
+      error: (err) => {
+        console.error('Error al guardar:', err);
+        alert('Ocurrió un error al guardar los cambios en el servidor.');
+        this.guardando = false;
+      }
+    });
+  }
+
+  toggleMenuUsuario(event: MouseEvent): void {
+    event.stopPropagation();
+    this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  toggleSidebar(): void {
+    this.sidebarOculto = !this.sidebarOculto;
+  }
+
+  @HostListener('document:click')
+  cerrarMenus(): void {
+    this.menuUsuarioAbierto = false;
+  }
+
+  irASeleccionPortales(): void {
+    this.router.navigate(['/seleccion-portales']);
+  }
+
+  irAConfiguracion(): void {
+    alert('Módulo de configuración de cuenta en desarrollo.');
+  }
+
+  selectNav(label: string): void {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
     if (label === 'Inicio') {
@@ -87,28 +214,12 @@ export class AdminEditarPerfil implements OnInit {
     }
   }
 
-  agregarLesion() {
-    const num = this.lesiones.length + 1;
-    this.lesiones.push(`Lesion ${num}`);
+  volver(): void {
+    this.router.navigate(['/admin/ficha-jugador', this.jugadorId]);
   }
 
-  editarLesion(index: number) {
-    const val = prompt('Editar lesión:', this.lesiones[index]);
-    if (val !== null && val.trim() !== '') {
-      this.lesiones[index] = val.trim();
-    }
-  }
-
-  eliminarLesion(index: number) {
-    this.lesiones.splice(index, 1);
-  }
-
-  cancelar() {
-    this.location.back();
-  }
-
-  guardar() {
-    alert('Cambios guardados con éxito.');
-    this.location.back();
+  cerrarSesion(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

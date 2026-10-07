@@ -1,0 +1,91 @@
+<div class="layout">
+  <div class="bg-shapes" aria-hidden="true">
+    <div class="shape-dark"></div>
+    <div class="shape-light"></div>
+  </div>
+
+  <section class="left-panel" aria-label="Club Atlético Social y Deportivo Camioneros">
+    <div class="logo-container">
+      <img src="cacc-logo.png" alt="Escudo Club Camioneros" class="club-logo" />
+    </div>
+    <h1 class="club-title">CLUB ATLETICO SOCIAL Y<br />DEPORTIVO CAMIONEROS</h1>
+  </section>
+
+  <main class="right-panel">
+    <div class="login-card">
+      <div class="avatar-container" aria-hidden="true">
+        <div class="avatar-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <h2>Iniciar sesión</h2>
+      <p class="subtitle">Accedé al panel de administración</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <div class="input-wrapper">
+            <svg class="input-icon left-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <input id="login-email" type="text" formControlName="email" placeholder="Ingresá tu email" autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <div class="input-wrapper">
+            <svg class="input-icon left-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input
+              id="login-password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Ingresá tu Contraseña"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M3 3l18 18"></path>
+                <path d="M10.6 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-2.1 3.1M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10.6 10.6 0 0 0 5-1.2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="loginForm.invalid || isLoading" class="submit-btn">
+          {{ isLoading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+        </button>
+
+        <div *ngIf="errorMessage" class="login-feedback" role="alert">{{ errorMessage }}</div>
+
+        <div class="divider"><span>o</span></div>
+
+        <div class="forgot-password">
+          <a href="#" (click)="$event.preventDefault()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
