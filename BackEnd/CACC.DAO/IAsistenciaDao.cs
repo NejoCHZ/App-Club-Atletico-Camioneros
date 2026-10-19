@@ -1,3 +1,3 @@
 using CACC.Entities;
 namespace CACC.DAO;
-public interface IAsistenciaDao { Task<ResultadoIngreso> ProcesarIngresoAsync(string dni,string observaciones); }
+public interface IAsistenciaDao { Task<ResultadoIngreso> RegistrarAsistenciaAsync(string dni, string estadoAcceso, string? observaciones); }

@@ -19,7 +19,7 @@ namespace CACC.DAO
         public async Task<UsuarioAuthData?> ObtenerUsuarioParaAuthAsync(string email)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             // Quitamos la condición de la contraseña de la query SQL
             var queryUsuario = @"

@@ -16,6 +16,11 @@ namespace CACC.API.DTOs
         [JsonPropertyName("fechaNacimiento")]
         public DateTime? FechaNacimiento { get; set; }
 
+        // Masculino o Femenino. Obligatorio: de el sale el arancel que se le cobra al jugador.
+        [JsonPropertyName("genero")]
+        public string Genero { get; set; } = string.Empty;
+
+        // Obligatoria: sin categoria el jugador no figura en los listados de deuda del Portal Administrativo.
         [JsonPropertyName("categoria")]
         public string Categoria { get; set; } = string.Empty;
 

@@ -57,6 +57,8 @@ export class AdminAltaJugadorComponent implements OnInit {
   nombre = '';
   apellido = '';
   fechaNacimiento = '';
+  // Obligatorio: de el sale el arancel que se le cobra al jugador (cuota e inscripcion).
+  genero: 'Masculino' | 'Femenino' | '' = '';
   categoria: number | '' = '';
   posicion: PosicionJugador | string = '';
   clubOrigen = '';
@@ -221,7 +223,7 @@ export class AdminAltaJugadorComponent implements OnInit {
     this.formularioEnviado = true;
     this.errorGuardado = '';
 
-    if (!this.dni.trim() || !this.nombre.trim() || !this.apellido.trim() || !this.fechaNacimiento || !this.categoria || !this.posicion) {
+    if (!this.dni.trim() || !this.nombre.trim() || !this.apellido.trim() || !this.fechaNacimiento || !this.genero || !this.categoria || !this.posicion) {
       alert('Por favor complete los campos obligatorios (*) del Jugador.');
       return;
     }
@@ -250,6 +252,7 @@ export class AdminAltaJugadorComponent implements OnInit {
       nombre: this.nombre.trim(),
       apellido: this.apellido.trim(),
       fechaNacimiento: fechaNacimientoIso,
+      genero: this.genero,
       categoria: this.categoria ? this.categoria.toString() : '',
       posicion: this.posicion as any,
       clubOrigen: this.clubOrigen?.trim() || null,

@@ -1,4 +1,5 @@
 using CACC.API.DTOs;
+using CACC.API.Services;
 using CACC.DAO;
 using CACC.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +16,13 @@ namespace CACC.API.Controllers
     {
         private readonly IJugadorDao _jugadorDao;
         private readonly ICurrentUserAccess _access;
+        private readonly IEstadoDeudaClient _estadoDeuda;
 
-        public JugadoresController(IJugadorDao jugadorDao, ICurrentUserAccess access)
+        public JugadoresController(IJugadorDao jugadorDao, ICurrentUserAccess access, IEstadoDeudaClient estadoDeuda)
         {
             _jugadorDao = jugadorDao;
             _access = access;
+            _estadoDeuda = estadoDeuda;
         }
 
         [HttpGet]
@@ -58,7 +61,15 @@ namespace CACC.API.Controllers
                 jugadoresDb = await _jugadorDao.ObtenerTodosAsync();
             }
 
-            var response = jugadoresDb.Select(j => new JugadorResponseDto
+            // El estado de cuota lo informa el Portal Administrativo (una sola consulta para todo el listado).
+            var lista = jugadoresDb.ToList();
+            var estados = await _estadoDeuda.PorLoteAsync(lista.Select(j => j.Dni), HttpContext.RequestAborted);
+            foreach (var j in lista)
+            {
+                j.EstadoCuota = EstadoCuotaTexto.De(estados is not null && estados.TryGetValue(j.Dni, out var e) ? e : null);
+            }
+
+            var response = lista.Select(j => new JugadorResponseDto
             {
                 IdJugador = j.IdJugador,
                 Nombre = j.Nombre,
@@ -102,6 +113,9 @@ namespace CACC.API.Controllers
             {
                 return Forbid();
             }
+
+            var consulta = await _estadoDeuda.PorDniAsync(j.Dni, HttpContext.RequestAborted);
+            j.EstadoCuota = EstadoCuotaTexto.De(consulta.Resultado == ResultadoConsulta.Ok ? consulta.Estado : null);
 
             var response = new JugadorResponseDto
             {
@@ -158,6 +172,12 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "Datos de actualización inválidos." });
             }
 
+            // El género nunca queda vacío: de él sale el arancel que se le cobra. Si no viene, se conserva el que ya tiene.
+            if (dto.Genero != null && dto.Genero != "Masculino" && dto.Genero != "Femenino")
+            {
+                return BadRequest(new { message = "El género debe ser Masculino o Femenino." });
+            }
+
             try
             {
                 var jugador = new JugadorDetalle
@@ -205,6 +225,16 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "El nombre y el DNI son obligatorios." });
             }
 
+            // De estos dos datos sale el arancel que se le cobra al jugador: la base tambien los exige.
+            if (dto.Genero != "Masculino" && dto.Genero != "Femenino")
+            {
+                return BadRequest(new { message = "El género es obligatorio (Masculino o Femenino): sin él no se sabe qué arancel cobrarle." });
+            }
+            if (!int.TryParse(dto.Categoria, out int idCategoria) || idCategoria <= 0)
+            {
+                return BadRequest(new { message = "La categoría es obligatoria." });
+            }
+
             try
             {
                 var jugadorAlta = new JugadorAlta
@@ -213,6 +243,7 @@ namespace CACC.API.Controllers
                     Nombre = dto.Nombre,
                     Apellido = dto.Apellido,
                     FechaNacimiento = dto.FechaNacimiento,
+                    Genero = dto.Genero,
                     Categoria = dto.Categoria,
                     Posicion = dto.Posicion,
                     ClubOrigen = dto.ClubOrigen,
@@ -261,7 +292,7 @@ namespace CACC.API.Controllers
                     return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
                 }
 
-                return Ok(new { message = "Jugador eliminado correctamente del club." });
+                return Ok(new { message = "Jugador dado de baja correctamente. Su historial se conserva." });
             }
             catch (Exception ex)
             {

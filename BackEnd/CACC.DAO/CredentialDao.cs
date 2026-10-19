@@ -11,7 +11,7 @@ public sealed class CredentialDao(IConfiguration configuration) : ICredentialDao
     public async Task<Guid?> GetOrCreateActiveCredentialForPlayerAsync(int playerId, CancellationToken ct)
     {
         await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync(ct);
+        await connection.OpenAuditadaAsync(ct);
         await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync(ct);
         const string personSql = "SELECT FK_id_persona FROM dbo.JUGADORES WHERE PK_id_jugador=@PlayerId;";
         await using var person = new SqlCommand(personSql, connection, transaction);
@@ -37,7 +37,7 @@ public sealed class CredentialDao(IConfiguration configuration) : ICredentialDao
 
     public async Task<string?> GetActiveDniAsync(Guid credentialId, CancellationToken ct)
     {
-        await using var connection = new SqlConnection(connectionString); await connection.OpenAsync(ct);
+        await using var connection = new SqlConnection(connectionString); await connection.OpenAuditadaAsync(ct);
         const string sql = "SELECT p.dni FROM dbo.CREDENCIALES_QR c JOIN dbo.PERSONAS p ON p.PK_id_persona=c.FK_id_persona WHERE c.id_credencial=@Id AND c.activa=1 AND c.fecha_revocacion IS NULL;";
         await using var command = new SqlCommand(sql, connection); command.Parameters.AddWithValue("@Id", credentialId);
         return (string?)await command.ExecuteScalarAsync(ct);
@@ -45,7 +45,7 @@ public sealed class CredentialDao(IConfiguration configuration) : ICredentialDao
 
     public async Task<CredentialPlayerData?> GetPlayerAsync(int playerId, CancellationToken ct)
     {
-        await using var connection = new SqlConnection(connectionString); await connection.OpenAsync(ct);
+        await using var connection = new SqlConnection(connectionString); await connection.OpenAuditadaAsync(ct);
         const string sql = "SELECT j.PK_id_jugador,p.nombre,p.apellido,p.dni FROM dbo.JUGADORES j JOIN dbo.PERSONAS p ON p.PK_id_persona=j.FK_id_persona WHERE j.PK_id_jugador=@Id;";
         await using var command = new SqlCommand(sql, connection); command.Parameters.AddWithValue("@Id", playerId);
         await using var reader = await command.ExecuteReaderAsync(ct);

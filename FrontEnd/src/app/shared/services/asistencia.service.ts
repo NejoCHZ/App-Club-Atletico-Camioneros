@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-export interface IngresoResult { accesoPermitido: boolean; asistenciaRegistrada: boolean; yaRegistrada: boolean; mensaje: string; deudaTotal: number; cuotasVencidas: number; }
+// verificado=false: el Portal Administrativo no respondió y el ingreso quedó marcado para revisar (la deuda es desconocida).
+export interface IngresoResult { accesoPermitido: boolean; asistenciaRegistrada: boolean; yaRegistrada: boolean; mensaje: string; verificado?: boolean; estado?: string; }
 @Injectable({ providedIn: 'root' })
 export class AsistenciaService {
   private readonly http = inject(HttpClient);

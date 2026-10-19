@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
+import { volverALosPortalesGuard } from '../core/auth/portales.guard';
 
 export const ADMIN_ROUTES: Routes = [
   { path: '', title: 'Administración', loadComponent: () => import('../features/admin-home/admin-home.component').then((m) => m.AdminHomeComponent) },
-  { path: 'portales', title: 'Portales', loadComponent: () => import('../features/admin-seleccion-portales/seleccion-portal.component').then((m) => m.SeleccionPortalComponent) },
+  { path: 'portales', canActivate: [volverALosPortalesGuard], children: [] },
   { path: 'registro-personas', title: 'Registro de personas', loadComponent: () => import('../features/admin-registro-personas/admin-registro-personas.component').then((m) => m.AdminRegistroPersonasComponent) },
   { path: 'jugadores', title: 'Jugadores', loadComponent: () => import('../features/admin-lista-jugadores/admin-lista-jugadores').then((m) => m.AdminListaJugadores) },
   { path: 'jugadores/nuevo', title: 'Registrar jugador', loadComponent: () => import('../features/admin-alta-jugador/admin-alta-jugador.component').then((m) => m.AdminAltaJugadorComponent) },

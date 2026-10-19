@@ -25,6 +25,13 @@ namespace CACC.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
+            // El inicio de sesión es único para los dos portales y vive en el Portal Administrativo. Este login queda
+            // apagado; solo se prende (Auth:LoginPropio = true) en un entorno de desarrollo sin el otro portal.
+            if (!_configuration.GetValue<bool>("Auth:LoginPropio"))
+            {
+                return StatusCode(410, new { message = "El inicio de sesión es único: ingresá desde el Portal Administrativo." });
+            }
+
             if (dto == null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
             {
                 return BadRequest(new { message = "El usuario y la contraseña son obligatorios." });

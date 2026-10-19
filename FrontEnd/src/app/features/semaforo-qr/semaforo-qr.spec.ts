@@ -21,7 +21,7 @@ describe('SemaforoQrComponent', () => {
   });
 
   it('announces and focuses an idempotently registered result', fakeAsync(() => {
-    registrar.and.returnValue(of({ accesoPermitido: true, asistenciaRegistrada: true, yaRegistrada: true, mensaje: 'Ya registrada', deudaTotal: 0, cuotasVencidas: 0 }));
+    registrar.and.returnValue(of({ accesoPermitido: true, asistenciaRegistrada: true, yaRegistrada: true, mensaje: 'Ya registrada' }));
     fixture.componentInstance.dni = '40111222';
     fixture.componentInstance.submitManual();
     fixture.detectChanges();
@@ -33,8 +33,41 @@ describe('SemaforoQrComponent', () => {
     expect(document.activeElement).toBe(heading);
   }));
 
+  function mostrar(resultado: object): HTMLElement {
+    registrar.and.returnValue(of(resultado));
+    fixture.componentInstance.dni = '40111222';
+    fixture.componentInstance.submitManual();
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('.result-card') as HTMLElement;
+  }
+
+  it('shows yellow with a month of debt', () => {
+    const card = mostrar({ accesoPermitido: true, asistenciaRegistrada: true, yaRegistrada: false, mensaje: 'Un mes', verificado: true, estado: 'solo_entrenamientos' });
+    expect(card.classList).toContain('yellow');
+    expect(card.querySelector('h1')!.textContent).toContain('con deuda');
+  });
+
+  it('shows red without access', () => {
+    const card = mostrar({ accesoPermitido: false, asistenciaRegistrada: false, yaRegistrada: false, mensaje: 'Denegado', verificado: true, estado: 'inhabilitado' });
+    expect(card.classList).toContain('red');
+    expect(card.querySelector('h1')!.textContent).toContain('inhabilitado');
+  });
+
+  it('shows red and says so when the player was removed from the club', () => {
+    const card = mostrar({ accesoPermitido: false, asistenciaRegistrada: false, yaRegistrada: false, mensaje: 'Baja', verificado: true, estado: 'baja' });
+    expect(card.classList).toContain('red');
+    expect(card.querySelector('h1')!.textContent).toContain('dado de baja');
+  });
+
+  it('shows yellow, never green, when the debt could not be verified', () => {
+    const card = mostrar({ accesoPermitido: true, asistenciaRegistrada: true, yaRegistrada: false, mensaje: 'Sin verificar', verificado: false, estado: 'sin_verificar' });
+    expect(card.classList).toContain('yellow');
+    expect(card.classList).not.toContain('green');
+    expect(card.querySelector('h1')!.textContent).toContain('sin verificar');
+  });
+
   it('does not show green or yellow without backend attendance confirmation', () => {
-    registrar.and.returnValue(of({ accesoPermitido: true, asistenciaRegistrada: false, yaRegistrada: false, mensaje: 'No confirmada', deudaTotal: 0, cuotasVencidas: 0 }));
+    registrar.and.returnValue(of({ accesoPermitido: true, asistenciaRegistrada: false, yaRegistrada: false, mensaje: 'No confirmada' }));
     fixture.componentInstance.dni = '40111222';
     fixture.componentInstance.submitManual();
     fixture.detectChanges();

@@ -18,7 +18,7 @@ namespace CACC.DAO
         public async Task<FichaMedica?> ObtenerPorJugadorIdAsync(int idJugador)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             var query = @"
                 SELECT PK_id_ficha_medica, FK_id_jugador, obra_social, numero_afiliado_os, 
@@ -42,7 +42,7 @@ namespace CACC.DAO
         public async Task<bool> CrearAsync(FichaMedica ficha)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             var query = @"
                 INSERT INTO FICHAS_MEDICAS 
@@ -64,7 +64,7 @@ namespace CACC.DAO
         public async Task<bool> ActualizarAsync(FichaMedica ficha)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             var query = @"
                 UPDATE FICHAS_MEDICAS SET 
