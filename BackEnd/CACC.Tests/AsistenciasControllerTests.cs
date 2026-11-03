@@ -107,8 +107,10 @@ public class AsistenciasControllerTests
     private sealed class FakeCredentialDao : ICredentialDao
     {
         public Task<Guid?> GetOrCreateActiveCredentialForPlayerAsync(int playerId, CancellationToken cancellationToken) => Task.FromResult<Guid?>(Guid.NewGuid());
+        public Task<Guid?> GetOrCreateActiveCredentialForStaffAsync(int staffId, CancellationToken cancellationToken) => Task.FromResult<Guid?>(Guid.NewGuid());
         public Task<string?> GetActiveDniAsync(Guid credentialId, CancellationToken cancellationToken) => Task.FromResult<string?>("99000002");
         public Task<CredentialPlayerData?> GetPlayerAsync(int playerId, CancellationToken cancellationToken) => Task.FromResult<CredentialPlayerData?>(null);
+        public Task<CredentialStaffData?> GetStaffAsync(int staffId, CancellationToken cancellationToken) => Task.FromResult<CredentialStaffData?>(null);
     }
 
     private static CurrentUserAccess CreatePhysicalTrainerAccess(int categoryId)

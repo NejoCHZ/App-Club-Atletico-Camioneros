@@ -141,7 +141,7 @@ export class AdminListaJugadores implements OnInit {
   cargarJugadores(): void {
     this.http.get<any[]>('/api/jugadores').subscribe({
       next: (data) => {
-        this.players = data.map(j => {
+        this.players = this.access.visiblePlayers(data).map(j => {
           let fechaFormateada = 'Sin informar';
           if (j.fechaDeNacimiento) {
             const date = new Date(j.fechaDeNacimiento);

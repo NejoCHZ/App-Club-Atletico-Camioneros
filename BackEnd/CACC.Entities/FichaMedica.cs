@@ -11,6 +11,8 @@ namespace CACC.Entities
         public string? AntecedentesSalud { get; set; }
         public string? MedicamentosCronicos { get; set; }
         public string? CondicionesCronicas { get; set; }
+        public string? Patologias { get; set; }
+        public string? HistorialLesiones { get; set; }
         public DateTime? AptoFisicoVencimiento { get; set; }
         public string? Observaciones { get; set; }
         public DateTime? FechaActualizacion { get; set; }

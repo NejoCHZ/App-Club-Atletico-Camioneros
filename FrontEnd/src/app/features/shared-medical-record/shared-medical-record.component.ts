@@ -27,6 +27,9 @@ export class SharedMedicalRecordComponent implements OnInit {
   error = '';
   success = '';
   playerId = 0;
+  injuries: string[] = [];
+  newInjury = '';
+  addToday = true;
 
   ngOnInit(): void {
     this.playerId = Number(this.route.snapshot.paramMap.get('id'));
@@ -41,13 +44,18 @@ export class SharedMedicalRecordComponent implements OnInit {
       error: () => this.error = 'No se pudo cargar el jugador.',
     });
     this.api.getMedicalRecord(this.playerId).subscribe({
-      next: (record) => { this.record = record; this.loading = false; },
+      next: (record) => {
+        this.record = record;
+        this.injuries = this.parseInjuries(record.historialLesiones);
+        this.loading = false;
+      },
       error: () => { this.error = 'No se pudo cargar la ficha médica del jugador.'; this.loading = false; },
     });
   }
 
   save(): void {
     if (!this.canEdit || !this.record || this.saving) return;
+    this.record.historialLesiones = this.injuries.join('\n');
     this.saving = true;
     this.error = '';
     this.success = '';
@@ -55,5 +63,31 @@ export class SharedMedicalRecordComponent implements OnInit {
       next: () => { this.saving = false; this.success = 'La ficha médica se guardó correctamente.'; },
       error: () => { this.saving = false; this.error = 'No se pudo guardar la ficha médica.'; },
     });
+  }
+
+  addInjury(): void {
+    const injury = this.newInjury.trim();
+    if (!injury) return;
+    const value = this.addToday ? `${injury} (${this.todayLabel()})` : injury;
+    this.injuries = [...this.injuries, value];
+    this.newInjury = '';
+  }
+
+  removeInjury(index: number): void {
+    this.injuries = this.injuries.filter((_, itemIndex) => itemIndex !== index);
+  }
+
+  private parseInjuries(value?: string | null): string[] {
+    if (!value) return [];
+    return value
+      .split(/\r?\n|\.\s+(?=[^.\r\n]*\(\d{2}\/\d{2}\/\d{4}\))|\.\s+(?=[A-ZÁÉÍÓÚÑ])/)
+      .map(item => item.trim().replace(/\.$/, ''))
+      .filter(Boolean);
+  }
+
+  private todayLabel(): string {
+    return new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+    }).format(new Date());
   }
 }

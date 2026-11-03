@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 import { normalizeRole } from '../../core/auth/roles';
+import { PortalAccessService } from '../../shared/auth/portal-access.service';
 
 interface TutorInfo {
   nombre?: string;
@@ -41,6 +42,7 @@ export class AdminHomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly access = inject(PortalAccessService);
 
   usuarioActual = {
     nombre: 'Cargando...',
@@ -120,7 +122,7 @@ export class AdminHomeComponent implements OnInit {
   private cargarDatos(): void {
     this.http.get<any[]>('/api/jugadores').subscribe({
       next: (data) => {
-        this.players = data.map(j => {
+        this.players = this.access.visiblePlayers(data).map(j => {
           let fechaFormateada = 'Sin informar';
           if (j.fechaDeNacimiento) {
             const date = new Date(j.fechaDeNacimiento);
@@ -154,8 +156,8 @@ export class AdminHomeComponent implements OnInit {
   private cargarCategoriasBd(): void {
     this.http.get<Categoria[]>('/api/categorias').subscribe({
       next: (data) => {
-        this.listaCategorias = data;
-        this.kpiCards[1].value = `+${data.length}`;
+        this.listaCategorias = this.access.visibleCategories(data);
+        this.kpiCards[1].value = `+${this.listaCategorias.length}`;
       },
       error: (err) => {
         console.error('Error al cargar categorías', err);

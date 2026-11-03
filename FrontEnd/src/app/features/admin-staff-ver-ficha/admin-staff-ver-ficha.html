@@ -88,7 +88,9 @@
       <section class="staff-centered-card" *ngIf="!isLoading">
         <!-- Banner con Ícono de Avatar -->
         <div class="photo-banner">
-          <span width="68" height="68" viewBox="0 0 24 24" fill="#007A3D" class="cacc-icon cacc-icon-profile"></span>
+          <div class="avatar-banner-circle">
+            <span width="44" height="44" viewBox="0 0 24 24" fill="#007A3D" class="cacc-icon cacc-icon-profile"></span>
+          </div>
         </div>
 
         <!-- Encabezado con Nombre, Rol y Botón de Edición Rápida -->
@@ -200,6 +202,11 @@
           <button type="button" class="btn-volver-outline" (click)="volver()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             <span>Volver a Nómina</span>
+          </button>
+
+          <button type="button" class="btn-edit-staff" (click)="editarPerfil()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span>Editar perfil</span>
           </button>
 
           <button type="button" class="btn-solid-green" (click)="generarCredencial()">

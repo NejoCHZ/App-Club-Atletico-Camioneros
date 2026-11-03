@@ -17,9 +17,34 @@ public sealed class CredentialDao(IConfiguration configuration) : ICredentialDao
         await using var person = new SqlCommand(personSql, connection, transaction);
         person.Parameters.AddWithValue("@PlayerId", playerId);
         var result = await person.ExecuteScalarAsync(ct);
-        if (result is null or DBNull) { await transaction.RollbackAsync(ct); return null; }
-        var personId = Convert.ToInt32(result);
+        return await GetOrCreateActiveCredentialAsync(result, connection, transaction, ct);
+    }
 
+    public async Task<Guid?> GetOrCreateActiveCredentialForStaffAsync(int staffId, CancellationToken ct)
+    {
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync(ct);
+        await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync(ct);
+        const string personSql = "SELECT u.FK_id_persona FROM dbo.STAFF s JOIN dbo.USUARIOS u ON u.PK_id_usuario=s.FK_id_usuario WHERE s.PK_id_staff=@StaffId;";
+        await using var person = new SqlCommand(personSql, connection, transaction);
+        person.Parameters.AddWithValue("@StaffId", staffId);
+        var result = await person.ExecuteScalarAsync(ct);
+        return await GetOrCreateActiveCredentialAsync(result, connection, transaction, ct);
+    }
+
+    private static async Task<Guid?> GetOrCreateActiveCredentialAsync(
+        object? personResult,
+        SqlConnection connection,
+        SqlTransaction transaction,
+        CancellationToken ct)
+    {
+        if (personResult is null or DBNull)
+        {
+            await transaction.RollbackAsync(ct);
+            return null;
+        }
+
+        var personId = Convert.ToInt32(personResult);
         const string findSql = "SELECT id_credencial FROM dbo.CREDENCIALES_QR WITH (UPDLOCK,HOLDLOCK) WHERE FK_id_persona=@PersonId AND activa=1 AND fecha_revocacion IS NULL;";
         await using var find = new SqlCommand(findSql, connection, transaction);
         find.Parameters.AddWithValue("@PersonId", personId);
@@ -50,5 +75,18 @@ public sealed class CredentialDao(IConfiguration configuration) : ICredentialDao
         await using var command = new SqlCommand(sql, connection); command.Parameters.AddWithValue("@Id", playerId);
         await using var reader = await command.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? new(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3)) : null;
+    }
+
+    public async Task<CredentialStaffData?> GetStaffAsync(int staffId, CancellationToken ct)
+    {
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync(ct);
+        const string sql = "SELECT s.PK_id_staff,p.nombre,p.apellido,p.dni FROM dbo.STAFF s JOIN dbo.USUARIOS u ON u.PK_id_usuario=s.FK_id_usuario JOIN dbo.PERSONAS p ON p.PK_id_persona=u.FK_id_persona WHERE s.PK_id_staff=@Id;";
+        await using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@Id", staffId);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        return await reader.ReadAsync(ct)
+            ? new(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3))
+            : null;
     }
 }

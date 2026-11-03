@@ -15,6 +15,8 @@ public class CredencialPdfContractTests
         Assert.Contains("new CredentialPdfData", controller);
         Assert.Contains("_tokenService.Create", controller);
         Assert.Contains("GetOrCreateActiveCredentialForPlayerAsync", controller);
+        Assert.Contains("GetOrCreateActiveCredentialForStaffAsync", controller);
+        Assert.Contains("staff/{idStaff}/pdf", controller);
         Assert.DoesNotContain("string dni = \"12345678\"", controller);
         Assert.DoesNotContain("Document.Create", controller);
     }

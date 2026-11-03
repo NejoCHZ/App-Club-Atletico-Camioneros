@@ -6,15 +6,13 @@ export const ADMIN_ROUTES: Routes = [
   { path: 'lista-jugadores', redirectTo: 'jugadores', pathMatch: 'full' },
   { path: 'ficha-jugador/:id', redirectTo: ({ params }) => `jugadores/${params['id']}` },
   { path: 'editar-perfil/:id', redirectTo: ({ params }) => `jugadores/${params['id']}/editar` },
-  { path: 'registro-personas', title: 'Registro de personas', loadComponent: () => import('../features/admin-registro-personas/admin-registro-personas.component').then((m) => m.AdminRegistroPersonasComponent) },
+  { path: 'registro-personas', title: 'Registro de personas', data: { desktopOwnShell: true }, loadComponent: () => import('../features/admin-registro-personas/admin-registro-personas.component').then((m) => m.AdminRegistroPersonasComponent) },
   { path: 'jugadores', title: 'Jugadores', loadComponent: () => import('../features/admin-lista-jugadores/admin-lista-jugadores').then((m) => m.AdminListaJugadores) },
   { path: 'jugadores/nuevo', title: 'Registrar jugador', data: { desktopOwnShell: true }, loadComponent: () => import('../features/admin-alta-jugador/admin-alta-jugador.component').then((m) => m.AdminAltaJugadorComponent) },
   { path: 'jugadores/:id/editar', title: 'Editar jugador', data: { desktopOwnShell: true }, loadComponent: () => import('../features/admin-editar-perfil/admin-editar-perfil').then((m) => m.AdminEditarPerfil) },
-  { path: 'jugadores/:id/ficha-medica', title: 'Ficha médica', data: { desktopOwnShell: true }, loadComponent: responsiveComponent(
-    () => import('../features/admin-medical-page/admin-medical-page').then((m) => m.AdminMedicalPage),
-    () => import('../features/jugador-perfil/jugador-perfil.component').then((m) => m.JugadorPerfilComponent),
-  ) },
+  { path: 'jugadores/:id/ficha-medica', title: 'Ficha médica', loadComponent: () => import('../features/admin-medical-page/admin-medical-page').then((m) => m.AdminMedicalPage) },
   { path: 'jugadores/:id/asistencias', title: 'Historial de asistencia', loadComponent: () => import('../features/historial-asistencia/historial-asistencia.component').then((m) => m.HistorialAsistenciaComponent) },
+  { path: 'jugadores/:id/partidos', title: 'Historial de partidos', loadComponent: () => import('../features/historial-partidos-jugador/historial-partidos-jugador.component').then((m) => m.HistorialPartidosJugadorComponent) },
   { path: 'jugadores/:id', title: 'Perfil del jugador', data: { desktopOwnShell: true }, loadComponent: responsiveComponent(
     () => import('../features/admin-ficha-jugador/admin-ficha-jugador').then((m) => m.AdminFichaJugador),
     () => import('../features/jugador-perfil/jugador-perfil.component').then((m) => m.JugadorPerfilComponent),

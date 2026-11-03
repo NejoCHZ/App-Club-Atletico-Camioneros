@@ -7,6 +7,7 @@ import { PosicionJugador } from '../../shared/models/jugador.model';
 import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
+import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
 
 export interface CategoriaSelectOption {
   id: number;
@@ -34,6 +35,7 @@ export class AdminAltaJugadorComponent implements OnInit {
 
   sidebarOculto = false;
   menuUsuarioAbierto = false;
+  nuevoJugadorId: number | null = null;
 
   navItems = [
     { label: 'Inicio', icon: 'home', active: false },
@@ -267,6 +269,7 @@ export class AdminAltaJugadorComponent implements OnInit {
     this.guardando = true;
     this.jugadorService.crear(nuevoJugador).subscribe({
       next: (jugador) => {
+        this.nuevoJugadorId = Number(jugador.id) || null;
         this.dni = jugador.dni;
         this.nombre = jugador.nombre;
         this.apellido = jugador.apellido;
@@ -284,7 +287,23 @@ export class AdminAltaJugadorComponent implements OnInit {
   }
 
   descargarCredencial(): void {
-    alert('Descargando credencial oficial en formato PDF...');
+    if (!this.nuevoJugadorId) {
+      alert('No se pudo identificar al jugador registrado.');
+      return;
+    }
+
+    this.http.get(`/api/credenciales/jugador/${this.nuevoJugadorId}/pdf`, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, credentialFileName('jugador', this.nombre, this.apellido));
+        this.mostrarPopupCredencial = false;
+      },
+      error: (err) => {
+        console.error('Error al generar la credencial del jugador:', err);
+        alert('No se pudo generar la credencial. Verificá la configuración del servidor.');
+      }
+    });
   }
 
   volver(): void {

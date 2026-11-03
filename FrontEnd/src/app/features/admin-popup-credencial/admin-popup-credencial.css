@@ -185,3 +185,88 @@
 --viewport-tier: desktop;
 }
 }
+/* Mobile keeps the same visual hierarchy as the desktop credential dialog. */
+@media (max-width: 767px) {
+  .popup-backdrop {
+    position: fixed; inset: 0; z-index: 9999; display: flex;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(15, 23, 42, .58);
+    backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+    box-sizing: border-box;
+  }
+  .popup-modal {
+    width: 100%; max-width: 390px; min-height: 0;
+    max-height: calc(100dvh - 36px); padding: 0; overflow: auto;
+    background: #fff; border: 1px solid #dce5e1; border-radius: 18px;
+    box-shadow: 0 22px 55px rgba(15, 23, 42, .28); box-sizing: border-box;
+  }
+  .popup-header {
+    display: flex; align-items: center; gap: 13px;
+    padding: 20px 20px 16px; background: #f2fbf6;
+  }
+  .header-icon-badge {
+    display: grid; flex: 0 0 48px; width: 48px; height: 48px;
+    place-items: center; background: #dff7ea; border: 1px solid #b7e8ce;
+    border-radius: 13px;
+  }
+  .header-icon-badge svg { width: 24px; height: 24px; }
+  .header-text { min-width: 0; }
+  .popup-title {
+    margin: 0; color: #0f172a; font-family: "Segoe UI", sans-serif;
+    font-size: 19px; font-weight: 800; line-height: 1.2;
+  }
+  .popup-subtitle {
+    margin: 4px 0 0; color: #64748b; font-family: "Segoe UI", sans-serif;
+    font-size: 12px; font-weight: 500; line-height: 1.35;
+  }
+  .popup-divider { height: 1px; margin: 0; background: #dce5e1; border: 0; }
+  .popup-body { display: flex; flex-direction: column; padding: 18px 20px 4px; }
+  .question-text {
+    margin: 0 0 17px; color: #1e293b; font-family: "Segoe UI", sans-serif;
+    font-size: 14px; font-weight: 700; line-height: 1.45;
+  }
+  .data-included-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .data-included-title {
+    color: #0f172a; font-family: "Segoe UI", sans-serif;
+    font-size: 13px; font-weight: 800;
+  }
+  .data-items-grid {
+    display: grid; grid-template-columns: 1fr; gap: 9px; margin: 0;
+  }
+  .data-item {
+    display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px;
+    min-height: 50px; align-items: center; padding: 10px 12px;
+    background: #f8faf9; border: 1px solid #dce5e1; border-radius: 10px;
+    box-sizing: border-box;
+  }
+  .data-item svg {
+    width: 20px; height: 20px; justify-self: center; stroke: #008443;
+  }
+  .data-val {
+    min-width: 0; color: #334155; font-family: "Segoe UI", sans-serif;
+    font-size: 13px; font-weight: 700; line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .popup-footer {
+    display: grid;
+    grid-template-columns: minmax(104px, .8fr) minmax(0, 1.35fr);
+    gap: 9px; margin: 18px 0 0; padding: 14px 20px 18px;
+    background: #fff; border-top: 1px solid #e3e9e6;
+  }
+  .btn-cancelar-outline, .btn-solid-green {
+    display: inline-flex; width: 100%; min-width: 0; min-height: 44px;
+    align-items: center; justify-content: center; gap: 7px; padding: 9px 10px;
+    border-radius: 9px; font-family: "Segoe UI", sans-serif;
+    font-size: 12px; font-weight: 800; line-height: 1.15;
+    box-sizing: border-box;
+  }
+  .btn-cancelar-outline {
+    color: #b42318; background: #fff; border: 1px solid #fda29b;
+  }
+  .btn-solid-green {
+    color: #fff; background: #008443; border: 1px solid #008443;
+  }
+  .btn-cancelar-outline svg, .btn-solid-green svg { flex: 0 0 auto; }
+}
