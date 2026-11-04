@@ -110,7 +110,16 @@ namespace CACC.API.Controllers
         [Authorize(Roles = AppRoles.Administradores)]
         public async Task<IActionResult> EliminarCategoria(int id)
         {
-            bool ok = await _categoriaDao.EliminarAsync(id);
+            bool ok;
+            try
+            {
+                ok = await _categoriaDao.EliminarAsync(id);
+            }
+            catch (CategoriaEnUsoException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+
             if (!ok)
             {
                 return NotFound(new { message = $"Categoría con ID {id} no encontrada para eliminar." });

@@ -23,7 +23,7 @@ namespace CACC.DAO
         {
             var listaStaff = new List<Persona>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 SELECT p.PK_id_persona, p.genero, p.fecha_de_nacimiento, p.dni, p.nombre, p.apellido
@@ -54,7 +54,7 @@ namespace CACC.DAO
         {
             var lista = new List<StaffDetalle>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 SELECT 
@@ -123,7 +123,7 @@ namespace CACC.DAO
         public async Task<StaffDetalle?> ObtenerPorIdAsync(int idStaff)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 SELECT 
@@ -191,7 +191,7 @@ namespace CACC.DAO
         public async Task<int> CrearAsync(StaffAlta staff)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
             using var transaction = connection.BeginTransaction();
 
             try
@@ -338,7 +338,7 @@ namespace CACC.DAO
         public async Task<bool> ActualizarAsync(StaffEdicion staff)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
             using var transaction = connection.BeginTransaction();
 
             try

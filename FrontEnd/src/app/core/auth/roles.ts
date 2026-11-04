@@ -34,6 +34,8 @@ const roleAliases: Record<string, AppRole> = {
   '3': 'medico',
   medico: 'medico',
   '4': 'dt',
+  '6': 'dt',
+  'preparador fisico': 'dt',
   dt: 'dt',
   tecnico: 'dt',
   'director tecnico': 'dt',

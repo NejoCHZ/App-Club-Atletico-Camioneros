@@ -6,6 +6,7 @@ namespace CACC.Entities
         public string Nombre { get; set; } = string.Empty;
         public string Apellido { get; set; } = string.Empty;
         public DateTime? FechaNacimiento { get; set; }
+        public string Genero { get; set; } = string.Empty;
         public string Categoria { get; set; } = string.Empty;
         public string? Posicion { get; set; }
         public string? ClubOrigen { get; set; }

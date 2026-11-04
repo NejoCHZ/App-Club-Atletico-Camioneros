@@ -7,10 +7,12 @@ namespace CACC.API.DTOs
     public class JugadorUpdateDto
     {
         [JsonPropertyName("nombre")]
-        public string Nombre { get; set; } = string.Empty;
+        public string Nombre { get => _nombre; set => _nombre = CACC.Entities.NombresPropios.Normalizar(value); }
+        private string _nombre = string.Empty;
 
         [JsonPropertyName("apellido")]
-        public string Apellido { get; set; } = string.Empty;
+        public string Apellido { get => _apellido; set => _apellido = CACC.Entities.NombresPropios.Normalizar(value); }
+        private string _apellido = string.Empty;
 
         [JsonPropertyName("dni")]
         public string Dni { get; set; } = string.Empty;

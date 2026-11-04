@@ -1,0 +1,46 @@
+# Verificación temporal de la rama feat/base-unificada (PR #22): compila y corre las pruebas.
+# Las pruebas que necesitan una base real se saltean o fallan: este entorno no tiene SQL Server.
+name: Verificacion PR 22
+on:
+  push:
+    branches: [ci/prueba-base-unificada]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '9.0.x' }
+      - name: Unir carpetas que en Windows son la misma (Cacc.Api = CACC.API, etc.)
+        run: |
+          cd BackEnd
+          for par in "Cacc.Api CACC.API" "Cacc.Dao CACC.DAO" "Cacc.Entities CACC.Entities"; do
+            set -- $par; cp -rn "$1"/. "$2"/; mv "$2/$1.csproj" "$2/$2.csproj"; rm -rf "$1"
+          done
+          grep -rn "ProjectReference" */*.csproj
+      - name: Compilar
+        run: |
+          set -o pipefail
+          dotnet build BackEnd/CACC.Tests/CACC.Tests.csproj -c Release 2>&1 | tee build.log || { bash .ci/log2annot.sh "Backend build" build.log; exit 1; }
+      - name: Pruebas
+        run: dotnet test BackEnd/CACC.Tests/CACC.Tests.csproj -c Release --no-build --logger trx --results-directory tr
+      - name: Resultado de pruebas
+        if: always()
+        run: python3 .ci/trx2annot.py tr Backend
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: FrontEnd } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci
+      - name: Compilar
+        run: |
+          set -o pipefail
+          npx ng build 2>&1 | tee ../fe-build.log || { bash ../.ci/log2annot.sh "Frontend build" ../fe-build.log; exit 1; }
+      - name: Pruebas
+        run: |
+          set -o pipefail
+          npx ng test --watch=false --browsers=ChromeHeadless 2>&1 | tee ../fe-test.log || { bash ../.ci/log2annot.sh "Frontend tests" ../fe-test.log; exit 1; }
+          bash ../.ci/log2annot.sh "Frontend tests OK" ../fe-test.log | grep notice || true

@@ -1,62 +1,41 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { homeForRole, normalizeRole } from '../../core/auth/roles';
+import { PORTALES } from '../../core/auth/portales.config';
+import { navegador } from '../../core/auth/navegador';
+import { tokenDelFragmento } from '../../core/auth/sso';
 
+// Este portal NO tiene login. El inicio de sesion es unico y vive en el Portal Administrativo. Esta ruta solo recibe la
+// sesion que ese portal entrega (#sso=<token>) y, si no hay una valida, manda de inmediato al login unico: no muestra nada.
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  template: '<p class="entrando" role="status">Ingresando&hellip;</p>',
+  styles: [':host{display:grid;place-items:center;min-height:100dvh;font-family:Inter,system-ui,sans-serif;color:#555}']
 })
-export class LoginComponent {
-  private readonly fb = inject(FormBuilder);
+export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly esNavegador = isPlatformBrowser(inject(PLATFORM_ID));
 
-  loginForm: FormGroup = this.fb.group({
-    email: ['', Validators.required],
-    password: ['', Validators.required]
-  });
+  ngOnInit(): void {
+    if (!this.esNavegador) return;
 
-  errorMessage: string = '';
-  isLoading: boolean = false;
-  showPassword: boolean = false;
+    const token = tokenDelFragmento(window.location.hash);
+    // El token sale de la direccion enseguida: no queda en el historial ni se copia al compartir el enlace.
+    if (token) window.history.replaceState(null, '', window.location.pathname + window.location.search);
 
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
-  }
-
-  onSubmit(): void {
-    if (this.loginForm.invalid) {
+    const role = token && this.authService.iniciarSesionConToken(token) ? normalizeRole(this.authService.getRol()) : null;
+    if (!role) {
+      this.authService.logout();
+      navegador.irA(PORTALES.administrativo);
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        const role = normalizeRole(this.authService.getRol());
-        if (!role) {
-          this.authService.logout();
-          this.errorMessage = 'Tu usuario no tiene un rol habilitado.';
-          return;
-        }
-
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-        this.router.navigateByUrl(returnUrl?.startsWith('/') ? returnUrl : homeForRole(role));
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error('Error de login:', err);
-        this.errorMessage = 'Credenciales incorrectas o usuario inactivo.';
-      }
-    });
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    void this.router.navigateByUrl(returnUrl?.startsWith('/') ? returnUrl : homeForRole(role));
   }
 }

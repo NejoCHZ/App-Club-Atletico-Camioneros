@@ -1,4 +1,5 @@
 import { routes } from './app.routes';
+import { volverALosPortalesGuard } from './core/auth/portales.guard';
 import { MainLayout } from './layout/main-layout/main-layout';
 import { ADMIN_ROUTES } from './routes/admin.routes';
 import { MEDICO_ROUTES } from './routes/medico.routes';
@@ -23,7 +24,7 @@ describe('critical application routes', () => {
     expect(deniedIndex).toBeLessThan(wildcardIndex);
   });
 
-  it('renders the protected portal selector outside MainLayout', async () => {
+  it('sends the protected portal selector route to the single selector of the Administrativo, outside MainLayout', () => {
     const portalIndex = routes.findIndex((route) => route.path === 'admin/portales');
     const adminIndex = routes.findIndex((route) => route.path === 'admin');
     const route = routes[portalIndex];
@@ -31,11 +32,10 @@ describe('critical application routes', () => {
     expect(portalIndex).toBeGreaterThanOrEqual(0);
     expect(portalIndex).toBeLessThan(adminIndex);
     expect(route.component).not.toBe(MainLayout);
-    expect(route.loadComponent).toBeDefined();
+    expect(route.loadComponent).toBeUndefined();      // este portal no tiene selector propio
     expect(route.canMatch?.length).toBeGreaterThan(0);
-    expect(route.canActivate?.length).toBeGreaterThan(0);
+    expect(route.canActivate).toContain(volverALosPortalesGuard);
     expect(route.data?.['roles']).toEqual(['admin']);
-    expect((await (route.loadComponent!() as Promise<any>)).name).toMatch(/^SeleccionPortalComponent/);
     expect(ADMIN_ROUTES.some((candidate) => candidate.path === 'portales')).toBeFalse();
   });
 

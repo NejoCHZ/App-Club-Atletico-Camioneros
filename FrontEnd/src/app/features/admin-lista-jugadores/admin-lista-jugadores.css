@@ -596,6 +596,19 @@
   border-color: #D97706;
 }
 
+.badge-sin-verificar {
+  background-color: #F1F5F9;
+  color: #475569;
+  border-color: #94A3B8;
+  border-style: dashed;
+}
+
+.badge-baja {
+  background-color: #E5E7EB;
+  color: #1F2937;
+  border-color: #6B7280;
+}
+
 /* Contenedor de Botones de Acción */
 .actions-wrapper {
   display: flex;

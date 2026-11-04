@@ -1,11 +1,13 @@
 import { Routes } from '@angular/router';
 import { roleGuard, roleMatchGuard } from './core/auth/auth.guard';
+import { volverALosPortalesGuard } from './core/auth/portales.guard';
 import { MainLayout } from './layout/main-layout/main-layout';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', title: 'Iniciar sesión', loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent) },
-  { path: 'admin/portales', title: 'Portales', data: { roles: ['admin'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadComponent: () => import('./features/admin-seleccion-portales/seleccion-portal.component').then((m) => m.SeleccionPortalComponent) },
+  // La eleccion de portales es una sola y vive en el Portal Administrativo: esta ruta solo lleva hasta alla.
+  { path: 'admin/portales', title: 'Portales', data: { roles: ['admin'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard, volverALosPortalesGuard], children: [] },
   { path: 'admin', component: MainLayout, data: { roles: ['admin'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/admin.routes').then((m) => m.ADMIN_ROUTES) },
   { path: 'coordinador', component: MainLayout, data: { roles: ['coordinador'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/coordinador.routes').then((m) => m.COORDINADOR_ROUTES) },
   { path: 'medico', component: MainLayout, data: { roles: ['medico'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/medico.routes').then((m) => m.MEDICO_ROUTES) },
