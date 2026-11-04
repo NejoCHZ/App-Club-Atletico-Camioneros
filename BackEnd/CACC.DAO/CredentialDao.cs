@@ -23,7 +23,7 @@ public sealed class CredentialDao(IConfiguration configuration) : ICredentialDao
     public async Task<Guid?> GetOrCreateActiveCredentialForStaffAsync(int staffId, CancellationToken ct)
     {
         await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync(ct);
+        await connection.OpenAuditadaAsync(ct);
         await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync(ct);
         const string personSql = "SELECT u.FK_id_persona FROM dbo.STAFF s JOIN dbo.USUARIOS u ON u.PK_id_usuario=s.FK_id_usuario WHERE s.PK_id_staff=@StaffId;";
         await using var person = new SqlCommand(personSql, connection, transaction);
@@ -80,7 +80,7 @@ public sealed class CredentialDao(IConfiguration configuration) : ICredentialDao
     public async Task<CredentialStaffData?> GetStaffAsync(int staffId, CancellationToken ct)
     {
         await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync(ct);
+        await connection.OpenAuditadaAsync(ct);
         const string sql = "SELECT s.PK_id_staff,p.nombre,p.apellido,p.dni FROM dbo.STAFF s JOIN dbo.USUARIOS u ON u.PK_id_usuario=s.FK_id_usuario JOIN dbo.PERSONAS p ON p.PK_id_persona=u.FK_id_persona WHERE s.PK_id_staff=@Id;";
         await using var command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@Id", staffId);
