@@ -11,6 +11,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '9.0.x' }
+      - name: Unir carpetas que en Windows son la misma (Cacc.Api = CACC.API, etc.)
+        run: |
+          cd BackEnd
+          for par in "Cacc.Api CACC.API" "Cacc.Dao CACC.DAO" "Cacc.Entities CACC.Entities"; do
+            set -- $par; cp -rn "$1"/. "$2"/; mv "$2/$1.csproj" "$2/$2.csproj"; rm -rf "$1"
+          done
+          grep -rn "ProjectReference" */*.csproj
       - name: Compilar
         run: |
           set -o pipefail
