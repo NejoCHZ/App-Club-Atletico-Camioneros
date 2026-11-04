@@ -30,11 +30,12 @@ describe('Admin and Coordinator legacy visual routes', () => {
     });
   });
 
-  it('loads the original Coordinator presentations for read/manage workflows', async () => {
+  it('uses the Admin mobile visual language for shared Coordinator workflows', async () => {
     await assertComponents(COORDINADOR_ROUTES, {
-      jugadores: 'CoordinadorListaJugadores',
-      'jugadores/:id': 'CoordinadorVisualizarPerfil',
-      categorias: 'CoordinadorSeleccionCategorias',
+      '': 'AdminHomeComponent',
+      jugadores: 'AdminListaJugadores',
+      'jugadores/:id': 'AdminFichaJugador',
+      categorias: 'AdminListaCategoria',
       'categorias/:id': 'CoordinadorVisualizarPlantel',
       'jugadores/:id/ficha-medica': 'CoordinadorMedicalPage',
     });

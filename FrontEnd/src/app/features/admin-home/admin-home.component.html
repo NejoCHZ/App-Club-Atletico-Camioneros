@@ -180,7 +180,7 @@
                   <button *ngIf="tieneTutor(p)"
                           type="button"
                           class="btn-action-tutor"
-                          (click)="verTutor(p)"
+                          (click)="$event.stopPropagation(); verTutor(p)"
                           title="Ver datos del tutor responsable">
                     <span width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="cacc-icon cacc-icon-tutor"></span>
                     <span>Ver tutor</span>

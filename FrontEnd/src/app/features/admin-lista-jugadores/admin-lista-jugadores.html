@@ -108,11 +108,11 @@
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                     </button>
                     <!-- Agregar / Editar Tutor -->
-                    <button *ngIf="canEditPlayers" type="button" class="action-btn tutor-btn" (click)="abrirModalTutor(p)" [title]="p.tutor ? 'Editar Tutor Responsable' : 'Asignar Tutor Responsable'">
+                    <button *ngIf="canEditPlayers" type="button" class="action-btn tutor-btn" (click)="$event.stopPropagation(); abrirModalTutor(p)" [title]="p.tutor ? 'Editar Tutor Responsable' : 'Asignar Tutor Responsable'">
                       <span width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" class="cacc-icon cacc-icon-tutor"></span>
                     </button>
                     <!-- Eliminar Jugador -->
-                    <button *ngIf="canEditPlayers" type="button" class="action-btn delete-btn" (click)="abrirModalEliminar(p)" title="Eliminar Jugador">
+                    <button *ngIf="canEditPlayers" type="button" class="action-btn delete-btn" (click)="$event.stopPropagation(); abrirModalEliminar(p)" title="Eliminar Jugador">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                     </button>
                   </div>
@@ -133,7 +133,11 @@
     <div class="popup-card popup-card-small" (click)="$event.stopPropagation()">
       <div class="popup-card-header header-danger">
         <div class="popup-header-icon-danger">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.3 3.7 2.4 17.3A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.7L13.7 3.7a2 2 0 0 0-3.4 0Z"></path>
+            <path d="M12 9v4"></path>
+            <path d="M12 17h.01"></path>
+          </svg>
         </div>
         <h2 class="popup-card-title text-danger-title">Confirmar Eliminación</h2>
         <button type="button" class="btn-close-popup" (click)="cancelarEliminar()">✕</button>
@@ -145,7 +149,7 @@
           <strong>{{ jugadorAEliminar?.nombreCompleto }}</strong> (DNI: {{ jugadorAEliminar?.dni }})?
         </p>
         <p class="delete-warning-note">
-          ⚠️ Si no tiene cuotas, pagos, descuentos, asistencias ni datos en la ficha médica, se elimina por completo y su DNI queda libre para volver a darlo de alta. Si tiene alguno (aunque sea una cuota pendiente), se lo da de baja y se conserva todo, incluida su deuda.
+          Si no tiene cuotas, pagos, descuentos, asistencias ni datos en la ficha médica, se elimina por completo y su DNI queda libre para volver a darlo de alta. Si tiene alguno (aunque sea una cuota pendiente), se lo da de baja y se conserva todo, incluida su deuda.
         </p>
       </div>
 

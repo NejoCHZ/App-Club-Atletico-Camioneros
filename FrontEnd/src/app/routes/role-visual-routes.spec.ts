@@ -13,12 +13,13 @@ const setMobileViewport = (matches: boolean) => {
 describe('role-specific visual routes', () => {
   beforeEach(() => setMobileViewport(true));
 
-  it('keeps every Médico workflow on the original Médico visual components', async () => {
+  it('uses the Admin mobile visual language while preserving Médico-specific workflows', async () => {
     const expected: Record<string, string> = {
-      jugadores: 'MedicoListaJugadoresComponent',
-      'jugadores/:id': 'MedicoFichaJugadorComponent',
+      '': 'AdminHomeComponent',
+      jugadores: 'AdminListaJugadores',
+      'jugadores/:id': 'AdminFichaJugador',
       'jugadores/:id/ficha-medica': 'MedicoEditarFichaComponent',
-      categorias: 'MedicoSeleccionCategoriasComponent',
+      categorias: 'AdminListaCategoria',
       'categorias/:id': 'MedicoCategoriaJugadoresComponent',
     };
     for (const [path, componentName] of Object.entries(expected)) {
@@ -28,12 +29,13 @@ describe('role-specific visual routes', () => {
     }
   });
 
-  it('keeps every DT workflow on the original DT visual components', async () => {
+  it('uses the Admin mobile visual language while preserving DT-specific roster workflows', async () => {
     const expected: Record<string, string> = {
-      jugadores: 'DtCategoriaJugadoresComponent',
-      'jugadores/:id': 'DtFichaJugadorComponent',
-      'jugadores/:id/ficha-medica': 'DtFichaJugadorComponent',
-      categorias: 'DtCategoriaComponent',
+      '': 'AdminHomeComponent',
+      jugadores: 'AdminListaJugadores',
+      'jugadores/:id': 'AdminFichaJugador',
+      'jugadores/:id/ficha-medica': 'AdminFichaJugador',
+      categorias: 'AdminListaCategoria',
       'categorias/:id': 'DtCategoriaJugadoresComponent',
     };
     for (const [path, componentName] of Object.entries(expected)) {

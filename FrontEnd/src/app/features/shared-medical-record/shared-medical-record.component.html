@@ -1,23 +1,54 @@
 <main class="medical-page">
-  <a [routerLink]="['/', role, 'jugadores', playerId]" class="back-link">← Volver al perfil</a>
-  <header>
-    <div><p class="eyebrow">Ficha médica</p><h1>{{ player ? player.nombre + ' ' + player.apellido : 'Jugador' }}</h1></div>
-    <span class="mode" [class.editable]="canEdit">{{ canEdit ? 'Edición habilitada' : 'Solo lectura' }}</span>
+  <header class="medical-page-header">
+    <div>
+      <p class="eyebrow">Seguimiento del jugador</p>
+      <h1>Ficha médica</h1>
+      <p class="player-name" *ngIf="player">{{ player.nombre }} {{ player.apellido }}</p>
+    </div>
+    <a [routerLink]="['/', role, 'jugadores', playerId]" class="back-link">← Volver al perfil</a>
   </header>
   <p *ngIf="loading" class="state">Cargando ficha médica…</p>
   <p *ngIf="error" class="state error">{{ error }}</p>
   <p *ngIf="success" class="state success">{{ success }}</p>
 
   <form *ngIf="record as ficha" (ngSubmit)="save()" class="record-card">
-    <label>Obra social<input name="obraSocial" [(ngModel)]="ficha.obraSocial" [disabled]="!canEdit"></label>
-    <label>Número de afiliado<input name="numeroAfiliadoOs" type="number" [(ngModel)]="ficha.numeroAfiliadoOs" [disabled]="!canEdit"></label>
-    <label>Grupo sanguíneo<input name="grupoSanguineo" [(ngModel)]="ficha.grupoSanguineo" [disabled]="!canEdit"></label>
-    <label>Factor<input name="factor" [(ngModel)]="ficha.factor" [disabled]="!canEdit"></label>
-    <label>Vencimiento del apto físico<input name="aptoFisicoVencimiento" type="date" [(ngModel)]="ficha.aptoFisicoVencimiento" [disabled]="!canEdit"></label>
-    <label class="wide">Antecedentes de salud<textarea name="antecedentesSalud" [(ngModel)]="ficha.antecedentesSalud" [disabled]="!canEdit"></textarea></label>
-    <label class="wide">Medicamentos crónicos<textarea name="medicamentosCronicos" [(ngModel)]="ficha.medicamentosCronicos" [disabled]="!canEdit"></textarea></label>
-    <label class="wide">Condiciones crónicas<textarea name="condicionesCronicas" [(ngModel)]="ficha.condicionesCronicas" [disabled]="!canEdit"></textarea></label>
-    <label class="wide">Observaciones<textarea name="observaciones" [(ngModel)]="ficha.observaciones" [disabled]="!canEdit"></textarea></label>
-    <div class="actions wide" *ngIf="canEdit"><button type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button></div>
+    <section class="record-section">
+      <label for="pathologies">Patologías</label>
+      <textarea id="pathologies" name="patologias" [(ngModel)]="ficha.patologias" [disabled]="!canEdit"></textarea>
+    </section>
+
+    <section class="record-section">
+      <span class="section-label">Historial de lesiones</span>
+      <div class="injury-list" *ngIf="injuries.length; else noInjuries">
+        <div class="injury-item" *ngFor="let injury of injuries; let i = index">
+          <span><i aria-hidden="true"></i>{{ injury }}</span>
+          <button *ngIf="canEdit" type="button" class="delete-injury" (click)="removeInjury(i)" [attr.aria-label]="'Eliminar ' + injury">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/></svg>
+          </button>
+        </div>
+      </div>
+      <ng-template #noInjuries><p class="empty-state">Sin lesiones registradas.</p></ng-template>
+
+      <div class="injury-editor" *ngIf="canEdit">
+        <div class="injury-input-row">
+          <input name="newInjury" [(ngModel)]="newInjury" placeholder="Ej: Esguince de tobillo" (keyup.enter)="$event.preventDefault(); addInjury()">
+          <button type="button" class="add-injury" (click)="addInjury()">+ Agregar</button>
+        </div>
+        <label class="date-option">
+          <input type="checkbox" name="addToday" [(ngModel)]="addToday">
+          <span>Agregar automáticamente la fecha de hoy</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="record-section">
+      <label for="medicalNotes">Observaciones médicas</label>
+      <textarea id="medicalNotes" name="observaciones" [(ngModel)]="ficha.observaciones" [disabled]="!canEdit"></textarea>
+    </section>
+
+    <div class="actions" *ngIf="canEdit">
+      <a [routerLink]="['/', role, 'jugadores', playerId]" class="cancel-button">Cancelar</a>
+      <button type="submit" class="save-button" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button>
+    </div>
   </form>
 </main>

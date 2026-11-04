@@ -434,6 +434,7 @@
 .table-responsive {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid #E2E8F0;
   border-radius: 10px;
   min-height: 0;
@@ -451,6 +452,7 @@
 
 .cacc-table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   font-size: 13px;
   table-layout: fixed;
@@ -468,6 +470,7 @@
     font-size: 12px;
     letter-spacing: 0.3px;
     white-space: nowrap;
+    box-sizing: border-box;
   }
 
   .cacc-table td {
@@ -475,6 +478,7 @@
     border-bottom: 1px solid #F1F5F9;
     color: #334155;
     vertical-align: middle;
+    box-sizing: border-box;
   }
 
   .cacc-table tbody tr {
@@ -499,22 +503,22 @@
 }
 
 .th-asociacion, .col-asociacion {
-  width: 140px;
+  width: 120px;
   text-align: center;
 }
 
 .th-jugadores, .col-jugadores {
-  width: 180px; /* Suficiente para "PLANTEL JUGADORES" completo */
+  width: 155px;
   text-align: center;
 }
 
 .th-staff, .col-staff {
-  width: 175px;
+  width: 150px;
   text-align: center;
 }
 
 .th-acciones, .col-acciones {
-  width: 215px;
+  width: 220px;
   text-align: center;
 }
 
@@ -567,20 +571,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  gap: 4px;
 }
 
 .btn-action-outline {
   background-color: #FFFFFF;
   color: #007A3D;
   border: 1.5px solid #007A3D;
-  padding: 5px 12px;
+  min-width: 0;
+  padding: 5px 8px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actions-wrapper > .btn-action-outline {
+  flex: 1 1 auto;
 }
 
   .btn-action-outline:hover {
@@ -598,6 +611,9 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
 }
 
 .edit-btn:hover {

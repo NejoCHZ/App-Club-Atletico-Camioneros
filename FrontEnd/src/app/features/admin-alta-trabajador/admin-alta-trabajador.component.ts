@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
+import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
 
 export interface CategoriaSimple {
   idCategoria: number;
@@ -31,6 +32,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
   menuUsuarioAbierto = false;
   sidebarOculto = false;
   mostrarPopupCredencial = false;
+  nuevoStaffId: number | null = null;
   mensajeExito = false;
   isLoading = false;
 
@@ -207,8 +209,9 @@ export class AdminAltaTrabajadorComponent implements OnInit {
 
     this.isLoading = true;
     this.http.post<any>('/api/staff', payload).subscribe({
-      next: () => {
+      next: (response) => {
         this.isLoading = false;
+        this.nuevoStaffId = Number(response?.idStaff) || null;
         this.mensajeExito = true;
         this.mostrarPopupCredencial = true;
       },
@@ -225,7 +228,23 @@ export class AdminAltaTrabajadorComponent implements OnInit {
   }
 
   descargarCredencial(): void {
-    alert('Descargando credencial oficial en formato PDF...');
+    if (!this.nuevoStaffId) {
+      alert('No se pudo identificar al colaborador registrado.');
+      return;
+    }
+
+    this.http.get(`/api/credenciales/staff/${this.nuevoStaffId}/pdf`, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, credentialFileName('staff', this.nombre, this.apellido));
+        this.mostrarPopupCredencial = false;
+      },
+      error: (err) => {
+        console.error('Error al generar la credencial del staff:', err);
+        alert('No se pudo generar la credencial. Verificá la configuración del servidor.');
+      }
+    });
   }
 
   toggleSidebar(): void {

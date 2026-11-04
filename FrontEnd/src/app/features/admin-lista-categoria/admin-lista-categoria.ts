@@ -167,7 +167,7 @@ export class AdminListaCategoria implements OnInit {
   cargarDatos(): void {
     this.http.get<any[]>('/api/categorias').subscribe({
       next: (data) => {
-        this.categorias = data.map(c => {
+        this.categorias = this.access.visibleCategories(data).map(c => {
           const cantJug = c.cantidadJugadores || 0;
           const cantStf = c.cantidadStaff || 0;
           const asoc = c.asociacion || ((c.nombreCategoria || '').toUpperCase().includes('AFA') ? 'AFA' : 'Liga Cordobesa');

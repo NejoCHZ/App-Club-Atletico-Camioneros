@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { JugadorModel } from '../../shared/models/jugador.model';
@@ -7,6 +7,7 @@ import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
+import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
 
 export interface JugadorFichaModel extends JugadorModel {
   domicilio?: string | null;
@@ -24,6 +25,7 @@ export class AdminFichaJugador implements OnInit {
   private readonly router = inject(Router);
   private readonly jugadorService = inject(JugadorService);
   private readonly authService = inject(AuthService);
+  private readonly http = inject(HttpClient);
   private readonly access = inject(PortalAccessService);
   readonly canEditPlayers = this.access.capabilities.canEditPlayers;
   readonly portalRoot = `/${this.access.role}`;
@@ -176,8 +178,8 @@ export class AdminFichaJugador implements OnInit {
   get lesionesList(): string[] {
     if (!this.jugador?.fichaMedica?.historialLesiones) return [];
     return this.jugador.fichaMedica.historialLesiones
-      .split('.')
-      .map(l => l.trim())
+      .split(/\r?\n|\.\s+(?=[^.\r\n]*\(\d{2}\/\d{2}\/\d{4}\))|\.\s+(?=[A-ZÁÉÍÓÚÑ])/)
+      .map(l => l.trim().replace(/\.$/, ''))
       .filter(l => l.length > 0);
   }
 
@@ -230,6 +232,10 @@ export class AdminFichaJugador implements OnInit {
     this.router.navigate([this.portalRoot, 'jugadores', this.playerId, 'asistencias']);
   }
 
+  verHistorialPartidos(): void {
+    this.router.navigate([this.portalRoot, 'jugadores', this.playerId, 'partidos']);
+  }
+
   editarPerfil(): void {
     if (!this.canEditPlayers) return;
     if (this.jugador) {
@@ -245,6 +251,19 @@ export class AdminFichaJugador implements OnInit {
   }
 
   descargarCredencial(): void {
-    alert(`Descargando credencial de ${this.nombreCompleto}...`);
+    if (!this.jugador) return;
+
+    this.http.get(`/api/credenciales/jugador/${this.jugador.id}/pdf`, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, credentialFileName('jugador', this.jugador!.nombre, this.jugador!.apellido));
+        this.mostrarPopupCredencial = false;
+      },
+      error: (err) => {
+        console.error('Error al generar la credencial del jugador:', err);
+        alert('No se pudo generar la credencial. Verificá la configuración del servidor.');
+      }
+    });
   }
 }

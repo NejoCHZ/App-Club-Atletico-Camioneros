@@ -1,0 +1,67 @@
+<main class="history-page">
+  <section class="history-header">
+    <div>
+      <span class="eyebrow">SEGUIMIENTO DEL JUGADOR</span>
+      <h1>Historial de partidos</h1>
+      <div class="player-meta">
+        <strong>{{ nombreCompleto }}</strong>
+        <span *ngIf="dni">DNI: {{ dni }}</span>
+        <span *ngIf="categoria">{{ categoria }}</span>
+      </div>
+    </div>
+    <button type="button" class="btn-outline" (click)="volver()">← Volver al perfil</button>
+  </section>
+
+  <section class="summary-grid" *ngIf="!cargando && !error">
+    <article class="summary-card"><span>Partidos</span><strong>{{ stats.total }}</strong></article>
+    <article class="summary-card result-win"><span>Ganados</span><strong>{{ stats.ganados }}</strong></article>
+    <article class="summary-card result-draw"><span>Empatados</span><strong>{{ stats.empatados }}</strong></article>
+    <article class="summary-card result-loss"><span>Perdidos</span><strong>{{ stats.perdidos }}</strong></article>
+    <article class="summary-card minutes"><span>Minutos disputados</span><strong>{{ stats.minutos }}'</strong></article>
+  </section>
+
+  <section class="history-panel">
+    <div class="filters-row">
+      <label class="search-box">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" [(ngModel)]="searchTerm" placeholder="Buscar por rival o categoría..." />
+      </label>
+      <select [(ngModel)]="condicionFiltro" aria-label="Filtrar por condición">
+        <option value="">Todas las condiciones</option>
+        <option value="Local">Local</option>
+        <option value="Visitante">Visitante</option>
+      </select>
+      <select [(ngModel)]="resultadoFiltro" aria-label="Filtrar por resultado">
+        <option value="">Todos los resultados</option>
+        <option value="G">Ganados</option>
+        <option value="E">Empatados</option>
+        <option value="P">Perdidos</option>
+      </select>
+      <select [(ngModel)]="ordenFiltro" aria-label="Ordenar partidos">
+        <option value="fecha-desc">Más recientes</option>
+        <option value="fecha-asc">Más antiguos</option>
+        <option value="rival">Rival A-Z</option>
+      </select>
+    </div>
+
+    <p class="state-message" *ngIf="cargando">Cargando historial...</p>
+    <p class="state-message error" *ngIf="error">{{ error }}</p>
+
+    <div class="table-responsive" *ngIf="!cargando && !error">
+      <table class="history-table">
+        <thead><tr><th>FECHA</th><th>RIVAL</th><th>CATEGORÍA</th><th>CONDICIÓN</th><th>RESULTADO</th><th>MINUTOS</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let partido of filteredPartidos">
+            <td data-label="Fecha">{{ partido.fecha }}</td>
+            <td data-label="Rival" class="rival">{{ partido.rival }}</td>
+            <td data-label="Categoría">{{ partido.categoria || '-' }}</td>
+            <td data-label="Condición"><span class="badge neutral">{{ partido.condicion }}</span></td>
+            <td data-label="Resultado"><span class="badge" [class.win]="partido.resultado.toUpperCase().startsWith('G')" [class.draw]="partido.resultado.toUpperCase().startsWith('E')" [class.loss]="partido.resultado.toUpperCase().startsWith('P')">{{ partido.resultado }}</span></td>
+            <td data-label="Minutos" class="minutes-value">{{ partido.minutos }}'</td>
+          </tr>
+          <tr *ngIf="filteredPartidos.length === 0"><td colspan="6" class="empty">No se encontraron partidos para los filtros seleccionados.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

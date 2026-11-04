@@ -43,7 +43,7 @@ describe('MainLayout', () => {
     expect(element.querySelector('.sidebar')).not.toBeNull();
     expect(element.querySelector('.top-header')).not.toBeNull();
     expect(element.querySelector('.sidebar-header .logo-wrapper .cacc-shield-img')).not.toBeNull();
-    expect(element.querySelector('.admin-profile .profile-avatar svg')).not.toBeNull();
+    expect(element.querySelector('.admin-profile .profile-avatar .cacc-icon-profile')).not.toBeNull();
     expect(element.querySelector('.admin-profile .profile-info .profile-name')?.textContent).toContain('Administrador');
     expect(element.querySelector('.admin-profile .chevron-down svg')).not.toBeNull();
     expect(element.querySelector('.sidebar-footer .portal-btn')?.textContent).toContain('Selección de Portales');

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
+import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
 
 export interface StaffFichaDetalle {
   idStaff: number;
@@ -166,7 +167,20 @@ export class AdminStaffVerFicha implements OnInit {
   }
 
   descargarCredencial(): void {
-    alert(`Descargando credencial oficial en PDF de ${this.nombreCompleto}...`);
+    if (!this.staffId) return;
+
+    this.http.get(`/api/credenciales/staff/${this.staffId}/pdf`, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, credentialFileName('staff', this.nombreCompleto));
+        this.mostrarPopupCredencial = false;
+      },
+      error: (err) => {
+        console.error('Error al generar la credencial del staff:', err);
+        alert('No se pudo generar la credencial. Verificá la configuración del servidor.');
+      }
+    });
   }
 
   toggleSidebar(): void {
