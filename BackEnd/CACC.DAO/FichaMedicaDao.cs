@@ -23,7 +23,9 @@ namespace CACC.DAO
             var query = @"
                 SELECT PK_id_ficha_medica, FK_id_jugador, obra_social, numero_afiliado_os, 
                        grupo_sanguineo, factor, antecedentes_salud, medicamentos_cronicos, 
-                       condiciones_cronicas, apto_fisico_vencimiento, observaciones, fecha_actualizacion 
+                       condiciones_cronicas, antecedentes_salud AS patologias,
+                       condiciones_cronicas AS historial_lesiones,
+                       apto_fisico_vencimiento, observaciones, fecha_actualizacion 
                 FROM FICHAS_MEDICAS 
                 WHERE FK_id_jugador = @IdJugador";
 
@@ -51,7 +53,7 @@ namespace CACC.DAO
                  apto_fisico_vencimiento, observaciones, fecha_actualizacion)
                 VALUES 
                 (@IdJugador, @ObraSocial, @NumeroAfiliadoOs, @GrupoSanguineo, @Factor, 
-                 @AntecedentesSalud, @MedicamentosCronicos, @CondicionesCronicas, 
+                 @Patologias, @MedicamentosCronicos, @HistorialLesiones, 
                  @AptoFisicoVencimiento, @Observaciones, GETDATE())";
 
             using var command = new SqlCommand(query, connection);
@@ -72,9 +74,9 @@ namespace CACC.DAO
                     numero_afiliado_os = @NumeroAfiliadoOs,
                     grupo_sanguineo = @GrupoSanguineo,
                     factor = @Factor,
-                    antecedentes_salud = @AntecedentesSalud,
+                    antecedentes_salud = @Patologias,
                     medicamentos_cronicos = @MedicamentosCronicos,
-                    condiciones_cronicas = @CondicionesCronicas,
+                    condiciones_cronicas = @HistorialLesiones,
                     apto_fisico_vencimiento = @AptoFisicoVencimiento,
                     observaciones = @Observaciones,
                     fecha_actualizacion = GETDATE()
@@ -95,9 +97,9 @@ namespace CACC.DAO
             command.Parameters.AddWithValue("@NumeroAfiliadoOs", (object?)ficha.NumeroAfiliadoOs ?? DBNull.Value);
             command.Parameters.AddWithValue("@GrupoSanguineo", (object?)ficha.GrupoSanguineo ?? DBNull.Value);
             command.Parameters.AddWithValue("@Factor", (object?)ficha.Factor ?? DBNull.Value);
-            command.Parameters.AddWithValue("@AntecedentesSalud", (object?)ficha.AntecedentesSalud ?? DBNull.Value);
             command.Parameters.AddWithValue("@MedicamentosCronicos", (object?)ficha.MedicamentosCronicos ?? DBNull.Value);
-            command.Parameters.AddWithValue("@CondicionesCronicas", (object?)ficha.CondicionesCronicas ?? DBNull.Value);
+            command.Parameters.AddWithValue("@Patologias", (object?)(ficha.Patologias ?? ficha.AntecedentesSalud) ?? DBNull.Value);
+            command.Parameters.AddWithValue("@HistorialLesiones", (object?)(ficha.HistorialLesiones ?? ficha.CondicionesCronicas) ?? DBNull.Value);
             command.Parameters.AddWithValue("@AptoFisicoVencimiento", (object?)ficha.AptoFisicoVencimiento ?? DBNull.Value);
             command.Parameters.AddWithValue("@Observaciones", (object?)ficha.Observaciones ?? DBNull.Value);
         }
@@ -116,6 +118,8 @@ namespace CACC.DAO
                 AntecedentesSalud = reader.IsDBNull(reader.GetOrdinal("antecedentes_salud")) ? null : reader.GetString(reader.GetOrdinal("antecedentes_salud")),
                 MedicamentosCronicos = reader.IsDBNull(reader.GetOrdinal("medicamentos_cronicos")) ? null : reader.GetString(reader.GetOrdinal("medicamentos_cronicos")),
                 CondicionesCronicas = reader.IsDBNull(reader.GetOrdinal("condiciones_cronicas")) ? null : reader.GetString(reader.GetOrdinal("condiciones_cronicas")),
+                Patologias = reader.IsDBNull(reader.GetOrdinal("patologias")) ? null : reader.GetString(reader.GetOrdinal("patologias")),
+                HistorialLesiones = reader.IsDBNull(reader.GetOrdinal("historial_lesiones")) ? null : reader.GetString(reader.GetOrdinal("historial_lesiones")),
                 AptoFisicoVencimiento = reader.IsDBNull(reader.GetOrdinal("apto_fisico_vencimiento")) ? null : reader.GetDateTime(reader.GetOrdinal("apto_fisico_vencimiento")),
                 Observaciones = reader.IsDBNull(reader.GetOrdinal("observaciones")) ? null : reader.GetString(reader.GetOrdinal("observaciones")),
                 FechaActualizacion = reader.IsDBNull(reader.GetOrdinal("fecha_actualizacion")) ? null : reader.GetDateTime(reader.GetOrdinal("fecha_actualizacion"))

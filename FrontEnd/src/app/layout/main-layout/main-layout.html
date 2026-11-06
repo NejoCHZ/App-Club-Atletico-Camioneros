@@ -47,7 +47,7 @@
 
       <div class="header-right">
         <button type="button" class="admin-profile" aria-haspopup="menu" [attr.aria-expanded]="userMenuOpen" (click)="toggleUserMenu($event)">
-          <span class="profile-avatar" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg></span>
+          <span class="profile-avatar" aria-hidden="true"><span class="cacc-icon cacc-icon-profile"></span></span>
           <span class="profile-info"><span class="profile-name">{{ roleLabel }}</span><span class="profile-email">{{ userIdentifier }}</span></span>
           <span class="chevron-down" [class.rotated]="userMenuOpen" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
         </button>

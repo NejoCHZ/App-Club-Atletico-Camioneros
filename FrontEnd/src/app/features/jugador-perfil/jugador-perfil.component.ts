@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
+import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
 import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -288,8 +289,8 @@ export class JugadorPerfilComponent implements OnInit {
   get lesionesList(): string[] {
     if (!this.jugador?.fichaMedica?.historialLesiones) return [];
     return this.jugador.fichaMedica.historialLesiones
-      .split('.')
-      .map(l => l.trim())
+      .split(/\r?\n|\.\s+(?=[^.\r\n]*\(\d{2}\/\d{2}\/\d{4}\))|\.\s+(?=[A-ZÁÉÍÓÚÑ])/)
+      .map(l => l.trim().replace(/\.$/, ''))
       .filter(l => l.length > 0);
   }
 
@@ -336,6 +337,10 @@ export class JugadorPerfilComponent implements OnInit {
     this.router.navigate(['/', this.normalizarRutaRol(), 'jugadores', this.playerId, 'asistencias']);
   }
 
+  verHistorialPartidos(): void {
+    this.router.navigate(['/', this.normalizarRutaRol(), 'jugadores', this.playerId, 'partidos']);
+  }
+
   private normalizarRutaRol(): string {
     const roleId = this.authService.getRoleId();
     if (roleId === RoleId.Medico) return 'medico';
@@ -346,7 +351,7 @@ export class JugadorPerfilComponent implements OnInit {
 
   editarFichaMedica(): void {
     if (this.jugador && this.puedeEditarFichaMedica) {
-      this.router.navigate(['/medico/jugadores', this.jugador.id, 'ficha-medica']);
+      this.router.navigate(['/', this.normalizarRutaRol(), 'jugadores', this.jugador.id, 'ficha-medica']);
     }
   }
 
@@ -373,12 +378,7 @@ export class JugadorPerfilComponent implements OnInit {
     if (!this.jugador || !this.puedeGenerarCredencial) return;
     this.http.get(`/api/credenciales/jugador/${this.jugador.id}/pdf`, { responseType: 'blob' }).subscribe({
       next: blob => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `credencial_jugador_${this.jugador!.id}.pdf`;
-        link.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(blob, credentialFileName('jugador', this.jugador!.nombre, this.jugador!.apellido));
         this.mostrarPopupCredencial = false;
       },
       error: () => alert('No se pudo generar la credencial. Verificá la configuración del servidor.')
