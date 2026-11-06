@@ -22,6 +22,19 @@ public class EstadoDeudaClientTests
             NullLogger<EstadoDeudaClient>.Instance);
     }
 
+    // Con la credencial de sistema de la API de integración (HU-055) configurada, como en el entorno real.
+    private static EstadoDeudaClient ClienteConClave(string? clave, out Manejador manejador)
+    {
+        manejador = new Manejador(_ => Json(HttpStatusCode.OK, "{\"items\":[],\"dni\":\"40111222\",\"idJugador\":7,\"estado\":\"habilitado\",\"accesoPermitido\":true,\"inscripcionGenerada\":false,\"cuotaGenerada\":false}"));
+        var contexto = new DefaultHttpContext();
+        contexto.Request.Headers.Authorization = "Bearer token-del-usuario";
+        return new EstadoDeudaClient(
+            new HttpClient(manejador) { BaseAddress = new Uri("http://administrativo.test/") },
+            new HttpContextAccessor { HttpContext = contexto },
+            NullLogger<EstadoDeudaClient>.Instance,
+            Microsoft.Extensions.Options.Options.Create(new AdministrativoApiOptions { ClaveIntegracion = clave ?? "" }));
+    }
+
     private static HttpResponseMessage Json(HttpStatusCode codigo, string cuerpo) =>
         new(codigo) { Content = new StringContent(cuerpo, Encoding.UTF8, "application/json") };
 
@@ -38,6 +51,48 @@ public class EstadoDeudaClientTests
         Assert.Equal(7, consulta.Estado.IdJugador);
         Assert.Equal("Bearer token-del-usuario", manejador.Pedidos[0].Headers.Authorization!.ToString());
         Assert.Equal("/api/integracion/v1/estado-deuda/dni/40111222", manejador.Pedidos[0].RequestUri!.AbsolutePath);
+    }
+
+    // SCRUM-805 / HU-055: las tres llamadas a la API de integracion llevan la credencial de sistema, ademas del token del usuario.
+    [Fact]
+    public async Task ConLaClaveConfigurada_LasTresLlamadasLlevanXIntegrationKeyYElTokenDelUsuario()
+    {
+        var cliente = ClienteConClave("clave-de-prueba-123", out var manejador);
+
+        await cliente.PorDniAsync("40111222");
+        await cliente.PorLoteAsync(new[] { "40111222" });
+        await cliente.GenerarCargosDeAltaAsync(7);
+
+        Assert.Equal(3, manejador.Pedidos.Count);
+        foreach (var pedido in manejador.Pedidos)
+        {
+            Assert.Equal("clave-de-prueba-123", Assert.Single(pedido.Headers.GetValues("X-Integration-Key")));
+            Assert.Equal("Bearer token-del-usuario", pedido.Headers.Authorization!.ToString());
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task SinClaveConfigurada_NoSeMandaElHeader_YTodoSigueComoAntes(string? clave)
+    {
+        var cliente = ClienteConClave(clave, out var manejador);
+
+        await cliente.PorDniAsync("40111222");
+
+        Assert.False(manejador.Pedidos[0].Headers.Contains("X-Integration-Key"));
+        Assert.Equal("Bearer token-del-usuario", manejador.Pedidos[0].Headers.Authorization!.ToString());
+    }
+
+    [Fact]
+    public async Task ElClienteArmadoSinOpciones_ComoEnLasPruebasAnteriores_NoMandaLaClave()
+    {
+        var cliente = Cliente(_ => Json(HttpStatusCode.OK, Habilitado), out var manejador);
+
+        await cliente.PorDniAsync("40111222");
+
+        Assert.False(manejador.Pedidos[0].Headers.Contains("X-Integration-Key"));
     }
 
     [Theory]

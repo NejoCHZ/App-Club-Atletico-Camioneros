@@ -61,3 +61,21 @@ con el token del usuario (solo el SuperAdmin y el Administrador (Tesorero) puede
 ## Probar los dos portales juntos
 
 Hay un entorno de prueba que arma la base, aplica la configuración y levanta los dos portales: https://github.com/Atzur1/cacc-unificacion (carpeta `docs`, con la guía paso a paso).
+
+## Credencial de sistema de la API de integración (HU-055)
+
+Las llamadas a `api/integracion/*` llevan, además del token del usuario, el header `X-Integration-Key` con una credencial de
+sistema. Tiene que ser la misma clave en las dos APIs y **se configura por entorno, nunca en el repositorio**:
+
+| API | Variable de entorno |
+|---|---|
+| Portal Administrativo | `Integracion__ClienteDeportivo__Clave` |
+| Portal Deportivo | `AdministrativoApi__ClaveIntegracion` |
+
+- Si la clave del Deportivo está vacía no se manda el header (es lo que espera un Administrativo que todavía no exige la
+  credencial). Si el Administrativo la exige y falta o es distinta, responde 401 y el Deportivo muestra "SIN VERIFICAR" y el QR no
+  deja pasar a nadie.
+- En `Development`, los user-secrets del Administrativo pisan `appsettings.Development.json`: pasar la clave por variable de
+  entorno (como arriba) y no por archivo.
+- La clave no se escribe en los logs.
+

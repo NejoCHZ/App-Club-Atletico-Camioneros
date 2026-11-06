@@ -18,6 +18,14 @@ namespace CACC.API.Services
         // Cuánto se espera la respuesta antes de darla por caída.
         public int TimeoutSegundos { get; set; } = 3;
 
+        // Credencial de sistema de la API de integración (HU-055): se manda en el header X-Integration-Key y tiene que ser la
+        // misma que el Administrativo tiene en Integracion:ClienteDeportivo:Clave. Se configura por entorno (nunca en el
+        // repositorio): AdministrativoApi__ClaveIntegracion. Si está vacía no se manda el header, que es lo que espera un
+        // Administrativo que todavía no exige la credencial.
+        public string ClaveIntegracion { get; set; } = string.Empty;
+
+        public const string CabeceraClaveIntegracion = "X-Integration-Key";
+
         // Qué hace el QR si el Portal Administrativo no responde:
         //   "Denegar" (por defecto): no deja pasar a nadie hasta que se pueda consultar la deuda.
         //   "Permitir": deja pasar a un jugador activo y marca la asistencia SIN_VERIFICAR para revisarla después.
@@ -77,12 +85,15 @@ namespace CACC.API.Services
         private readonly HttpClient _http;
         private readonly IHttpContextAccessor _contexto;
         private readonly ILogger<EstadoDeudaClient> _logger;
+        private readonly string _claveIntegracion;
 
-        public EstadoDeudaClient(HttpClient http, IHttpContextAccessor contexto, ILogger<EstadoDeudaClient> logger)
+        public EstadoDeudaClient(HttpClient http, IHttpContextAccessor contexto, ILogger<EstadoDeudaClient> logger,
+            IOptions<AdministrativoApiOptions>? opciones = null)
         {
             _http = http;
             _contexto = contexto;
             _logger = logger;
+            _claveIntegracion = opciones?.Value.ClaveIntegracion?.Trim() ?? string.Empty;
         }
 
         public async Task<ConsultaEstadoDeuda> PorDniAsync(string dni, CancellationToken ct = default)
@@ -219,10 +230,15 @@ namespace CACC.API.Services
             }
         }
 
-        // Reenvía el token del usuario: es el mismo en los dos portales.
+        // Reenvía el token del usuario (es el mismo en los dos portales) y, si está configurada, la credencial de sistema de
+        // la API de integración. La clave nunca se escribe en los logs.
         private HttpRequestMessage NuevoPedido(HttpMethod metodo, string ruta)
         {
             var pedido = new HttpRequestMessage(metodo, ruta);
+            if (_claveIntegracion.Length > 0)
+            {
+                pedido.Headers.TryAddWithoutValidation(AdministrativoApiOptions.CabeceraClaveIntegracion, _claveIntegracion);
+            }
             string? autorizacion = _contexto.HttpContext?.Request.Headers.Authorization.ToString();
             if (!string.IsNullOrWhiteSpace(autorizacion) && AuthenticationHeaderValue.TryParse(autorizacion, out var valor))
             {
