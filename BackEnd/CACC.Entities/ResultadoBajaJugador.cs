@@ -5,6 +5,9 @@ namespace CACC.Entities
     {
         NoEncontrado,
         DadoDeBaja,
-        Eliminado
+        Eliminado,
+        // Solo con EliminarSinHistorialAsync: el jugador tiene historial, asi que no se borro ni se dio de baja todavia
+        // (la baja la registra el Administrativo; ver JugadoresController.EliminarJugador).
+        RequiereBaja
     }
 }

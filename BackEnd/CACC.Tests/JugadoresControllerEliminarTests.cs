@@ -10,72 +10,86 @@ using System.Text.Json;
 using Xunit;
 namespace CACC.Tests;
 
-// Borrar un jugador: sin historial se elimina por completo (su DNI queda libre); con historial es una baja logica y se le
-// avisa al Administrativo para que quite las cuotas futuras sin pagos.
+// Borrar un jugador: sin historial se elimina por completo (su DNI queda libre); con historial es una baja logica que se le
+// pide al Administrativo (HU-057), que quita las cuotas futuras sin pagos y la registra con su origen y responsable.
+// Solo si el Administrativo no puede, el Deportivo la graba directo y avisa.
 public class JugadoresControllerEliminarTests
 {
-    private static async Task<(int? codigo, JsonElement cuerpo, AdministrativoFalso admin)> Borrar(
-        ResultadoBajaJugador resultado, ResultadoBajaInformada? informada = null)
+    private static async Task<(int? codigo, JsonElement cuerpo, DaoFalso dao, AdministrativoFalso admin)> Borrar(
+        ResultadoBajaJugador sinHistorial, ResultadoBajaInformada? informada = null,
+        ResultadoBajaJugador bajaDirecta = ResultadoBajaJugador.DadoDeBaja)
     {
+        var dao = new DaoFalso(sinHistorial, bajaDirecta);
         var admin = new AdministrativoFalso(informada ?? new ResultadoBajaInformada(EstadoBajaInformada.Informada));
-        var controlador = new JugadoresController(new DaoFalso(resultado), new AccesoFalso(), admin)
+        var controlador = new JugadoresController(dao, new AccesoFalso(), admin)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
         var objeto = Assert.IsAssignableFrom<ObjectResult>(await controlador.EliminarJugador(7));
-        return (objeto.StatusCode, JsonDocument.Parse(JsonSerializer.Serialize(objeto.Value)).RootElement.Clone(), admin);
+        return (objeto.StatusCode, JsonDocument.Parse(JsonSerializer.Serialize(objeto.Value)).RootElement.Clone(), dao, admin);
     }
 
     [Fact]
-    public async Task SinHistorial_SeEliminaYElMensajeDiceQueElDniQuedoLibre_SinAvisarAlAdministrativo()
+    public async Task SinHistorial_SeEliminaYElMensajeDiceQueElDniQuedoLibre_SinPedirNingunaBaja()
     {
-        var (codigo, cuerpo, admin) = await Borrar(ResultadoBajaJugador.Eliminado);
+        var (codigo, cuerpo, dao, admin) = await Borrar(ResultadoBajaJugador.Eliminado);
 
         Assert.Equal(200, codigo);
         Assert.True(cuerpo.GetProperty("eliminado").GetBoolean());
         Assert.Contains("DNI quedó libre", cuerpo.GetProperty("message").GetString());
-        Assert.Empty(admin.BajasInformadas);   // no hay cuotas ni becas que quitar
+        Assert.Empty(admin.Bajas);          // no hay cuotas ni becas que quitar
+        Assert.Equal(0, dao.BajasDirectas); // y no se graba ninguna baja
     }
 
     [Fact]
-    public async Task ConHistorial_EsUnaBajaLogica_YSeLeAvisaAlAdministrativoParaQuitarLasCuotasFuturas()
+    public async Task ConHistorial_LaBajaLaRegistraElAdministrativo_ConLaFechaDeHoy_YElDeportivoNoLaGrabaDirecto()
     {
-        var (codigo, cuerpo, admin) = await Borrar(ResultadoBajaJugador.DadoDeBaja,
-            new ResultadoBajaInformada(EstadoBajaInformada.Informada, CuotasFuturasQuitadas: 3, BeneficiosCancelados: 1));
+        var (codigo, cuerpo, dao, admin) = await Borrar(ResultadoBajaJugador.RequiereBaja);
 
         Assert.Equal(200, codigo);
         Assert.False(cuerpo.GetProperty("eliminado").GetBoolean());
         Assert.Contains("historial se conserva", cuerpo.GetProperty("message").GetString());
-        Assert.Equal(new[] { 7 }, admin.BajasInformadas);
-        Assert.Equal(3, cuerpo.GetProperty("cuotasFuturasQuitadas").GetInt32());
         Assert.Equal(JsonValueKind.Null, cuerpo.GetProperty("avisoBaja").ValueKind);
+        var (idJugador, fecha) = Assert.Single(admin.Bajas);
+        Assert.Equal(7, idJugador);
+        Assert.Equal(JugadoresController.FechaDeHoyEnElClub(), fecha);
+        Assert.Equal(0, dao.BajasDirectas);  // la escribio el Administrativo (con origen y responsable), no el Deportivo
     }
 
     [Theory]
     [InlineData(EstadoBajaInformada.NoResponde)]
     [InlineData(EstadoBajaInformada.Rechazada)]
-    public async Task SiElAdministrativoNoPuedeQuitarLasCuotas_LaBajaIgualQuedaHechaYSeAvisa(EstadoBajaInformada estado)
+    public async Task SiElAdministrativoNoPuedeRegistrarla_ElDeportivoLaGrabaDirectoYAvisa(EstadoBajaInformada estado)
     {
-        var (codigo, cuerpo, _) = await Borrar(ResultadoBajaJugador.DadoDeBaja, new ResultadoBajaInformada(estado, Motivo: "x"));
+        var (codigo, cuerpo, dao, _) = await Borrar(ResultadoBajaJugador.RequiereBaja, new ResultadoBajaInformada(estado, Motivo: "x"));
 
         Assert.Equal(200, codigo);
         Assert.False(cuerpo.GetProperty("eliminado").GetBoolean());
-        Assert.Equal(JsonValueKind.Null, cuerpo.GetProperty("cuotasFuturasQuitadas").ValueKind);
+        Assert.Equal(1, dao.BajasDirectas);   // la baja no se frena porque el Administrativo este caido
         Assert.Contains("próxima revisión", cuerpo.GetProperty("avisoBaja").GetString());
     }
 
     [Fact]
-    public async Task UnJugadorQueNoExiste_Da404_SinAvisarAlAdministrativo()
+    public async Task UnJugadorQueNoExiste_Da404_SinPedirNingunaBaja()
     {
-        var (codigo, _, admin) = await Borrar(ResultadoBajaJugador.NoEncontrado);
+        var (codigo, _, dao, admin) = await Borrar(ResultadoBajaJugador.NoEncontrado);
 
         Assert.Equal(404, codigo);
-        Assert.Empty(admin.BajasInformadas);
+        Assert.Empty(admin.Bajas);
+        Assert.Equal(0, dao.BajasDirectas);
     }
 
-    private sealed class DaoFalso(ResultadoBajaJugador resultado) : IJugadorDao
+    private sealed class DaoFalso(ResultadoBajaJugador sinHistorial, ResultadoBajaJugador bajaDirecta) : IJugadorDao
     {
-        public Task<ResultadoBajaJugador> EliminarAsync(int idJugador) => Task.FromResult(resultado);
+        public int BajasDirectas { get; private set; }
+
+        public Task<ResultadoBajaJugador> EliminarSinHistorialAsync(int idJugador) => Task.FromResult(sinHistorial);
+
+        public Task<ResultadoBajaJugador> EliminarAsync(int idJugador)
+        {
+            BajasDirectas++;
+            return Task.FromResult(bajaDirecta);
+        }
 
         public Task<IEnumerable<JugadorDetalle>> ObtenerTodosAsync() => throw new NotSupportedException();
         public Task<JugadorDetalle?> ObtenerPorIdAsync(int id) => throw new NotSupportedException();
@@ -88,11 +102,11 @@ public class JugadoresControllerEliminarTests
 
     private sealed class AdministrativoFalso(ResultadoBajaInformada baja) : IEstadoDeudaClient
     {
-        public List<int> BajasInformadas { get; } = new();
+        public List<(int IdJugador, DateTime Fecha)> Bajas { get; } = new();
 
-        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, CancellationToken ct = default)
+        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, DateTime fechaBaja, CancellationToken ct = default)
         {
-            BajasInformadas.Add(idJugador);
+            Bajas.Add((idJugador, fechaBaja));
             return Task.FromResult(baja);
         }
 

@@ -90,7 +90,7 @@ public class JugadoresControllerAltaTests
             return Task.FromResult(resultado);
         }
 
-        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, DateTime fechaBaja, CancellationToken ct = default) => throw new NotSupportedException();
 
         public Task<ConsultaEstadoDeuda> PorDniAsync(string dni, CancellationToken ct = default) => throw new NotSupportedException();
 
@@ -113,6 +113,7 @@ public class JugadoresControllerAltaTests
         public Task<IEnumerable<JugadorDetalle>> ObtenerPorCategoriaAsync(int idCategoria) => throw new NotSupportedException();
         public Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador) => throw new NotSupportedException();
         public Task<ResultadoBajaJugador> EliminarAsync(int idJugador) => throw new NotSupportedException();
+        public Task<ResultadoBajaJugador> EliminarSinHistorialAsync(int idJugador) => throw new NotSupportedException();
         public Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni) => throw new NotSupportedException();
         public Task<bool> GuardarTutorAsync(int idJugador, string dni, string nombre, string apellido, string parentesco, string telefono, string? email) => throw new NotSupportedException();
     }

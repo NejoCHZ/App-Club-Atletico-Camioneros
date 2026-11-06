@@ -340,7 +340,7 @@ public class AsistenciasControllerTests
         public Task<ResultadoCargosAlta> GenerarCargosDeAltaAsync(int idJugador, CancellationToken ct = default) =>
             Task.FromResult(new ResultadoCargosAlta(EstadoCargosAlta.NoResponde));
 
-        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, CancellationToken ct = default) =>
+        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, DateTime fechaBaja, CancellationToken ct = default) =>
             Task.FromResult(new ResultadoBajaInformada(EstadoBajaInformada.NoResponde));
     }
 
@@ -379,6 +379,7 @@ public class AsistenciasControllerTests
         public Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador) => Task.FromResult(false);
         public Task<int> CrearAsync(JugadorAlta dto) => Task.FromResult(0);
         public Task<ResultadoBajaJugador> EliminarAsync(int idJugador) => Task.FromResult(ResultadoBajaJugador.NoEncontrado);
+        public Task<ResultadoBajaJugador> EliminarSinHistorialAsync(int idJugador) => Task.FromResult(ResultadoBajaJugador.NoEncontrado);
         public Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni) => Task.FromResult<TutorDetalle?>(null);
         public Task<bool> GuardarTutorAsync(int idJugador, string dni, string nombre, string apellido, string parentesco, string telefono, string? email) => Task.FromResult(false);
     }

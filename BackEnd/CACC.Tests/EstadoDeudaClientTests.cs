@@ -95,23 +95,33 @@ public class EstadoDeudaClientTests
         Assert.False(manejador.Pedidos[0].Headers.Contains("X-Integration-Key"));
     }
 
-    // Baja informada (SCRUM-757): el Deportivo avisa y el Administrativo quita las cuotas futuras sin pagos.
+    // Baja pedida al Administrativo (HU-057 / SCRUM-757 / SCRUM-756): el Administrativo la registra con su origen y responsable.
+    private static readonly DateTime FechaDeLaBaja = new(2026, 11, 5);
+
     [Fact]
-    public async Task InformarBaja_LeeLoQueSeQuito_YManda_ElTokenYLaCredencialDeSistema()
+    public async Task InformarBaja_PideLaBajaConLaFechaEfectiva_YManda_ElTokenYLaCredencialDeSistema()
     {
         var cliente = ClienteConClave("clave-de-prueba-123", out var manejador,
-            _ => Json(HttpStatusCode.OK, "{\"idJugador\":7,\"cuotasFuturasQuitadas\":3,\"beneficiosCancelados\":1}"));
+            _ => Json(HttpStatusCode.OK, "{\"idJugador\":7,\"estado\":\"baja\",\"fechaBaja\":\"2026-11-05\",\"yaEstabaDadoDeBaja\":false}"));
 
-        var resultado = await cliente.InformarBajaAsync(7);
+        var resultado = await cliente.InformarBajaAsync(7, FechaDeLaBaja);
 
         Assert.Equal(EstadoBajaInformada.Informada, resultado.Estado);
-        Assert.Equal(3, resultado.CuotasFuturasQuitadas);
-        Assert.Equal(1, resultado.BeneficiosCancelados);
         var pedido = manejador.Pedidos.Single();
         Assert.Equal(HttpMethod.Post, pedido.Method);
         Assert.Equal("/api/integracion/v1/jugadores/7/baja", pedido.RequestUri!.AbsolutePath);
         Assert.Equal("Bearer token-del-usuario", pedido.Headers.Authorization!.ToString());
         Assert.Equal("clave-de-prueba-123", Assert.Single(pedido.Headers.GetValues("X-Integration-Key")));
+        Assert.Equal("{\"fechaBaja\":\"2026-11-05\"}", manejador.Cuerpos.Single());
+    }
+
+    [Fact]
+    public async Task InformarBaja_SiElJugadorYaEstabaDadoDeBajaConOtraFecha_CuentaComoInformada()
+    {
+        var resultado = await Cliente(_ => Json(HttpStatusCode.Conflict,
+            "{\"exito\":false,\"mensaje\":\"El jugador ya está dado de baja desde el 01/11/2026.\"}"), out _).InformarBajaAsync(7, FechaDeLaBaja);
+
+        Assert.Equal(EstadoBajaInformada.Informada, resultado.Estado);
     }
 
     [Theory]
@@ -121,7 +131,7 @@ public class EstadoDeudaClientTests
     [InlineData(HttpStatusCode.Forbidden, "", "Sin permiso en el Portal Administrativo.")]
     public async Task InformarBaja_SiElAdministrativoDiceQueNoCorresponde_EsRechazada(HttpStatusCode codigo, string cuerpo, string motivo)
     {
-        var resultado = await Cliente(_ => Json(codigo, cuerpo), out _).InformarBajaAsync(7);
+        var resultado = await Cliente(_ => Json(codigo, cuerpo), out _).InformarBajaAsync(7, FechaDeLaBaja);
 
         Assert.Equal(EstadoBajaInformada.Rechazada, resultado.Estado);
         Assert.Equal(motivo, resultado.Motivo);
@@ -134,7 +144,7 @@ public class EstadoDeudaClientTests
     [InlineData(HttpStatusCode.OK, "no es json")]
     public async Task InformarBaja_SiElAdministrativoFallaOLaRutaNoExiste_NoRespondeYNoLanza(HttpStatusCode codigo, string cuerpo)
     {
-        var resultado = await Cliente(_ => Json(codigo, cuerpo), out _).InformarBajaAsync(7);
+        var resultado = await Cliente(_ => Json(codigo, cuerpo), out _).InformarBajaAsync(7, FechaDeLaBaja);
 
         Assert.Equal(EstadoBajaInformada.NoResponde, resultado.Estado);
     }
@@ -144,7 +154,7 @@ public class EstadoDeudaClientTests
     {
         var cliente = Cliente(_ => throw new HttpRequestException("sin conexion"), out _);
 
-        Assert.Equal(EstadoBajaInformada.NoResponde, (await cliente.InformarBajaAsync(7)).Estado);
+        Assert.Equal(EstadoBajaInformada.NoResponde, (await cliente.InformarBajaAsync(7, FechaDeLaBaja)).Estado);
     }
 
     [Theory]

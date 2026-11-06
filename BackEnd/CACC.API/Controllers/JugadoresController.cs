@@ -290,13 +290,27 @@ namespace CACC.API.Controllers
             }
         }
 
+        // Hoy según el reloj del club (Argentina): es la fecha efectiva de la baja que se le pide al Administrativo.
+        public static DateTime FechaDeHoyEnElClub()
+        {
+            try
+            {
+                return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "Argentina Standard Time").Date;
+            }
+            catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+            {
+                return DateTime.UtcNow.AddHours(-3).Date;
+            }
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = AppRoles.Administradores)]
         public async Task<IActionResult> EliminarJugador(int id)
         {
             try
             {
-                var resultado = await _jugadorDao.EliminarAsync(id);
+                // Sin historial se borra por completo. Con historial no se toca nada todavía: la baja la registra el Administrativo.
+                var resultado = await _jugadorDao.EliminarSinHistorialAsync(id);
                 if (resultado == ResultadoBajaJugador.NoEncontrado)
                 {
                     return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
@@ -306,17 +320,26 @@ namespace CACC.API.Controllers
                     return Ok(new { message = "Jugador eliminado. No tenía pagos ni otro historial, así que se borró por completo y su DNI quedó libre.", eliminado = true });
                 }
 
-                // Baja lógica: ya quedó hecha en la base. Se le avisa al Portal Administrativo (contrato v1) para que quite las
-                // cuotas futuras sin pagos y cancele las becas, con la misma lógica de su propia baja; la deuda anterior se
-                // mantiene. Si no responde, la baja no se deshace: el Administrativo la completa solo en su próxima revisión.
-                var baja = await _estadoDeuda.InformarBajaAsync(id, HttpContext.RequestAborted);
-                bool informada = baja.Estado == EstadoBajaInformada.Informada;
+                // Con historial es una baja lógica. Se la pide al Administrativo (HU-057, con la fecha de hoy): la registra con su origen
+                // y responsable, quita las cuotas futuras sin pagos, cancela las becas y mantiene la deuda anterior. Si no responde (o
+                // rechaza el pedido), la baja no se frena: el Deportivo la graba directo y el Administrativo la completa solo en su
+                // próxima revisión.
+                var baja = await _estadoDeuda.InformarBajaAsync(id, FechaDeHoyEnElClub(), HttpContext.RequestAborted);
+                bool registradaPorElAdministrativo = baja.Estado == EstadoBajaInformada.Informada;
+                if (!registradaPorElAdministrativo)
+                {
+                    resultado = await _jugadorDao.EliminarAsync(id);
+                    if (resultado == ResultadoBajaJugador.NoEncontrado)
+                    {
+                        return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
+                    }
+                }
+
                 return Ok(new
                 {
                     message = "Jugador dado de baja correctamente. Su historial se conserva.",
                     eliminado = false,
-                    cuotasFuturasQuitadas = informada ? baja.CuotasFuturasQuitadas : (int?)null,
-                    avisoBaja = informada
+                    avisoBaja = registradaPorElAdministrativo
                         ? null
                         : "La baja se guardó, pero el Portal Administrativo todavía no quitó las cuotas futuras sin pagar de este jugador. Lo completa solo en su próxima revisión (cada pocas horas)."
                 });

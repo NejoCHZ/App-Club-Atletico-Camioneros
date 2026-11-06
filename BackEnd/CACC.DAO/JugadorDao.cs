@@ -555,7 +555,12 @@ namespace CACC.DAO
         //    ingresar, pero se conserva todo (cuotas, pagos, descuentos, asistencias, ficha medica) y su persona. Si vuelve,
         //    se lo reactiva desde el Administrativo. Nunca se borra una deuda.
         // La persona solo se borra si no es tambien tutor, usuario o personal con asistencias.
-        public async Task<ResultadoBajaJugador> EliminarAsync(int idJugador)
+        public Task<ResultadoBajaJugador> EliminarAsync(int idJugador) => EliminarCoreAsync(idJugador, permitirBaja: true);
+
+        // Igual, pero con historial no graba la baja: la deja para que la registre el Administrativo.
+        public Task<ResultadoBajaJugador> EliminarSinHistorialAsync(int idJugador) => EliminarCoreAsync(idJugador, permitirBaja: false);
+
+        private async Task<ResultadoBajaJugador> EliminarCoreAsync(int idJugador, bool permitirBaja)
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAuditadaAsync();
@@ -600,6 +605,12 @@ namespace CACC.DAO
 
                 if (tieneHistorial)
                 {
+                    if (!permitirBaja)
+                    {
+                        await transaction.RollbackAsync();
+                        return ResultadoBajaJugador.RequiereBaja;
+                    }
+
                     const string queryBaja = @"
                         UPDATE JUGADORES
                         SET fecha_baja = CASE

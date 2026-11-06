@@ -12,6 +12,10 @@ namespace CACC.DAO
         Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador);
         Task<int> CrearAsync(JugadorAlta dto);
         Task<ResultadoBajaJugador> EliminarAsync(int idJugador);
+
+        // Borra al jugador solo si no tiene historial. Con historial no toca nada y devuelve RequiereBaja: la baja la registra el
+        // Administrativo (que quita las cuotas futuras sin pagos); si no responde, el Deportivo la graba con EliminarAsync.
+        Task<ResultadoBajaJugador> EliminarSinHistorialAsync(int idJugador);
         Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni);
         Task<bool> GuardarTutorAsync(int idJugador, string dni, string nombre, string apellido, string parentesco, string telefono, string? email);
     }

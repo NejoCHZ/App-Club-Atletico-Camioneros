@@ -66,16 +66,16 @@ namespace CACC.API.Services
 
     public enum EstadoBajaInformada
     {
-        // El Administrativo aplicó los efectos de la baja (aunque no haya tenido nada que quitar: es idempotente).
+        // El Administrativo registró la baja y quitó las cuotas futuras sin pagos (o ya la tenía registrada: es idempotente).
         Informada,
-        // El Administrativo respondió que no corresponde (sin permiso, jugador inexistente).
+        // El Administrativo respondió que no corresponde (sin permiso, jugador inexistente, fecha anterior al ingreso).
         Rechazada,
         // No respondió, devolvió un error o la ruta no existe en esa versión.
         NoResponde
     }
 
-    // Qué pasó al avisarle la baja. Solo cantidades: nunca montos.
-    public sealed record ResultadoBajaInformada(EstadoBajaInformada Estado, int CuotasFuturasQuitadas = 0, int BeneficiosCancelados = 0, string? Motivo = null);
+    // Qué pasó al pedirle la baja (HU-057). El Administrativo no devuelve cantidades ni montos.
+    public sealed record ResultadoBajaInformada(EstadoBajaInformada Estado, string? Motivo = null);
 
     public interface IEstadoDeudaClient
     {
@@ -89,10 +89,10 @@ namespace CACC.API.Services
         // No lanza: si no se pudo, el alta ya hecha no se toca y el resultado dice qué pasó.
         Task<ResultadoCargosAlta> GenerarCargosDeAltaAsync(int idJugador, CancellationToken ct = default);
 
-        // Avisa al Administrativo que un jugador fue dado de baja para que quite sus cuotas futuras sin pagos y cancele sus
-        // becas (contrato v1). La baja ya está hecha en la base: no lanza, y si no se pudo el resultado lo dice (el
-        // Administrativo la completa solo en su próxima revisión).
-        Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, CancellationToken ct = default);
+        // Le pide al Administrativo que registre la baja de un jugador con la fecha efectiva indicada (HU-057, contrato v1): el
+        // Administrativo la graba con su origen y responsable, quita las cuotas futuras sin pagos y cancela las becas. No lanza: si
+        // no se pudo, el resultado lo dice y quien llama decide (el Deportivo la graba directo y el Administrativo la completa solo).
+        Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, DateTime fechaBaja, CancellationToken ct = default);
     }
 
     public sealed class EstadoDeudaClient : IEstadoDeudaClient
@@ -227,40 +227,50 @@ namespace CACC.API.Services
             }
         }
 
-        public async Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, CancellationToken ct = default)
+        public async Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, DateTime fechaBaja, CancellationToken ct = default)
         {
             using var pedido = NuevoPedido(HttpMethod.Post, $"api/integracion/v1/jugadores/{idJugador}/baja");
+            pedido.Content = new StringContent(
+                JsonSerializer.Serialize(new { fechaBaja = fechaBaja.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) }),
+                Encoding.UTF8, "application/json");
             try
             {
                 using var respuesta = await _http.SendAsync(pedido, ct);
                 if (respuesta.IsSuccessStatusCode)
                 {
-                    var baja = await respuesta.Content.ReadFromJsonAsync<BajaRespuesta>(Json, ct);
-                    return baja is null
-                        ? new ResultadoBajaInformada(EstadoBajaInformada.NoResponde)
-                        : new ResultadoBajaInformada(EstadoBajaInformada.Informada, baja.CuotasFuturasQuitadas, baja.BeneficiosCancelados);
+                    // Un 200 que no trae el JSON del Administrativo (por ejemplo, una pagina de un proxy) no es una baja registrada.
+                    await using var cuerpo = await respuesta.Content.ReadAsStreamAsync(ct);
+                    using var documento = await JsonDocument.ParseAsync(cuerpo, cancellationToken: ct);
+                    return documento.RootElement.ValueKind == JsonValueKind.Object
+                        ? new ResultadoBajaInformada(EstadoBajaInformada.Informada)
+                        : new ResultadoBajaInformada(EstadoBajaInformada.NoResponde);
                 }
 
                 string? mensaje = await LeerMensajeAsync(respuesta, ct);
                 int codigo = (int)respuesta.StatusCode;
+                // 409: el jugador ya figura dado de baja (con otra fecha). Para el Deportivo es lo mismo que haberlo logrado: ya no recibe cuotas.
+                if (codigo == 409 && mensaje is not null)
+                {
+                    return new ResultadoBajaInformada(EstadoBajaInformada.Informada);
+                }
                 // 4xx con mensaje: el Administrativo entendió el pedido y dijo que no corresponde. Un 404 vacío es una ruta que no existe.
                 if (codigo is >= 400 and < 500 && mensaje is not null)
                 {
                     _logger.LogWarning("El Portal Administrativo rechazó la baja del jugador {IdJugador}: {Codigo} {Motivo}", idJugador, codigo, mensaje);
-                    return new ResultadoBajaInformada(EstadoBajaInformada.Rechazada, Motivo: mensaje);
+                    return new ResultadoBajaInformada(EstadoBajaInformada.Rechazada, mensaje);
                 }
                 if (codigo is 401 or 403)
                 {
-                    _logger.LogWarning("El Portal Administrativo no aceptó la sesión para informar la baja del jugador {IdJugador}: {Codigo}", idJugador, codigo);
-                    return new ResultadoBajaInformada(EstadoBajaInformada.Rechazada, Motivo: "Sin permiso en el Portal Administrativo.");
+                    _logger.LogWarning("El Portal Administrativo no aceptó la sesión para registrar la baja del jugador {IdJugador}: {Codigo}", idJugador, codigo);
+                    return new ResultadoBajaInformada(EstadoBajaInformada.Rechazada, "Sin permiso en el Portal Administrativo.");
                 }
 
-                _logger.LogWarning("El Portal Administrativo respondió {Codigo} al informar la baja del jugador {IdJugador}.", codigo, idJugador);
+                _logger.LogWarning("El Portal Administrativo respondió {Codigo} al registrar la baja del jugador {IdJugador}.", codigo, idJugador);
                 return new ResultadoBajaInformada(EstadoBajaInformada.NoResponde);
             }
             catch (Exception ex) when (EsFalloDeConexion(ex, ct))
             {
-                _logger.LogWarning(ex, "No se pudo informar al Portal Administrativo la baja del jugador {IdJugador}.", idJugador);
+                _logger.LogWarning(ex, "No se pudo registrar en el Portal Administrativo la baja del jugador {IdJugador}.", idJugador);
                 return new ResultadoBajaInformada(EstadoBajaInformada.NoResponde);
             }
         }
@@ -310,12 +320,6 @@ namespace CACC.API.Services
         private sealed class LoteRespuesta
         {
             public List<EstadoDeudaAdministrativo>? Items { get; set; }
-        }
-
-        private sealed class BajaRespuesta
-        {
-            public int CuotasFuturasQuitadas { get; set; }
-            public int BeneficiosCancelados { get; set; }
         }
 
         private sealed class CargosAltaRespuesta
