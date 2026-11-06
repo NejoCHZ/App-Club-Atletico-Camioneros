@@ -15,11 +15,11 @@ describe('AsistenciaService', () => {
   afterEach(() => http.verify());
 
   it('uses the same-origin atomic attendance endpoint with the scanned DNI', () => {
-    service.registrar('40111222', 'DNI_MANUAL').subscribe(r => expect(r.cuotasVencidas).toBe(1));
+    service.registrar('40111222', 'DNI_MANUAL').subscribe(r => expect(r.estado).toBe('solo_entrenamientos'));
     const req = http.expectOne('/api/asistencias/verificar-y-registrar');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ dni: '40111222', metodoRegistro: 'DNI_MANUAL' });
-    req.flush({ accesoPermitido: true, asistenciaRegistrada: true, yaRegistrada: false, mensaje: 'ok', deudaTotal: 100, cuotasVencidas: 1 });
+    req.flush({ accesoPermitido: true, asistenciaRegistrada: true, yaRegistrada: false, mensaje: 'ok', estado: 'solo_entrenamientos', verificado: true });
   });
 
   it('gets a player attendance history with optional filters', () => {
@@ -37,5 +37,19 @@ describe('AsistenciaService', () => {
     const req = http.expectOne('/api/asistencias/jugador/11');
     expect(req.request.params.keys()).toEqual([]);
     req.flush([]);
+  });
+});
+describe('AsistenciaService - metodo por defecto', () => {
+  it('sin metodo informado registra como DNI manual', () => {
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
+    const service = TestBed.inject(AsistenciaService);
+    const http = TestBed.inject(HttpTestingController);
+
+    service.registrar('40111222').subscribe();
+
+    const req = http.expectOne('/api/asistencias/verificar-y-registrar');
+    expect(req.request.body).toEqual({ dni: '40111222', metodoRegistro: 'DNI_MANUAL' });
+    req.flush({ accesoPermitido: true, asistenciaRegistrada: true, yaRegistrada: false, mensaje: 'ok' });
+    http.verify();
   });
 });

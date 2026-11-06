@@ -64,3 +64,4 @@ appsettings.*.local.json
 *.zip
 *.tmp
 *.temp
+appsettings.Development.json

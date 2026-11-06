@@ -22,7 +22,7 @@ namespace CACC.DAO
         {
             var categorias = new List<Categoria>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = "SELECT PK_id_categoria, nombre_categoria FROM CATEGORIAS ORDER BY nombre_categoria ASC;";
             using var command = new SqlCommand(query, connection);
@@ -46,7 +46,7 @@ namespace CACC.DAO
         {
             var lista = new List<CategoriaConConteo>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
         SELECT 
@@ -56,13 +56,14 @@ namespace CACC.DAO
             (
                 SELECT COUNT(*)
                 FROM JUGADORES j
-                WHERE j.FK_id_categoria = c.PK_id_categoria
+                WHERE j.activo = 1
+                  AND (j.FK_id_categoria = c.PK_id_categoria
                    OR EXISTS (
                        SELECT 1
                        FROM JUGADORES_CATEGORIAS jc
                        WHERE jc.FK_id_jugador = j.PK_id_jugador
                          AND jc.FK_id_categoria = c.PK_id_categoria
-                   )
+                   ))
             ) AS cantidad_jugadores,
             ISNULL(COUNT(DISTINCT sc.FK_id_staff), 0) AS cantidad_staff
         FROM CATEGORIAS c
@@ -91,7 +92,7 @@ namespace CACC.DAO
         public async Task<Categoria?> ObtenerPorIdAsync(int idCategoria)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = "SELECT PK_id_categoria, nombre_categoria FROM CATEGORIAS WHERE PK_id_categoria = @Id;";
             using var command = new SqlCommand(query, connection);
@@ -115,7 +116,7 @@ namespace CACC.DAO
         public async Task<int> CrearAsync(string nombreCategoria, string asociacion)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
         IF COLUMNPROPERTY(OBJECT_ID('CATEGORIAS'), 'PK_id_categoria', 'IsIdentity') = 1
@@ -141,7 +142,7 @@ namespace CACC.DAO
         public async Task<bool> ActualizarAsync(int idCategoria, string nombreCategoria, string asociacion)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = "UPDATE CATEGORIAS SET nombre_categoria = @Nombre, asociacion = @Asociacion WHERE PK_id_categoria = @Id;";
             using var command = new SqlCommand(query, connection);
@@ -156,7 +157,7 @@ namespace CACC.DAO
         public async Task<bool> ActualizarAsync(int idCategoria, string nombreCategoria)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = "UPDATE CATEGORIAS SET nombre_categoria = @Nombre WHERE PK_id_categoria = @Id;";
             using var command = new SqlCommand(query, connection);
@@ -170,7 +171,26 @@ namespace CACC.DAO
         public async Task<bool> EliminarAsync(int idCategoria)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
+
+            // Una categoria con jugadores o aranceles no se borra: dejaria jugadores sin categoria (que la base exige) o
+            // aranceles huerfanos. Hay que pasarlos antes a otra categoria.
+            const string queryEnUso = @"
+                SELECT
+                    (SELECT COUNT(*) FROM JUGADORES WHERE FK_id_categoria = @Id)
+                  + (SELECT COUNT(*) FROM JUGADORES_CATEGORIAS jc INNER JOIN JUGADORES j ON j.PK_id_jugador = jc.FK_id_jugador
+                     WHERE jc.FK_id_categoria = @Id AND j.activo = 1 AND ISNULL(j.FK_id_categoria, 0) <> @Id),
+                    (SELECT COUNT(*) FROM ARANCELES WHERE FK_id_categoria = @Id);";
+            using (var cmdEnUso = new SqlCommand(queryEnUso, connection))
+            {
+                cmdEnUso.Parameters.AddWithValue("@Id", idCategoria);
+                using var lector = await cmdEnUso.ExecuteReaderAsync();
+                if (await lector.ReadAsync() && (lector.GetInt32(0) > 0 || lector.GetInt32(1) > 0))
+                {
+                    throw new CategoriaEnUsoException(lector.GetInt32(0), lector.GetInt32(1));
+                }
+            }
+
             using var transaction = connection.BeginTransaction();
 
             try
@@ -186,14 +206,6 @@ namespace CACC.DAO
                 // 2. Desvincular cuerpo técnico de STAFF_CATEGORIAS
                 const string queryStaffCat = "DELETE FROM STAFF_CATEGORIAS WHERE FK_id_categoria = @Id;";
                 using (var cmd = new SqlCommand(queryStaffCat, connection, transaction))
-                {
-                    cmd.Parameters.AddWithValue("@Id", idCategoria);
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                // 3. Poner en NULL la categoría base en JUGADORES para preservar al atleta
-                const string queryJug = "UPDATE JUGADORES SET FK_id_categoria = NULL WHERE FK_id_categoria = @Id;";
-                using (var cmd = new SqlCommand(queryJug, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", idCategoria);
                     await cmd.ExecuteNonQueryAsync();
@@ -243,7 +255,7 @@ namespace CACC.DAO
         {
             var jugadores = new List<JugadorPlantel>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 SELECT 
@@ -255,13 +267,14 @@ namespace CACC.DAO
                     ISNULL(j.posicion_cancha, 'Sin definir') AS posicion_cancha
                 FROM JUGADORES j
                 INNER JOIN PERSONAS p ON j.FK_id_persona = p.PK_id_persona
-                WHERE j.FK_id_categoria = @IdCategoria
+                WHERE j.activo = 1
+                  AND (j.FK_id_categoria = @IdCategoria
                    OR EXISTS (
                        SELECT 1
                        FROM JUGADORES_CATEGORIAS jc
                        WHERE jc.FK_id_jugador = j.PK_id_jugador
                          AND jc.FK_id_categoria = @IdCategoria
-                   )
+                   ))
                 ORDER BY p.apellido ASC, p.nombre ASC;";
 
             using var command = new SqlCommand(query, connection);
@@ -291,7 +304,7 @@ namespace CACC.DAO
         {
             var disponibles = new List<JugadorPlantel>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 SELECT TOP 50
@@ -303,7 +316,8 @@ namespace CACC.DAO
                     ISNULL(j.posicion_cancha, 'Sin definir') AS posicion_cancha
                 FROM JUGADORES j
                 INNER JOIN PERSONAS p ON j.FK_id_persona = p.PK_id_persona
-                WHERE (j.FK_id_categoria IS NULL OR j.FK_id_categoria <> @IdCategoria)
+                WHERE j.activo = 1
+                AND (j.FK_id_categoria IS NULL OR j.FK_id_categoria <> @IdCategoria)
                 AND NOT EXISTS (
                     SELECT 1
                     FROM JUGADORES_CATEGORIAS jc
@@ -340,7 +354,7 @@ namespace CACC.DAO
         public async Task<bool> AsignarJugadorAsync(int idCategoria, int idJugador)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 IF NOT EXISTS (SELECT 1 FROM JUGADORES_CATEGORIAS WHERE FK_id_jugador = @IdJugador AND FK_id_categoria = @IdCategoria)
@@ -360,7 +374,7 @@ namespace CACC.DAO
         public async Task<bool> QuitarJugadorAsync(int idCategoria, int idJugador)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = "DELETE FROM JUGADORES_CATEGORIAS WHERE FK_id_jugador = @IdJugador AND FK_id_categoria = @IdCategoria;";
             using var command = new SqlCommand(query, connection);
@@ -375,7 +389,7 @@ namespace CACC.DAO
         {
             var staffList = new List<StaffPlantel>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 SELECT 
@@ -416,7 +430,7 @@ namespace CACC.DAO
         {
             var disponibles = new List<StaffPlantel>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 SELECT TOP 50
@@ -468,7 +482,7 @@ namespace CACC.DAO
         public async Task<bool> AsignarStaffAsync(int idCategoria, int idStaff)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
                 IF NOT EXISTS (SELECT 1 FROM STAFF_CATEGORIAS WHERE FK_id_staff = @IdStaff AND FK_id_categoria = @IdCategoria)
@@ -497,7 +511,7 @@ namespace CACC.DAO
         public async Task<bool> QuitarStaffAsync(int idCategoria, int idStaff)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = "DELETE FROM STAFF_CATEGORIAS WHERE FK_id_staff = @IdStaff AND FK_id_categoria = @IdCategoria;";
             using var command = new SqlCommand(query, connection);
@@ -511,7 +525,7 @@ namespace CACC.DAO
         {
             var partidos = new List<PartidoDetalle>();
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
         SELECT 
@@ -551,7 +565,7 @@ namespace CACC.DAO
         public async Task<int> RegistrarPartidoAsync(PartidoAlta partido)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
             using var transaction = connection.BeginTransaction();
 
             try
@@ -599,7 +613,7 @@ namespace CACC.DAO
         public async Task<PartidoDetalle?> ObtenerPartidoPorIdAsync(int idPartido)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
 
             const string query = @"
         SELECT 
@@ -667,7 +681,7 @@ namespace CACC.DAO
         public async Task<bool> ActualizarPartidoAsync(PartidoEdicion partido)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
             using var transaction = connection.BeginTransaction();
 
             try
@@ -731,7 +745,7 @@ namespace CACC.DAO
         public async Task<bool> EliminarPartidoAsync(int idPartido)
         {
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAuditadaAsync();
             using var transaction = connection.BeginTransaction();
 
             try

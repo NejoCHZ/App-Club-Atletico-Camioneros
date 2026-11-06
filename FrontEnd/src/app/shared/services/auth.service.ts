@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Capability, RoleId, hasCapability, normalizeRole } from '../../core/auth/roles';
+import { PORTALES } from '../../core/auth/portales.config';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,22 @@ export class AuthService {
     );
   }
 
+  // Inicia la sesión con el token que emitió el Portal Administrativo (el login es único). Devuelve false si el token
+  // venció o no trae un rol de este portal.
+  iniciarSesionConToken(token: string): boolean {
+    try {
+      const payload = this.decodeTokenPayload(token);
+      if (typeof payload['exp'] === 'number' && payload['exp'] * 1000 <= Date.now()) return false;
+      const rol = this.elegirRol(payload);
+      if (!rol) return false;
+      this.storage?.setItem('jwt_token', token);
+      this.storage?.setItem('user_rol', rol);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   getToken(): string | null {
     return this.storage?.getItem('jwt_token') ?? null;
   }
@@ -46,6 +63,16 @@ export class AuthService {
   getRol(): string | null {
     const rolLocal = this.storage?.getItem('user_rol');
     if (rolLocal && rolLocal !== 'undefined' && rolLocal !== 'null') {
+      // Una sesion guardada con el id del rol ("1") se corrige con el nombre que trae el mismo token.
+      if (/^\d+$/.test(rolLocal.trim())) {
+        const token = this.getToken();
+        if (token) {
+          try {
+            const rolDelToken = this.elegirRol(this.decodeTokenPayload(token));
+            if (rolDelToken) return rolDelToken;
+          } catch { /* se usa el valor guardado */ }
+        }
+      }
       return rolLocal;
     }
 
@@ -53,11 +80,7 @@ export class AuthService {
     const token = this.getToken();
     if (token) {
       try {
-        const payload = this.decodeTokenPayload(token);
-        return payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
-          || payload['role']
-          || payload['rol']
-          || null;
+        return this.elegirRol(this.decodeTokenPayload(token));
       } catch {
         return null;
       }
@@ -82,6 +105,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.cerrarSesionEnElAdministrativo();
     this.storage?.removeItem('jwt_token');
     this.storage?.removeItem('user_rol');
   }
@@ -125,11 +149,32 @@ export class AuthService {
     return typeof localStorage === 'undefined' ? null : localStorage;
   }
 
+  // El login es unico: cerrar sesion aca tambien invalida el token en el Portal Administrativo (y con el, en los dos portales).
+  private cerrarSesionEnElAdministrativo(): void {
+    const token = this.getToken();
+    if (!token || typeof fetch === 'undefined') return;
+    try {
+      fetch(`${PORTALES.administrativoApi}/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, keepalive: true }).catch(() => undefined);
+    } catch { /* si no hay conexion, la sesion local se cierra igual */ }
+  }
+
+  // El token compartido puede traer varios roles (por ejemplo el número del Administrativo y el nombre del rol deportivo):
+  // se toma el primero que este portal reconoce.
+  private elegirRol(payload: Record<string, any>): string | null {
+    const crudo = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? payload['role'] ?? payload['rol'];
+    const candidatos: unknown[] = Array.isArray(crudo) ? crudo : [crudo];
+    const validos = candidatos.filter((r): r is string => typeof r === 'string' && normalizeRole(r) !== null);
+    // El token del login unico trae el id del rol ("1") y su nombre ("Administrador (Tesorero)"): se prefiere el nombre,
+    // que es lo que comparan y muestran las pantallas (boton de Seleccion de Portales, menu Staff, nombre en la barra).
+    return validos.find((r) => !/^\d+$/.test(r.trim())) ?? validos[0] ?? null;
+  }
+
   private decodeTokenPayload(token: string): Record<string, any> {
     const encoded = token.split('.')[1];
     if (!encoded) throw new Error('Invalid JWT');
     const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(encoded.length / 4) * 4, '=');
-    return JSON.parse(atob(base64));
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
   }
 }
 

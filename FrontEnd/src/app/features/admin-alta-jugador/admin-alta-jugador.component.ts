@@ -59,6 +59,8 @@ export class AdminAltaJugadorComponent implements OnInit {
   nombre = '';
   apellido = '';
   fechaNacimiento = '';
+  // Obligatorio: de el sale el arancel que se le cobra al jugador (cuota e inscripcion).
+  genero: 'Masculino' | 'Femenino' | '' = '';
   categoria: number | '' = '';
   posicion: PosicionJugador | string = '';
   clubOrigen = '';
@@ -79,6 +81,8 @@ export class AdminAltaJugadorComponent implements OnInit {
   formularioEnviado = false;
   guardando = false;
   errorGuardado = '';
+  // Si el Portal Administrativo no pudo generar al momento la inscripción y la cuota, el alta igual queda hecha y se avisa.
+  avisoCargos = '';
 
   mostrarPopupCredencial = false;
 
@@ -218,13 +222,38 @@ export class AdminAltaJugadorComponent implements OnInit {
     });
   }
 
+  camposFaltantesDelJugador(): string[] {
+    const faltan: string[] = [];
+    if (!this.dni.trim()) faltan.push('DNI');
+    if (!this.nombre.trim()) faltan.push('Nombre');
+    if (!this.apellido.trim()) faltan.push('Apellido');
+    if (!this.fechaNacimiento) faltan.push('Fecha de nacimiento');
+    if (!this.genero) faltan.push('Género');
+    if (!this.categoria) faltan.push('Categoría');
+    if (!this.posicion) faltan.push('Posición');
+    return faltan;
+  }
+
+  camposFaltantesDelTutor(): string[] {
+    const faltan: string[] = [];
+    if (!this.tutorDni.trim()) faltan.push('DNI');
+    if (!this.tutorNombre.trim()) faltan.push('nombre');
+    if (!this.tutorApellido.trim()) faltan.push('apellido');
+    if (!this.tutorTelefono.trim()) faltan.push('teléfono');
+    if (!this.tutorParentesco) faltan.push('parentesco');
+    if (this.tutorParentesco === 'OTRO' && !this.tutorParentescoOtro.trim()) faltan.push('especificar el parentesco');
+    return faltan;
+  }
+
   guardarYGenerarQR(): void {
     if (this.guardando) return;
     this.formularioEnviado = true;
     this.errorGuardado = '';
+    this.avisoCargos = '';
 
-    if (!this.dni.trim() || !this.nombre.trim() || !this.apellido.trim() || !this.fechaNacimiento || !this.categoria || !this.posicion) {
-      alert('Por favor complete los campos obligatorios (*) del Jugador.');
+    const faltan = this.camposFaltantesDelJugador();
+    if (faltan.length > 0) {
+      this.errorGuardado = `Completá los campos obligatorios: ${faltan.join(', ')}.`;
       return;
     }
 
@@ -235,12 +264,9 @@ export class AdminAltaJugadorComponent implements OnInit {
     }
 
     if (this.esMenorDeEdad) {
-      if (!this.tutorDni.trim() || !this.tutorNombre.trim() || !this.tutorApellido.trim() || !this.tutorTelefono.trim() || !this.tutorParentesco) {
-        alert('Por ser menor de 18 años, debe completar los campos obligatorios (*) del Tutor Responsable.');
-        return;
-      }
-      if (this.tutorParentesco === 'OTRO' && !this.tutorParentescoOtro.trim()) {
-        alert('Por favor especifique el parentesco del tutor.');
+      const faltanDelTutor = this.camposFaltantesDelTutor();
+      if (faltanDelTutor.length > 0) {
+        this.errorGuardado = `Por ser menor de 18 años, completá los datos del tutor responsable: ${faltanDelTutor.join(', ')}.`;
         return;
       }
     }
@@ -252,6 +278,7 @@ export class AdminAltaJugadorComponent implements OnInit {
       nombre: this.nombre.trim(),
       apellido: this.apellido.trim(),
       fechaNacimiento: fechaNacimientoIso,
+      genero: this.genero,
       categoria: this.categoria ? this.categoria.toString() : '',
       posicion: this.posicion as any,
       clubOrigen: this.clubOrigen?.trim() || null,
@@ -274,6 +301,7 @@ export class AdminAltaJugadorComponent implements OnInit {
         this.nombre = jugador.nombre;
         this.apellido = jugador.apellido;
         this.mensajeExito = true;
+        this.avisoCargos = (jugador as { avisoCargos?: string | null }).avisoCargos ?? '';
         this.mostrarPopupCredencial = true;
         this.guardando = false;
       },

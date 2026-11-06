@@ -2,7 +2,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-export interface IngresoResult { accesoPermitido: boolean; estadoAcceso: 'PERMITIDO'|'DENEGADO'; asistenciaRegistrada: boolean; yaRegistrada: boolean; mensaje: string; deudaTotal: number; cuotasVencidas: number; }
+// verificado=false: el Portal Administrativo no respondió y el ingreso quedó marcado para revisar (la deuda es desconocida).
+// estado es el que informa el Portal Administrativo (habilitado, solo_entrenamientos, inhabilitado, baja); nunca hay montos.
+export interface IngresoResult { accesoPermitido: boolean; estadoAcceso?: 'PERMITIDO'|'DENEGADO'|'SIN_VERIFICAR'; asistenciaRegistrada: boolean; yaRegistrada: boolean; mensaje: string; verificado?: boolean; estado?: string; }
 export interface AsistenciaHistorialItem {
   idAsistencia: number;
   idJugador: number;
@@ -23,7 +25,7 @@ export class AsistenciaService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/asistencias';
 
-  registrar(dni: string, metodoRegistro: MetodoRegistro): Observable<IngresoResult> {
+  registrar(dni: string, metodoRegistro: MetodoRegistro = 'DNI_MANUAL'): Observable<IngresoResult> {
     return this.http.post<IngresoResult>(`${this.baseUrl}/verificar-y-registrar`, { dni, metodoRegistro });
   }
 

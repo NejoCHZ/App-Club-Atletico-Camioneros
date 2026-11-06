@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
+import { badgeClassDeEstadoCuota } from '../../shared/estado-cuota';
 
 export interface TutorInfo {
   dni?: string;
@@ -22,7 +23,7 @@ export interface Player {
   categoria: string;
   posicionCancha: string;
   fechaNacimiento: string;
-  estadoCuota: 'AL DÍA' | 'PENDIENTE' | 'ADEUDA' | string;
+  estadoCuota: 'AL DÍA' | 'SOLO ENTRENAMIENTOS' | 'INHABILITADO' | 'BAJA' | 'SIN VERIFICAR' | string;
   tutor?: TutorInfo | null;
 }
 
@@ -385,11 +386,7 @@ export class AdminListaJugadores implements OnInit {
   }
 
   getBadgeClass(estado: Player['estadoCuota']): string {
-    const e = (estado || '').toUpperCase();
-    if (e.includes('AL DÍA') || e.includes('AL DIA')) return 'badge-aldia';
-    if (e.includes('PENDIENTE')) return 'badge-pendiente';
-    if (e.includes('ADEUDA') || e.includes('INHABILITADO')) return 'badge-adeuda';
-    return '';
+    return badgeClassDeEstadoCuota(estado);
   }
 
   cerrarSesion(): void {

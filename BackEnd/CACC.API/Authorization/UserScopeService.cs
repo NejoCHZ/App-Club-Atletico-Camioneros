@@ -33,7 +33,7 @@ public sealed class UserScopeService : IUserScopeService
     public async Task<bool> CanReadPlayerAsync(ClaimsPrincipal user, int playerId)
     {
         var roleId = GetRoleId(user);
-        if (roleId is 1 or 2 or 3 or 5 or 7) return true;
+        if (roleId is 1 or 3 or 5 or 7) return true;
         if (roleId is not (4 or 6)) return false;
 
         var categories = GetAssignedCategoryIds(user);

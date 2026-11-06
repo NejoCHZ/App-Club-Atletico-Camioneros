@@ -6,6 +6,4 @@ public class ResultadoIngreso {
  public string? Error { get; set; }
  public bool AccesoPermitido { get; set; }
  public string EstadoAcceso { get; set; } = string.Empty;
- public decimal DeudaTotal { get; set; }
- public int CuotasVencidas { get; set; }
 }

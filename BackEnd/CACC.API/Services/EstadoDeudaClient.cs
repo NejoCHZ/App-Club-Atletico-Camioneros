@@ -1,0 +1,346 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using CACC.Entities;
+using Microsoft.Extensions.Options;
+
+namespace CACC.API.Services
+{
+    // Cómo se configura la conexión con el Portal Administrativo (sección "AdministrativoApi").
+    public class AdministrativoApiOptions
+    {
+        public const string Seccion = "AdministrativoApi";
+
+        // Dirección de la API del Portal Administrativo, por ejemplo http://localhost:5118
+        public string BaseUrl { get; set; } = string.Empty;
+
+        // Cuánto se espera la respuesta antes de darla por caída.
+        public int TimeoutSegundos { get; set; } = 3;
+
+        // Credencial de sistema de la API de integración (HU-055): se manda en el header X-Integration-Key y tiene que ser la
+        // misma que el Administrativo tiene en Integracion:ClienteDeportivo:Clave. Se configura por entorno (nunca en el
+        // repositorio): AdministrativoApi__ClaveIntegracion. Si está vacía no se manda el header, que es lo que espera un
+        // Administrativo que todavía no exige la credencial.
+        public string ClaveIntegracion { get; set; } = string.Empty;
+
+        public const string CabeceraClaveIntegracion = "X-Integration-Key";
+
+        // Qué hace el QR si el Portal Administrativo no responde:
+        //   "Denegar" (por defecto): no deja pasar a nadie hasta que se pueda consultar la deuda.
+        //   "Permitir": deja pasar a un jugador activo y marca la asistencia SIN_VERIFICAR para revisarla después.
+        public string SiNoResponde { get; set; } = Denegar;
+
+        public const string Permitir = "Permitir";
+        public const string Denegar = "Denegar";
+
+        public bool PermiteSiNoResponde => string.Equals(SiNoResponde?.Trim(), Permitir, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public enum ResultadoConsulta
+    {
+        Ok,
+        DniInvalido,
+        NoEsJugador,
+        Ambiguo,
+        // El Portal Administrativo rechazó el token (sesión cerrada o sin permiso para consultar).
+        SinPermiso,
+        // No respondió a tiempo, devolvió un error o no está configurado.
+        NoResponde
+    }
+
+    public sealed record ConsultaEstadoDeuda(ResultadoConsulta Resultado, EstadoDeudaAdministrativo? Estado = null, int CodigoHttp = 0);
+
+    public enum EstadoCargosAlta
+    {
+        // El Administrativo respondió bien (aunque no haya generado nada nuevo: es idempotente).
+        Generados,
+        // El Administrativo respondió que no corresponde (sin permiso, jugador inexistente, dado de baja, alta no reciente).
+        Rechazado,
+        // No respondió, devolvió un error o la ruta no existe en esa versión.
+        NoResponde
+    }
+
+    // Qué pasó al pedirle los cargos de alta. Inscripcion / Cuota dicen si se generaron en esa llamada; nunca hay montos.
+    public sealed record ResultadoCargosAlta(EstadoCargosAlta Estado, bool Inscripcion = false, bool Cuota = false, string? Motivo = null);
+
+    public enum EstadoBajaInformada
+    {
+        // El Administrativo registró la baja y quitó las cuotas futuras sin pagos (o ya la tenía registrada: es idempotente).
+        Informada,
+        // El Administrativo respondió que no corresponde (sin permiso, jugador inexistente, fecha anterior al ingreso).
+        Rechazada,
+        // No respondió, devolvió un error o la ruta no existe en esa versión.
+        NoResponde
+    }
+
+    // Qué pasó al pedirle la baja (HU-057). El Administrativo no devuelve cantidades ni montos.
+    public sealed record ResultadoBajaInformada(EstadoBajaInformada Estado, string? Motivo = null);
+
+    public interface IEstadoDeudaClient
+    {
+        Task<ConsultaEstadoDeuda> PorDniAsync(string dni, CancellationToken ct = default);
+
+        // El estado de varios jugadores por DNI (para los listados). Devuelve null si el Portal Administrativo no responde;
+        // los DNI que no son de jugadores simplemente no figuran en el resultado.
+        Task<IReadOnlyDictionary<string, EstadoDeudaAdministrativo>?> PorLoteAsync(IEnumerable<string> dnis, CancellationToken ct = default);
+
+        // Pide al Administrativo que genere la inscripción y la cuota del mes de un jugador recién dado de alta (contrato v1).
+        // No lanza: si no se pudo, el alta ya hecha no se toca y el resultado dice qué pasó.
+        Task<ResultadoCargosAlta> GenerarCargosDeAltaAsync(int idJugador, CancellationToken ct = default);
+
+        // Le pide al Administrativo que registre la baja de un jugador con la fecha efectiva indicada (HU-057, contrato v1): el
+        // Administrativo la graba con su origen y responsable, quita las cuotas futuras sin pagos y cancela las becas. No lanza: si
+        // no se pudo, el resultado lo dice y quien llama decide (el Deportivo la graba directo y el Administrativo la completa solo).
+        Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, DateTime fechaBaja, CancellationToken ct = default);
+    }
+
+    public sealed class EstadoDeudaClient : IEstadoDeudaClient
+    {
+        private const int MaximoPorLote = 500;
+        private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+
+        private readonly HttpClient _http;
+        private readonly IHttpContextAccessor _contexto;
+        private readonly ILogger<EstadoDeudaClient> _logger;
+        private readonly string _claveIntegracion;
+
+        public EstadoDeudaClient(HttpClient http, IHttpContextAccessor contexto, ILogger<EstadoDeudaClient> logger,
+            IOptions<AdministrativoApiOptions>? opciones = null)
+        {
+            _http = http;
+            _contexto = contexto;
+            _logger = logger;
+            _claveIntegracion = opciones?.Value.ClaveIntegracion?.Trim() ?? string.Empty;
+        }
+
+        public async Task<ConsultaEstadoDeuda> PorDniAsync(string dni, CancellationToken ct = default)
+        {
+            using var pedido = NuevoPedido(HttpMethod.Get, $"api/integracion/v1/estado-deuda/dni/{Uri.EscapeDataString(dni)}");
+            try
+            {
+                using var respuesta = await _http.SendAsync(pedido, ct);
+                switch (respuesta.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        var estado = await respuesta.Content.ReadFromJsonAsync<EstadoDeudaAdministrativo>(Json, ct);
+                        return estado is null
+                            ? new ConsultaEstadoDeuda(ResultadoConsulta.NoResponde, CodigoHttp: 200)
+                            : new ConsultaEstadoDeuda(ResultadoConsulta.Ok, estado, 200);
+                    case HttpStatusCode.BadRequest:
+                        return new ConsultaEstadoDeuda(ResultadoConsulta.DniInvalido, CodigoHttp: 400);
+                    case HttpStatusCode.NotFound:
+                        // El 404 de "no es un jugador" trae un mensaje en el cuerpo. Uno vacío es una ruta que no existe (por
+                        // ejemplo, un Portal Administrativo de una versión anterior sin la API v1): es un problema de
+                        // configuración, no un DNI desconocido, y no debe mostrarse como tal.
+                        if (await TieneMensajeAsync(respuesta, ct))
+                        {
+                            return new ConsultaEstadoDeuda(ResultadoConsulta.NoEsJugador, CodigoHttp: 404);
+                        }
+                        _logger.LogError("El Portal Administrativo respondió 404 sin mensaje: la ruta {Ruta} no existe en esa versión de la API. Revisá AdministrativoApi:BaseUrl y la versión del Administrativo.", pedido.RequestUri);
+                        return new ConsultaEstadoDeuda(ResultadoConsulta.NoResponde, CodigoHttp: 404);
+                    case HttpStatusCode.Conflict:
+                        return new ConsultaEstadoDeuda(ResultadoConsulta.Ambiguo, CodigoHttp: 409);
+                    case HttpStatusCode.Unauthorized:
+                    case HttpStatusCode.Forbidden:
+                        return new ConsultaEstadoDeuda(ResultadoConsulta.SinPermiso, CodigoHttp: (int)respuesta.StatusCode);
+                    default:
+                        _logger.LogWarning("El Portal Administrativo respondió {Codigo} al consultar la deuda.", (int)respuesta.StatusCode);
+                        return new ConsultaEstadoDeuda(ResultadoConsulta.NoResponde, CodigoHttp: (int)respuesta.StatusCode);
+                }
+            }
+            catch (Exception ex) when (EsFalloDeConexion(ex, ct))
+            {
+                _logger.LogWarning(ex, "No se pudo consultar la deuda al Portal Administrativo.");
+                return new ConsultaEstadoDeuda(ResultadoConsulta.NoResponde);
+            }
+        }
+
+        public async Task<IReadOnlyDictionary<string, EstadoDeudaAdministrativo>?> PorLoteAsync(IEnumerable<string> dnis, CancellationToken ct = default)
+        {
+            var pendientes = dnis.Where(d => !string.IsNullOrWhiteSpace(d)).Distinct().ToList();
+            var resultado = new Dictionary<string, EstadoDeudaAdministrativo>();
+            if (pendientes.Count == 0) return resultado;
+
+            try
+            {
+                for (int i = 0; i < pendientes.Count; i += MaximoPorLote)
+                {
+                    var tanda = pendientes.Skip(i).Take(MaximoPorLote).ToList();
+                    using var pedido = NuevoPedido(HttpMethod.Post, "api/integracion/v1/estado-deuda/lote");
+                    pedido.Content = new StringContent(JsonSerializer.Serialize(new { dnis = tanda }, Json), Encoding.UTF8, "application/json");
+                    using var respuesta = await _http.SendAsync(pedido, ct);
+                    if (!respuesta.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("El Portal Administrativo respondió {Codigo} al consultar la deuda por lote.", (int)respuesta.StatusCode);
+                        return null;
+                    }
+
+                    var cuerpo = await respuesta.Content.ReadFromJsonAsync<LoteRespuesta>(Json, ct);
+                    if (cuerpo?.Items is null) return null;
+                    foreach (var item in cuerpo.Items) resultado[item.Dni] = item;
+                }
+                return resultado;
+            }
+            catch (Exception ex) when (EsFalloDeConexion(ex, ct))
+            {
+                _logger.LogWarning(ex, "No se pudo consultar la deuda por lote al Portal Administrativo.");
+                return null;
+            }
+        }
+
+        public async Task<ResultadoCargosAlta> GenerarCargosDeAltaAsync(int idJugador, CancellationToken ct = default)
+        {
+            using var pedido = NuevoPedido(HttpMethod.Post, $"api/integracion/v1/jugadores/{idJugador}/cargos-alta");
+            try
+            {
+                using var respuesta = await _http.SendAsync(pedido, ct);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var cargos = await respuesta.Content.ReadFromJsonAsync<CargosAltaRespuesta>(Json, ct);
+                    return cargos is null
+                        ? new ResultadoCargosAlta(EstadoCargosAlta.NoResponde)
+                        : new ResultadoCargosAlta(EstadoCargosAlta.Generados, cargos.InscripcionGenerada, cargos.CuotaGenerada);
+                }
+
+                string? mensaje = await LeerMensajeAsync(respuesta, ct);
+                int codigo = (int)respuesta.StatusCode;
+                // 4xx con mensaje: el Administrativo entendió el pedido y dijo que no corresponde. Un 404 vacío es una ruta que no existe.
+                if (codigo is >= 400 and < 500 && mensaje is not null)
+                {
+                    _logger.LogWarning("El Portal Administrativo rechazó generar los cargos del jugador {IdJugador}: {Codigo} {Motivo}", idJugador, codigo, mensaje);
+                    return new ResultadoCargosAlta(EstadoCargosAlta.Rechazado, Motivo: mensaje);
+                }
+                if (codigo is 401 or 403)
+                {
+                    _logger.LogWarning("El Portal Administrativo no aceptó la sesión para generar los cargos del jugador {IdJugador}: {Codigo}", idJugador, codigo);
+                    return new ResultadoCargosAlta(EstadoCargosAlta.Rechazado, Motivo: "Sin permiso en el Portal Administrativo.");
+                }
+
+                _logger.LogWarning("El Portal Administrativo respondió {Codigo} al generar los cargos del jugador {IdJugador}.", codigo, idJugador);
+                return new ResultadoCargosAlta(EstadoCargosAlta.NoResponde);
+            }
+            catch (Exception ex) when (EsFalloDeConexion(ex, ct))
+            {
+                _logger.LogWarning(ex, "No se pudo pedir al Portal Administrativo los cargos del jugador {IdJugador}.", idJugador);
+                return new ResultadoCargosAlta(EstadoCargosAlta.NoResponde);
+            }
+        }
+
+        public async Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, DateTime fechaBaja, CancellationToken ct = default)
+        {
+            using var pedido = NuevoPedido(HttpMethod.Post, $"api/integracion/v1/jugadores/{idJugador}/baja");
+            pedido.Content = new StringContent(
+                JsonSerializer.Serialize(new { fechaBaja = fechaBaja.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) }),
+                Encoding.UTF8, "application/json");
+            try
+            {
+                using var respuesta = await _http.SendAsync(pedido, ct);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    // Un 200 que no trae el JSON del Administrativo (por ejemplo, una pagina de un proxy) no es una baja registrada.
+                    await using var cuerpo = await respuesta.Content.ReadAsStreamAsync(ct);
+                    using var documento = await JsonDocument.ParseAsync(cuerpo, cancellationToken: ct);
+                    return documento.RootElement.ValueKind == JsonValueKind.Object
+                        ? new ResultadoBajaInformada(EstadoBajaInformada.Informada)
+                        : new ResultadoBajaInformada(EstadoBajaInformada.NoResponde);
+                }
+
+                string? mensaje = await LeerMensajeAsync(respuesta, ct);
+                int codigo = (int)respuesta.StatusCode;
+                // 409: el jugador ya figura dado de baja (con otra fecha). Para el Deportivo es lo mismo que haberlo logrado: ya no recibe cuotas.
+                if (codigo == 409 && mensaje is not null)
+                {
+                    return new ResultadoBajaInformada(EstadoBajaInformada.Informada);
+                }
+                // 4xx con mensaje: el Administrativo entendió el pedido y dijo que no corresponde. Un 404 vacío es una ruta que no existe.
+                if (codigo is >= 400 and < 500 && mensaje is not null)
+                {
+                    _logger.LogWarning("El Portal Administrativo rechazó la baja del jugador {IdJugador}: {Codigo} {Motivo}", idJugador, codigo, mensaje);
+                    return new ResultadoBajaInformada(EstadoBajaInformada.Rechazada, mensaje);
+                }
+                if (codigo is 401 or 403)
+                {
+                    _logger.LogWarning("El Portal Administrativo no aceptó la sesión para registrar la baja del jugador {IdJugador}: {Codigo}", idJugador, codigo);
+                    return new ResultadoBajaInformada(EstadoBajaInformada.Rechazada, "Sin permiso en el Portal Administrativo.");
+                }
+
+                _logger.LogWarning("El Portal Administrativo respondió {Codigo} al registrar la baja del jugador {IdJugador}.", codigo, idJugador);
+                return new ResultadoBajaInformada(EstadoBajaInformada.NoResponde);
+            }
+            catch (Exception ex) when (EsFalloDeConexion(ex, ct))
+            {
+                _logger.LogWarning(ex, "No se pudo registrar en el Portal Administrativo la baja del jugador {IdJugador}.", idJugador);
+                return new ResultadoBajaInformada(EstadoBajaInformada.NoResponde);
+            }
+        }
+
+        private static async Task<bool> TieneMensajeAsync(HttpResponseMessage respuesta, CancellationToken ct) =>
+            await LeerMensajeAsync(respuesta, ct) is not null;
+
+        // El cuerpo de error del Administrativo es { exito, mensaje }. Sin ese mensaje (cuerpo vacío o de otra forma) no es una
+        // respuesta de la API sino, por ejemplo, un 404 de ruta inexistente.
+        private static async Task<string?> LeerMensajeAsync(HttpResponseMessage respuesta, CancellationToken ct)
+        {
+            try
+            {
+                await using var cuerpo = await respuesta.Content.ReadAsStreamAsync(ct);
+                using var documento = await JsonDocument.ParseAsync(cuerpo, cancellationToken: ct);
+                return documento.RootElement.ValueKind == JsonValueKind.Object && documento.RootElement.TryGetProperty("mensaje", out var m)
+                    ? m.GetString()
+                    : null;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        // Reenvía el token del usuario (es el mismo en los dos portales) y, si está configurada, la credencial de sistema de
+        // la API de integración. La clave nunca se escribe en los logs.
+        private HttpRequestMessage NuevoPedido(HttpMethod metodo, string ruta)
+        {
+            var pedido = new HttpRequestMessage(metodo, ruta);
+            if (_claveIntegracion.Length > 0)
+            {
+                pedido.Headers.TryAddWithoutValidation(AdministrativoApiOptions.CabeceraClaveIntegracion, _claveIntegracion);
+            }
+            string? autorizacion = _contexto.HttpContext?.Request.Headers.Authorization.ToString();
+            if (!string.IsNullOrWhiteSpace(autorizacion) && AuthenticationHeaderValue.TryParse(autorizacion, out var valor))
+            {
+                pedido.Headers.Authorization = valor;
+            }
+            return pedido;
+        }
+
+        // Una cancelación pedida por quien llama se propaga; todo lo demás (caída, timeout, respuesta ilegible) cuenta como "no responde".
+        private static bool EsFalloDeConexion(Exception ex, CancellationToken ct) =>
+            !ct.IsCancellationRequested && (ex is HttpRequestException or TaskCanceledException or JsonException or NotSupportedException);
+
+        private sealed class LoteRespuesta
+        {
+            public List<EstadoDeudaAdministrativo>? Items { get; set; }
+        }
+
+        private sealed class CargosAltaRespuesta
+        {
+            public bool InscripcionGenerada { get; set; }
+            public bool CuotaGenerada { get; set; }
+        }
+    }
+
+    // Texto que muestran los listados del Deportivo para el estado de cuota de cada jugador.
+    public static class EstadoCuotaTexto
+    {
+        public const string SinVerificar = "SIN VERIFICAR";
+
+        public static string De(EstadoDeudaAdministrativo? estado) => estado?.Estado switch
+        {
+            "habilitado" => "AL DÍA",
+            "solo_entrenamientos" => "SOLO ENTRENAMIENTOS",
+            "inhabilitado" => "INHABILITADO",
+            "baja" => "BAJA",
+            _ => SinVerificar
+        };
+    }
+}
