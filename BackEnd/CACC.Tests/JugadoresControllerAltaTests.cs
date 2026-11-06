@@ -90,6 +90,8 @@ public class JugadoresControllerAltaTests
             return Task.FromResult(resultado);
         }
 
+        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, CancellationToken ct = default) => throw new NotSupportedException();
+
         public Task<ConsultaEstadoDeuda> PorDniAsync(string dni, CancellationToken ct = default) => throw new NotSupportedException();
 
         public Task<IReadOnlyDictionary<string, EstadoDeudaAdministrativo>?> PorLoteAsync(IEnumerable<string> dnis, CancellationToken ct = default) =>

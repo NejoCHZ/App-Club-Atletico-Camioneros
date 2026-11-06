@@ -297,12 +297,29 @@ namespace CACC.API.Controllers
             try
             {
                 var resultado = await _jugadorDao.EliminarAsync(id);
-                return resultado switch
+                if (resultado == ResultadoBajaJugador.NoEncontrado)
                 {
-                    ResultadoBajaJugador.NoEncontrado => NotFound(new { message = $"Jugador con ID {id} no encontrado." }),
-                    ResultadoBajaJugador.Eliminado => Ok(new { message = "Jugador eliminado. No tenía pagos ni otro historial, así que se borró por completo y su DNI quedó libre.", eliminado = true }),
-                    _ => Ok(new { message = "Jugador dado de baja correctamente. Su historial se conserva.", eliminado = false })
-                };
+                    return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
+                }
+                if (resultado == ResultadoBajaJugador.Eliminado)
+                {
+                    return Ok(new { message = "Jugador eliminado. No tenía pagos ni otro historial, así que se borró por completo y su DNI quedó libre.", eliminado = true });
+                }
+
+                // Baja lógica: ya quedó hecha en la base. Se le avisa al Portal Administrativo (contrato v1) para que quite las
+                // cuotas futuras sin pagos y cancele las becas, con la misma lógica de su propia baja; la deuda anterior se
+                // mantiene. Si no responde, la baja no se deshace: el Administrativo la completa solo en su próxima revisión.
+                var baja = await _estadoDeuda.InformarBajaAsync(id, HttpContext.RequestAborted);
+                bool informada = baja.Estado == EstadoBajaInformada.Informada;
+                return Ok(new
+                {
+                    message = "Jugador dado de baja correctamente. Su historial se conserva.",
+                    eliminado = false,
+                    cuotasFuturasQuitadas = informada ? baja.CuotasFuturasQuitadas : (int?)null,
+                    avisoBaja = informada
+                        ? null
+                        : "La baja se guardó, pero el Portal Administrativo todavía no quitó las cuotas futuras sin pagar de este jugador. Lo completa solo en su próxima revisión (cada pocas horas)."
+                });
             }
             catch (Exception ex)
             {

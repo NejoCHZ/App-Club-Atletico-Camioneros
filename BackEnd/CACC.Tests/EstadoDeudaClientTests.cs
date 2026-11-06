@@ -23,9 +23,9 @@ public class EstadoDeudaClientTests
     }
 
     // Con la credencial de sistema de la API de integración (HU-055) configurada, como en el entorno real.
-    private static EstadoDeudaClient ClienteConClave(string? clave, out Manejador manejador)
+    private static EstadoDeudaClient ClienteConClave(string? clave, out Manejador manejador, Func<HttpRequestMessage, HttpResponseMessage>? responder = null)
     {
-        manejador = new Manejador(_ => Json(HttpStatusCode.OK, "{\"items\":[],\"dni\":\"40111222\",\"idJugador\":7,\"estado\":\"habilitado\",\"accesoPermitido\":true,\"inscripcionGenerada\":false,\"cuotaGenerada\":false}"));
+        manejador = new Manejador(responder ?? (_ => Json(HttpStatusCode.OK, "{\"items\":[],\"dni\":\"40111222\",\"idJugador\":7,\"estado\":\"habilitado\",\"accesoPermitido\":true,\"inscripcionGenerada\":false,\"cuotaGenerada\":false}")));
         var contexto = new DefaultHttpContext();
         contexto.Request.Headers.Authorization = "Bearer token-del-usuario";
         return new EstadoDeudaClient(
@@ -93,6 +93,58 @@ public class EstadoDeudaClientTests
         await cliente.PorDniAsync("40111222");
 
         Assert.False(manejador.Pedidos[0].Headers.Contains("X-Integration-Key"));
+    }
+
+    // Baja informada (SCRUM-757): el Deportivo avisa y el Administrativo quita las cuotas futuras sin pagos.
+    [Fact]
+    public async Task InformarBaja_LeeLoQueSeQuito_YManda_ElTokenYLaCredencialDeSistema()
+    {
+        var cliente = ClienteConClave("clave-de-prueba-123", out var manejador,
+            _ => Json(HttpStatusCode.OK, "{\"idJugador\":7,\"cuotasFuturasQuitadas\":3,\"beneficiosCancelados\":1}"));
+
+        var resultado = await cliente.InformarBajaAsync(7);
+
+        Assert.Equal(EstadoBajaInformada.Informada, resultado.Estado);
+        Assert.Equal(3, resultado.CuotasFuturasQuitadas);
+        Assert.Equal(1, resultado.BeneficiosCancelados);
+        var pedido = manejador.Pedidos.Single();
+        Assert.Equal(HttpMethod.Post, pedido.Method);
+        Assert.Equal("/api/integracion/v1/jugadores/7/baja", pedido.RequestUri!.AbsolutePath);
+        Assert.Equal("Bearer token-del-usuario", pedido.Headers.Authorization!.ToString());
+        Assert.Equal("clave-de-prueba-123", Assert.Single(pedido.Headers.GetValues("X-Integration-Key")));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound, "{\"exito\":false,\"mensaje\":\"No existe el jugador 7.\"}", "No existe el jugador 7.")]
+    [InlineData(HttpStatusCode.UnprocessableEntity, "{\"exito\":false,\"mensaje\":\"La fecha de baja no es valida.\"}", "La fecha de baja no es valida.")]
+    [InlineData(HttpStatusCode.Unauthorized, "{}", "Sin permiso en el Portal Administrativo.")]
+    [InlineData(HttpStatusCode.Forbidden, "", "Sin permiso en el Portal Administrativo.")]
+    public async Task InformarBaja_SiElAdministrativoDiceQueNoCorresponde_EsRechazada(HttpStatusCode codigo, string cuerpo, string motivo)
+    {
+        var resultado = await Cliente(_ => Json(codigo, cuerpo), out _).InformarBajaAsync(7);
+
+        Assert.Equal(EstadoBajaInformada.Rechazada, resultado.Estado);
+        Assert.Equal(motivo, resultado.Motivo);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.InternalServerError, "{}")]
+    [InlineData(HttpStatusCode.BadGateway, "")]
+    [InlineData(HttpStatusCode.NotFound, "")]            // ruta inexistente: un Administrativo de una version anterior
+    [InlineData(HttpStatusCode.OK, "no es json")]
+    public async Task InformarBaja_SiElAdministrativoFallaOLaRutaNoExiste_NoRespondeYNoLanza(HttpStatusCode codigo, string cuerpo)
+    {
+        var resultado = await Cliente(_ => Json(codigo, cuerpo), out _).InformarBajaAsync(7);
+
+        Assert.Equal(EstadoBajaInformada.NoResponde, resultado.Estado);
+    }
+
+    [Fact]
+    public async Task InformarBaja_SiLaConexionFalla_NoRespondeYNoLanza()
+    {
+        var cliente = Cliente(_ => throw new HttpRequestException("sin conexion"), out _);
+
+        Assert.Equal(EstadoBajaInformada.NoResponde, (await cliente.InformarBajaAsync(7)).Estado);
     }
 
     [Theory]

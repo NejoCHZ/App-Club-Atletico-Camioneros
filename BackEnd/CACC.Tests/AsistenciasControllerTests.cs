@@ -339,6 +339,9 @@ public class AsistenciasControllerTests
 
         public Task<ResultadoCargosAlta> GenerarCargosDeAltaAsync(int idJugador, CancellationToken ct = default) =>
             Task.FromResult(new ResultadoCargosAlta(EstadoCargosAlta.NoResponde));
+
+        public Task<ResultadoBajaInformada> InformarBajaAsync(int idJugador, CancellationToken ct = default) =>
+            Task.FromResult(new ResultadoBajaInformada(EstadoBajaInformada.NoResponde));
     }
 
     private sealed class FakeCredentialTokenService : ICredentialTokenService
