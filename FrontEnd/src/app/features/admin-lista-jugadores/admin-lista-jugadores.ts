@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
+import { playerPositionLabel } from '../../shared/utils/player-position';
 
 export interface TutorInfo {
   dni?: string;
@@ -40,10 +41,12 @@ export interface Categoria {
 })
 export class AdminListaJugadores implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly access = inject(PortalAccessService);
   readonly canEditPlayers = this.access.capabilities.canEditPlayers;
+  readonly showFinancialStatus = this.access.role !== 'medico';
   readonly portalRoot = `/${this.access.role}`;
 
   usuarioActual = {
@@ -88,6 +91,7 @@ export class AdminListaJugadores implements OnInit {
 
   players: Player[] = [];
   listaCategorias: Categoria[] = [];
+  categoriaContexto = '';
 
   posicionesDisponibles: string[] = [
     'Arquero',
@@ -129,17 +133,16 @@ export class AdminListaJugadores implements OnInit {
   }
 
   formatearPosicion(pos?: string): string {
-    if (!pos) return 'Sin definir';
-    const p = pos.trim().toUpperCase();
-    if (p.includes('ARQUER')) return 'Arquero';
-    if (p.includes('DEFENS')) return 'Defensor';
-    if (p.includes('MEDIO') || p.includes('VOLANTE')) return 'Mediocampista';
-    if (p.includes('DELANT')) return 'Delantero';
-    return pos.trim();
+    return playerPositionLabel(pos);
   }
 
   cargarJugadores(): void {
-    this.http.get<any[]>('/api/jugadores').subscribe({
+    const categoriaId = Number(this.route.snapshot.paramMap.get('id'));
+    const url = categoriaId > 0
+      ? `/api/jugadores?categoriaId=${categoriaId}`
+      : '/api/jugadores';
+
+    this.http.get<any[]>(url).subscribe({
       next: (data) => {
         this.players = this.access.visiblePlayers(data).map(j => {
           let fechaFormateada = 'Sin informar';
@@ -178,6 +181,10 @@ export class AdminListaJugadores implements OnInit {
     this.http.get<Categoria[]>('/api/categorias').subscribe({
       next: (data) => {
         this.listaCategorias = data;
+        const categoriaId = Number(this.route.snapshot.paramMap.get('id'));
+        this.categoriaContexto = categoriaId > 0
+          ? data.find((categoria) => categoria.idCategoria === categoriaId)?.nombreCategoria ?? ''
+          : '';
       },
       error: (err) => {
         console.error('Error al cargar categorías', err);

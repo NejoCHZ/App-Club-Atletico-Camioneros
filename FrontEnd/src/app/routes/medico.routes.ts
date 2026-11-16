@@ -13,7 +13,7 @@ export const MEDICO_ROUTES: Routes = [
     () => import('../features/admin-lista-jugadores/admin-lista-jugadores').then((m) => m.AdminListaJugadores),
     () => import('../features/admin-lista-jugadores/admin-lista-jugadores').then((m) => m.AdminListaJugadores),
   ) },
-  { path: 'jugadores/:id/ficha-medica', title: 'Editar ficha médica', loadComponent: () => import('../features/medico-editar-ficha/medico-editar-ficha.component').then((m) => m.MedicoEditarFichaComponent) },
+  { path: 'jugadores/:id/ficha-medica', title: 'Ficha médica', loadComponent: () => import('../features/admin-medical-page/admin-medical-page').then((m) => m.AdminMedicalPage) },
   { path: 'jugadores/:id/asistencias', title: 'Historial de asistencia', loadComponent: () => import('../features/historial-asistencia/historial-asistencia.component').then((m) => m.HistorialAsistenciaComponent) },
   { path: 'jugadores/:id/partidos', title: 'Historial de partidos', loadComponent: () => import('../features/historial-partidos-jugador/historial-partidos-jugador.component').then((m) => m.HistorialPartidosJugadorComponent) },
   { path: 'jugadores/:id', title: 'Perfil del jugador', data: { desktopOwnShell: true }, loadComponent: responsiveComponent(

@@ -1,4 +1,4 @@
-export type AppRole = 'admin' | 'coordinador' | 'medico' | 'dt' | 'don-qr';
+export type AppRole = 'admin' | 'coordinador' | 'medico' | 'dt' | 'preparador-fisico' | 'don-qr';
 
 export enum RoleId {
   Administrador = 1,
@@ -38,6 +38,10 @@ const roleAliases: Record<string, AppRole> = {
   tecnico: 'dt',
   'director tecnico': 'dt',
   entrenador: 'dt',
+  '6': 'preparador-fisico',
+  preparador: 'preparador-fisico',
+  'preparador fisico': 'preparador-fisico',
+  'preparador-fisico': 'preparador-fisico',
   '5': 'don-qr',
   qr: 'don-qr',
   'don qr': 'don-qr',
@@ -58,7 +62,12 @@ export function normalizeRole(value: string | null | undefined): AppRole | null 
 }
 
 export function homeForRole(role: AppRole): string {
-  return role === 'don-qr' ? '/semaforo-qr' : `/${role}`;
+  if (role === 'don-qr') return '/semaforo-qr';
+  return `/${role}`;
+}
+
+export function categoryNavLabel(role: AppRole | null): string {
+  return role === 'dt' || role === 'preparador-fisico' ? 'Mis categorías' : 'Categorías';
 }
 
 export function hasCapability(roleId: RoleId | null, capability: Capability): boolean {

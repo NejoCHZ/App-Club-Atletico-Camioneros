@@ -11,6 +11,7 @@ public static class AppRoles
     public const string DonQr = "Don QR";
 
     public const string Administradores = Administrador + "," + Tesorero;
+    public const string EscrituraMedica = Administradores + "," + Medico;
     public const string LecturaDeportiva = Administrador + "," + Tesorero + "," + Coordinador + "," + Medico + "," + DirectorTecnico + "," + PreparadorFisico;
     public const string LecturaGeneral = Administrador + "," + Tesorero + "," + Coordinador + "," + Medico;
 }

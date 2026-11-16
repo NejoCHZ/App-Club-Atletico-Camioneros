@@ -3,8 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
-import { MedicalRecord, PlayerSummary } from '../../shared/models/portal.models';
-import { ClubPortalApiService } from '../../shared/services/club-portal-api.service';
+import { RolePlayerProfile, RolePlayerViewService } from '../../shared/services/role-player-view.service';
 
 @Component({
   selector: 'app-shared-medical-record',
@@ -14,14 +13,15 @@ import { ClubPortalApiService } from '../../shared/services/club-portal-api.serv
   styleUrl: './shared-medical-record.component.css',
 })
 export class SharedMedicalRecordComponent implements OnInit {
-  private readonly api = inject(ClubPortalApiService);
+  private readonly views = inject(RolePlayerViewService);
   private readonly route = inject(ActivatedRoute);
   private readonly access = inject(PortalAccessService);
 
   readonly role = this.access.role;
   readonly canEdit = this.access.capabilities.canEditMedicalRecord;
-  player: PlayerSummary | null = null;
-  record: MedicalRecord | null = null;
+  editMode = false;
+  player: RolePlayerProfile | null = null;
+  private loadedPlayer: RolePlayerProfile | null = null;
   loading = true;
   saving = false;
   error = '';
@@ -39,14 +39,28 @@ export class SharedMedicalRecordComponent implements OnInit {
       return;
     }
 
-    this.api.getPlayer(this.playerId).subscribe({
-      next: (player) => this.player = player,
-      error: () => this.error = 'No se pudo cargar el jugador.',
-    });
-    this.api.getMedicalRecord(this.playerId).subscribe({
-      next: (record) => {
-        this.record = record;
-        this.injuries = this.parseInjuries(record.historialLesiones);
+    this.loadProfile();
+  }
+
+  startEditing(): void {
+    if (!this.canEdit || !this.player) return;
+    this.editMode = true;
+    this.success = '';
+  }
+
+  cancelEditing(): void {
+    if (this.loadedPlayer) this.applyProfile(this.loadedPlayer);
+    this.editMode = false;
+    this.newInjury = '';
+    this.error = '';
+  }
+
+  private loadProfile(): void {
+    this.loading = true;
+    this.views.profile(this.playerId).subscribe({
+      next: (player) => {
+        this.loadedPlayer = this.cloneProfile(player);
+        this.applyProfile(player);
         this.loading = false;
       },
       error: () => { this.error = 'No se pudo cargar la ficha médica del jugador.'; this.loading = false; },
@@ -54,18 +68,24 @@ export class SharedMedicalRecordComponent implements OnInit {
   }
 
   save(): void {
-    if (!this.canEdit || !this.record || this.saving) return;
-    this.record.historialLesiones = this.injuries.join('\n');
+    if (!this.canEdit || !this.editMode || !this.player || this.saving) return;
+    this.player.lesiones = [...this.injuries];
     this.saving = true;
     this.error = '';
     this.success = '';
-    this.api.saveMedicalRecord(this.record).subscribe({
-      next: () => { this.saving = false; this.success = 'La ficha médica se guardó correctamente.'; },
+    this.views.saveMedical(this.playerId, this.player).subscribe({
+      next: () => {
+        this.saving = false;
+        this.editMode = false;
+        this.success = 'La ficha médica se guardó correctamente.';
+        this.loadProfile();
+      },
       error: () => { this.saving = false; this.error = 'No se pudo guardar la ficha médica.'; },
     });
   }
 
   addInjury(): void {
+    if (!this.editMode) return;
     const injury = this.newInjury.trim();
     if (!injury) return;
     const value = this.addToday ? `${injury} (${this.todayLabel()})` : injury;
@@ -74,15 +94,17 @@ export class SharedMedicalRecordComponent implements OnInit {
   }
 
   removeInjury(index: number): void {
+    if (!this.editMode) return;
     this.injuries = this.injuries.filter((_, itemIndex) => itemIndex !== index);
   }
 
-  private parseInjuries(value?: string | null): string[] {
-    if (!value) return [];
-    return value
-      .split(/\r?\n|\.\s+(?=[^.\r\n]*\(\d{2}\/\d{2}\/\d{4}\))|\.\s+(?=[A-ZÁÉÍÓÚÑ])/)
-      .map(item => item.trim().replace(/\.$/, ''))
-      .filter(Boolean);
+  private applyProfile(player: RolePlayerProfile): void {
+    this.player = this.cloneProfile(player);
+    this.injuries = [...player.lesiones];
+  }
+
+  private cloneProfile(player: RolePlayerProfile): RolePlayerProfile {
+    return { ...player, lesiones: [...player.lesiones], historialPartidos: [...player.historialPartidos] };
   }
 
   private todayLabel(): string {

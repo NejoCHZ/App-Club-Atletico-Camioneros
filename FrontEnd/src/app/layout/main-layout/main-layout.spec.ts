@@ -65,6 +65,16 @@ describe('MainLayout', () => {
     expect(fixture.nativeElement.querySelector('.portal-btn')).toBeNull();
   });
 
+  it('reuses the DT navigation while preserving the Preparador Físico identity', () => {
+    create('Preparador Físico');
+
+    expect(component.roleLabel).toBe('Preparador Físico');
+    expect(component.pageTitle).toBe('Panel Principal del Preparador Físico');
+    expect(component.navItems.map((item) => item.path)).toEqual([
+      '/preparador-fisico', '/preparador-fisico/jugadores', '/preparador-fisico/categorias',
+    ]);
+  });
+
   it('collapses the sidebar on desktop', () => {
     spyOn(window, 'matchMedia').and.returnValue({ matches: false } as MediaQueryList);
     create();

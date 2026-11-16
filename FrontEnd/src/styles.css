@@ -1175,3 +1175,33 @@ app-admin-editar-perfil .btn-cancel,app-admin-editar-perfil .btn-save{display:in
 app-admin-editar-perfil .btn-cancel{color:#475569!important;background:#fff!important;border:1px solid #cbd5e1!important}
 app-admin-editar-perfil .btn-save{color:#fff!important;background:#008443!important;border:1px solid #008443!important}
 }
+/* Unified desktop topbar typography and vertical alignment. */
+@media (min-width: 768px) {
+  .top-header {
+    align-items: center !important;
+  }
+
+  .top-header .header-left {
+    display: flex !important;
+    min-width: 0;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+
+  .top-header .sidebar-toggle-btn {
+    display: grid !important;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    place-items: center;
+    padding: 0 !important;
+  }
+
+  .top-header .header-title,
+  .top-header h1 {
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+}

@@ -165,6 +165,8 @@ export class AdminAltaTrabajadorComponent implements OnInit {
   }
 
   guardarYGenerarQR(): void {
+    if (this.isLoading) return;
+
     if (!this.dni || !this.nombre || !this.apellido || !this.fechaNacimiento || !this.rol) {
       alert('Por favor complete los campos obligatorios (*) de los Datos del Empleado.');
       return;

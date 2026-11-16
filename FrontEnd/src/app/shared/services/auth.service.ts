@@ -72,6 +72,7 @@ export class AuthService {
       coordinador: RoleId.Coordinador,
       medico: RoleId.Medico,
       dt: RoleId.DirectorTecnico,
+      'preparador-fisico': RoleId.PreparadorFisico,
       'don-qr': RoleId.DonQr
     };
     return role ? roleIds[role] : null;

@@ -37,7 +37,7 @@ describe('Admin and Coordinator legacy visual routes', () => {
       'jugadores/:id': 'AdminFichaJugador',
       categorias: 'AdminListaCategoria',
       'categorias/:id': 'CoordinadorVisualizarPlantel',
-      'jugadores/:id/ficha-medica': 'CoordinadorMedicalPage',
+      'jugadores/:id/ficha-medica': 'AdminMedicalPage',
     });
   });
 
@@ -48,7 +48,7 @@ describe('Admin and Coordinator legacy visual routes', () => {
       'jugadores/:id': 'JugadorPerfilComponent',
       categorias: 'AdminListaCategoria',
       'categorias/:id': 'AdminCategoriaJugadores',
-      'jugadores/:id/ficha-medica': 'JugadorPerfilComponent',
+      'jugadores/:id/ficha-medica': 'AdminMedicalPage',
     });
   });
 });

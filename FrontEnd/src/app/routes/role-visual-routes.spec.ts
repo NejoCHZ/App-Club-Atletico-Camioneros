@@ -18,7 +18,7 @@ describe('role-specific visual routes', () => {
       '': 'AdminHomeComponent',
       jugadores: 'AdminListaJugadores',
       'jugadores/:id': 'AdminFichaJugador',
-      'jugadores/:id/ficha-medica': 'MedicoEditarFichaComponent',
+      'jugadores/:id/ficha-medica': 'AdminMedicalPage',
       categorias: 'AdminListaCategoria',
       'categorias/:id': 'MedicoCategoriaJugadoresComponent',
     };
@@ -34,7 +34,7 @@ describe('role-specific visual routes', () => {
       '': 'AdminHomeComponent',
       jugadores: 'AdminListaJugadores',
       'jugadores/:id': 'AdminFichaJugador',
-      'jugadores/:id/ficha-medica': 'AdminFichaJugador',
+      'jugadores/:id/ficha-medica': 'AdminMedicalPage',
       categorias: 'AdminListaCategoria',
       'categorias/:id': 'DtCategoriaJugadoresComponent',
     };

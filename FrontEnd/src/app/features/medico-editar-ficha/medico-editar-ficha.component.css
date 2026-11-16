@@ -601,3 +601,133 @@
 --viewport-tier: desktop;
 }
 }
+
+/* Médico editor: use the shared portal shell and keep the form inside its content width. */
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  height: auto;
+  overflow: visible;
+  background: #eceff1;
+}
+
+.medico-content {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding: 20px 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #eceff1;
+  box-sizing: border-box;
+}
+
+.ficha-3cols-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, .85fr) minmax(420px, 1.35fr);
+  gap: 18px;
+  width: min(100%, 1440px);
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.card-col {
+  min-width: 0;
+  height: auto;
+  border: 1px solid #dfe4e2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
+}
+
+.col-personal,
+.col-medica {
+  display: flex;
+  flex-direction: column;
+}
+
+.physical-input,
+.new-lesion-input {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 7px 10px;
+  color: #1e293b;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.physical-input:focus,
+.new-lesion-input:focus {
+  border-color: #008443;
+  outline: 2px solid rgba(0, 132, 67, .14);
+}
+
+.new-lesion-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.new-lesion-row .btn-add-lesion {
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.btn-add-lesion:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+@media (max-width: 1100px) {
+  .ficha-3cols-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  :host,
+  .medico-content {
+    min-height: 100%;
+    background: #eceff1;
+  }
+
+  .medico-content {
+    padding: 12px;
+  }
+
+  .ficha-3cols-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .col-personal,
+  .col-medica {
+    display: flex;
+    min-height: 0;
+  }
+
+  .personal-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .new-lesion-row {
+    grid-template-columns: 1fr;
+  }
+
+  .new-lesion-row .btn-add-lesion {
+    width: 100%;
+  }
+}

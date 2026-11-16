@@ -1,6 +1,11 @@
 <div class="content-body role-content">
       <!-- Tarjeta Principal de la Tabla con Filtros Integrados -->
       <section class="table-card">
+        <div *ngIf="categoriaContexto" class="category-context" aria-live="polite">
+          <span class="category-context__label">Plantel de la categoría</span>
+          <strong class="category-context__name">{{ categoriaContexto }}</strong>
+        </div>
+
         <div class="table-controls">
           <div class="search-box">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -63,7 +68,7 @@
                 <th class="th-categoria">Categoría</th>
                 <th class="th-posicion">Posición</th>
                 <th class="th-nacimiento">F. Nacimiento</th>
-                <th class="th-estado">Estado Cuota</th>
+                <th *ngIf="showFinancialStatus" class="th-estado">Estado Cuota</th>
                 <th class="th-acciones">Acciones</th>
               </tr>
             </thead>
@@ -92,7 +97,7 @@
                 </td>
 
                 <td class="col-nacimiento">{{ p.fechaNacimiento }}</td>
-                <td class="col-estado">
+                <td *ngIf="showFinancialStatus" class="col-estado">
                   <span class="badge-status" [ngClass]="getBadgeClass(p.estadoCuota)">
                     {{ p.estadoCuota }}
                   </span>
@@ -109,7 +114,7 @@
                     </button>
                     <!-- Agregar / Editar Tutor -->
                     <button *ngIf="canEditPlayers" type="button" class="action-btn tutor-btn" (click)="$event.stopPropagation(); abrirModalTutor(p)" [title]="p.tutor ? 'Editar Tutor Responsable' : 'Asignar Tutor Responsable'">
-                      <span width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" class="cacc-icon cacc-icon-tutor"></span>
+                      <span class="cacc-icon cacc-icon-tutor" aria-hidden="true" style="--cacc-icon-color: #008443; background-color: #008443;"></span>
                     </button>
                     <!-- Eliminar Jugador -->
                     <button *ngIf="canEditPlayers" type="button" class="action-btn delete-btn" (click)="$event.stopPropagation(); abrirModalEliminar(p)" title="Eliminar Jugador">

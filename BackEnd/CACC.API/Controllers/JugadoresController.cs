@@ -1,4 +1,5 @@
 using CACC.API.DTOs;
+using CACC.API.Utils;
 using CACC.DAO;
 using CACC.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -78,6 +79,7 @@ namespace CACC.API.Controllers
                 EstadoCuota = j.EstadoCuota,
                 Tutor = j.Tutor == null ? null : new TutorDto
                 {
+                    Dni = j.Tutor.Dni,
                     Nombre = j.Tutor.Nombre,
                     Apellido = j.Tutor.Apellido,
                     Telefono = j.Tutor.Telefono ?? string.Empty,
@@ -123,6 +125,7 @@ namespace CACC.API.Controllers
                 EstadoCuota = j.EstadoCuota,
                 Tutor = j.Tutor == null ? null : new TutorDto
                 {
+                    Dni = j.Tutor.Dni,
                     Nombre = j.Tutor.Nombre,
                     Apellido = j.Tutor.Apellido,
                     Telefono = j.Tutor.Telefono ?? string.Empty,
@@ -158,6 +161,11 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "Datos de actualización inválidos." });
             }
 
+            if (!PlayerPositionNormalizer.TryNormalize(dto.Posicion, out var posicionNormalizada))
+            {
+                return BadRequest(new { message = "La posición debe ser Arquero, Defensor, Mediocampista o Delantero." });
+            }
+
             try
             {
                 var jugador = new JugadorDetalle
@@ -170,10 +178,20 @@ namespace CACC.API.Controllers
                     Domicilio = dto.Domicilio,
                     IdCategoria = dto.IdCategoria,
                     ClubOrigen = dto.ClubOrigen,
-                    PosicionCancha = dto.Posicion,
+                    PosicionCancha = posicionNormalizada,
                     Peso = dto.Peso,
                     Altura = dto.Altura,
                     PieHabil = dto.PieHabil,
+                    FichaMedicaLiga = dto.AptoFisico,
+                    Tutor = dto.Tutor == null ? null : new TutorDetalle
+                    {
+                        Dni = dto.Tutor.Dni,
+                        Nombre = dto.Tutor.Nombre,
+                        Apellido = dto.Tutor.Apellido,
+                        Telefono = dto.Tutor.Telefono,
+                        Email = dto.Tutor.Email,
+                        Parentesco = dto.Tutor.Parentesco
+                    },
                     Partidos = dto.Partidos?.Select(p => new PartidoDetalle
                     {
                         Fecha = p.Fecha,
@@ -196,6 +214,56 @@ namespace CACC.API.Controllers
             }
         }
 
+        [HttpPut("{id}/datos-fisicos")]
+        [Authorize(Roles = AppRoles.EscrituraMedica)]
+        public async Task<IActionResult> ActualizarDatosFisicos(int id, [FromBody] JugadorDatosFisicosUpdateDto dto)
+        {
+            if (dto.Peso is < 0 or > 500)
+            {
+                return BadRequest(new { message = "El peso debe estar entre 0 y 500 kg." });
+            }
+
+            if (dto.Altura is < 0 or > 3)
+            {
+                return BadRequest(new { message = "La altura debe estar entre 0 y 3 metros." });
+            }
+
+            var pieHabil = string.IsNullOrWhiteSpace(dto.PieHabil) ? null : dto.PieHabil.Trim();
+            var actualizado = await _jugadorDao.ActualizarDatosFisicosAsync(id, dto.Peso, dto.Altura, pieHabil);
+            return actualizado
+                ? Ok(new { message = "Datos físicos actualizados correctamente." })
+                : NotFound(new { message = $"Jugador con ID {id} no encontrado." });
+        }
+
+        [HttpPut("{id}/datos-medicos")]
+        [Authorize(Roles = AppRoles.EscrituraMedica)]
+        public async Task<IActionResult> ActualizarDatosMedicos(int id, [FromBody] JugadorDatosMedicosUpdateDto dto)
+        {
+            if (dto.Peso is < 0 or > 500)
+            {
+                return BadRequest(new { message = "El peso debe estar entre 0 y 500 kg." });
+            }
+
+            if (dto.Altura is < 0 or > 3)
+            {
+                return BadRequest(new { message = "La altura debe estar entre 0 y 3 metros." });
+            }
+
+            var ficha = new FichaMedica
+            {
+                IdJugador = id,
+                GrupoSanguineo = string.IsNullOrWhiteSpace(dto.GrupoSanguineo) ? null : dto.GrupoSanguineo.Trim(),
+                AntecedentesSalud = dto.AntecedentesSalud,
+                HistorialLesiones = dto.HistorialLesiones,
+                Observaciones = dto.Observaciones,
+            };
+            var pieHabil = string.IsNullOrWhiteSpace(dto.PieHabil) ? null : dto.PieHabil.Trim();
+            var actualizado = await _jugadorDao.ActualizarDatosMedicosAsync(id, dto.Peso, dto.Altura, pieHabil, ficha);
+            return actualizado
+                ? Ok(new { message = "Datos médicos actualizados correctamente." })
+                : NotFound(new { message = $"Jugador con ID {id} no encontrado." });
+        }
+
         [HttpPost]
         [Authorize(Roles = AppRoles.Administradores)]
         public async Task<IActionResult> CrearJugador([FromBody] JugadorCreateDto dto)
@@ -203,6 +271,11 @@ namespace CACC.API.Controllers
             if (dto == null || string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Dni))
             {
                 return BadRequest(new { message = "El nombre y el DNI son obligatorios." });
+            }
+
+            if (!PlayerPositionNormalizer.TryNormalize(dto.Posicion, out var posicionNormalizada))
+            {
+                return BadRequest(new { message = "La posición debe ser Arquero, Defensor, Mediocampista o Delantero." });
             }
 
             try
@@ -214,7 +287,7 @@ namespace CACC.API.Controllers
                     Apellido = dto.Apellido,
                     FechaNacimiento = dto.FechaNacimiento,
                     Categoria = dto.Categoria,
-                    Posicion = dto.Posicion,
+                    Posicion = posicionNormalizada,
                     ClubOrigen = dto.ClubOrigen,
                     AptoFisico = dto.AptoFisico,
                     Tutor = dto.Tutor == null ? null : new TutorAlta

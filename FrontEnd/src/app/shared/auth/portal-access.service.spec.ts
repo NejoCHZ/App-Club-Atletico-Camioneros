@@ -31,6 +31,25 @@ describe('PortalAccessService', () => {
     ]).map((category) => category.idCategoria)).toEqual([2, 7]);
   });
 
+  it('applies the same assigned-category scope to Preparador Físico', () => {
+    role = 'Preparador Físico';
+    const service = TestBed.inject(PortalAccessService);
+
+    expect(service.visibleCategories([
+      { idCategoria: 2, nombreCategoria: '2008' },
+      { idCategoria: 5, nombreCategoria: '2010' },
+      { idCategoria: 7, nombreCategoria: 'Reserva' },
+    ]).map((category) => category.idCategoria)).toEqual([2, 7]);
+    expect(service.capabilities).toEqual({
+      canViewAllPlayers: false,
+      canEditPlayers: false,
+      canViewMedicalRecord: true,
+      canEditMedicalRecord: false,
+      canManageCategoryRoster: false,
+      canManageCategories: false,
+    });
+  });
+
   it('does not client-filter roles that may view the complete roster', () => {
     role = 'Médico';
     jwt = token({});

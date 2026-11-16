@@ -340,6 +340,12 @@
   align-items: center;
 }
 
+.kpi-icon-box .cacc-icon-category {
+  --cacc-icon-color: #008443;
+  background-color: #008443;
+  color: #008443;
+}
+
 .kpi-title {
   font-size: 13.5px;
   font-weight: 700;
@@ -894,6 +900,17 @@
 }
 
 @media (max-width: 767px) {
+  .kpi-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 10px;
+  }
+
+  .kpi-card {
+    width: 100%;
+    min-height: 96px;
+  }
+
   .cacc-table tr {
     grid-template-columns: 44px minmax(0, 1fr) auto;
     padding: 14px 16px;

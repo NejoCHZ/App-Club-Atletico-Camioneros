@@ -53,12 +53,21 @@ const PORTAL_SHELLS: Record<Exclude<AppRole, 'don-qr'>, PortalShellConfig> = {
     ],
   },
   dt: {
-    heading: 'Panel Principal del Entrenador',
+    heading: 'Panel Principal del Director Técnico',
     homePath: '/dt',
     nav: [
       { label: 'Inicio', icon: 'home', path: '/dt' },
       { label: 'Jugadores', icon: 'group', path: '/dt/jugadores', capability: 'canViewMedicalRecord' },
       { label: 'Mis categorías', icon: 'category', path: '/dt/categorias', capability: 'canViewMedicalRecord' },
+    ],
+  },
+  'preparador-fisico': {
+    heading: 'Panel Principal del Preparador Físico',
+    homePath: '/preparador-fisico',
+    nav: [
+      { label: 'Inicio', icon: 'home', path: '/preparador-fisico' },
+      { label: 'Jugadores', icon: 'group', path: '/preparador-fisico/jugadores', capability: 'canViewMedicalRecord' },
+      { label: 'Mis categorías', icon: 'category', path: '/preparador-fisico/categorias', capability: 'canViewMedicalRecord' },
     ],
   },
 };
@@ -95,7 +104,7 @@ export class MainLayout implements OnInit, OnDestroy {
   get roleLabel(): string {
     const labels: Record<AppRole, string> = {
       admin: 'Administrador', coordinador: 'Coordinador', medico: 'Médico',
-      dt: 'Director Técnico', 'don-qr': 'Don QR',
+      dt: 'Director Técnico', 'preparador-fisico': 'Preparador Físico', 'don-qr': 'Don QR',
     };
     return labels[this.role];
   }
@@ -176,7 +185,10 @@ export class MainLayout implements OnInit, OnDestroy {
       this.pageTitle = this.shell.heading;
       return;
     }
-    this.pageTitle = route.title || this.shell.heading;
+    const routeTitle = route.title;
+    this.pageTitle = routeTitle === 'Portal del entrenador'
+      ? this.roleLabel
+      : routeTitle || this.shell.heading;
   }
 
   private isMobileViewport(): boolean {

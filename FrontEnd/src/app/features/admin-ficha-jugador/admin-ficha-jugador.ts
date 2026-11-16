@@ -7,6 +7,7 @@ import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
+import { categoryNavLabel } from '../../core/auth/roles';
 import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
 
 export interface JugadorFichaModel extends JugadorModel {
@@ -57,7 +58,7 @@ export class AdminFichaJugador implements OnInit {
     { label: 'Inicio', icon: 'home', active: false },
     { label: 'Jugadores', icon: 'group', active: true },
     { label: 'Staff', icon: 'badge', active: false },
-    { label: 'Categorias', icon: 'category', active: false }
+    { label: categoryNavLabel(this.access.role), icon: 'category', active: false }
   ];
 
   ngOnInit(): void {
@@ -89,6 +90,10 @@ export class AdminFichaJugador implements OnInit {
         this.usuarioActual = { nombre: rol, email: '' };
       }
     }
+  }
+
+  verFichaMedicaCompleta(): void {
+    if (this.jugador) this.router.navigate([this.portalRoot, 'jugadores', this.jugador.id, 'ficha-medica']);
   }
 
   cargarJugador(): void {
@@ -209,13 +214,13 @@ export class AdminFichaJugador implements OnInit {
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
     if (label === 'Inicio') {
-      this.router.navigate(['/admin']);
+      this.router.navigate([this.portalRoot]);
     } else if (label === 'Jugadores') {
-      this.router.navigate(['/admin/jugadores']);
-    } else if (label === 'Categorias' || label === 'Categorías') {
-      this.router.navigate(['/admin/categorias']);
+      this.router.navigate([this.portalRoot, 'jugadores']);
+    } else if (label === 'Categorias' || label === 'Categorías' || label === 'Mis categorías') {
+      this.router.navigate([this.portalRoot, 'categorias']);
     } else if (label === 'Staff') {
-      this.router.navigate(['/admin/staff']);
+      this.router.navigate([this.portalRoot, 'staff']);
     }
   }
 

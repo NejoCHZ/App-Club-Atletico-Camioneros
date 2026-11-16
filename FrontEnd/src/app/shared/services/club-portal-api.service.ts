@@ -17,6 +17,17 @@ export class ClubPortalApiService {
     return this.http.get<PlayerProfile>(`${API_ROOT}/jugadores/${playerId}`);
   }
 
+  savePlayerPhysicalData(playerId: number, data: { peso: number | null; altura: number | null; pieHabil: string | null }): Observable<void> {
+    return this.http.put<void>(`${API_ROOT}/jugadores/${playerId}/datos-fisicos`, data);
+  }
+
+  savePlayerMedicalData(playerId: number, data: {
+    peso: number | null; altura: number | null; pieHabil: string | null; grupoSanguineo: string | null;
+    antecedentesSalud: string; historialLesiones: string; observaciones: string;
+  }): Observable<void> {
+    return this.http.put<void>(`${API_ROOT}/jugadores/${playerId}/datos-medicos`, data);
+  }
+
   listCategories(): Observable<CategorySummary[]> {
     return this.http.get<CategorySummary[]>(`${API_ROOT}/categorias`);
   }

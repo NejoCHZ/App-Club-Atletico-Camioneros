@@ -11,5 +11,6 @@ namespace CACC.DAO
         Task<StaffDetalle?> ObtenerPorIdAsync(int idStaff);
         Task<int> CrearAsync(StaffAlta staff);
         Task<bool> ActualizarAsync(StaffEdicion staff);
+        Task<bool> DarDeBajaAsync(int idStaff);
     }
 }

@@ -16,10 +16,7 @@ export const COORDINADOR_ROUTES: Routes = [
     () => import('../features/admin-ficha-jugador/admin-ficha-jugador').then((m) => m.AdminFichaJugador),
     () => import('../features/jugador-perfil/jugador-perfil.component').then((m) => m.JugadorPerfilComponent),
   ) },
-  { path: 'jugadores/:id/ficha-medica', title: 'Ficha médica', data: { desktopOwnShell: true }, loadComponent: responsiveComponent(
-    () => import('../features/coordinador-medical-page/coordinador-medical-page').then((m) => m.CoordinadorMedicalPage),
-    () => import('../features/jugador-perfil/jugador-perfil.component').then((m) => m.JugadorPerfilComponent),
-  ) },
+  { path: 'jugadores/:id/ficha-medica', title: 'Ficha médica', loadComponent: () => import('../features/admin-medical-page/admin-medical-page').then((m) => m.AdminMedicalPage) },
   { path: 'staff/perfil', title: 'Perfil del trabajador', data: { desktopOwnShell: true }, loadComponent: () => import('../features/coordinador-visualizar-perfil-staff/coordinador-visualizar-perfil-staff').then((m) => m.CoordinadorVisualizarPerfilStaff) },
   { path: 'staff/editar', title: 'Editar trabajador', data: { desktopOwnShell: true }, loadComponent: () => import('../features/coordinador-editar-staff/coordinador-editar-staff').then((m) => m.CoordinadorEditarStaff) },
   { path: 'staff', title: 'Personal', data: { desktopOwnShell: true }, loadComponent: () => import('../features/coordinador-visualizar-staff/coordinador-visualizar-staff').then((m) => m.CoordinadorVisualizarStaff) },

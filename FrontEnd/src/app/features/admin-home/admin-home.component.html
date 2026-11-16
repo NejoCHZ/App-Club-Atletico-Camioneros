@@ -89,8 +89,9 @@
         <div class="kpi-card" *ngFor="let card of kpiCards">
           <div class="kpi-card-header">
             <div class="kpi-icon-box">
-              <svg *ngIf="card.type === 'jugadores'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              <svg *ngIf="card.type === 'categorias'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+              <svg *ngIf="card.type === 'jugadores' && card.icon !== 'categorias'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span *ngIf="card.icon === 'categorias'" class="cacc-icon cacc-icon-category" aria-hidden="true" style="--cacc-icon-color: #008443; background-color: #008443;"></span>
+              <svg *ngIf="card.type === 'categorias' && card.icon !== 'categorias'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
               <svg *ngIf="card.type === 'cuotas'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
             <span class="kpi-title kpi-title-desktop">{{ card.title }}</span>
@@ -126,7 +127,7 @@
           <div class="select-box">
             <select [(ngModel)]="ordenFiltro">
               <option value="">Ordenar por</option>
-              <option value="cuota">Estado de cuota (Riesgo / Deuda)</option>
+              <option *ngIf="showFinancialStatus" value="cuota">Estado de cuota (Riesgo / Deuda)</option>
               <option value="nombre">Nombre</option>
               <option value="dni">DNI</option>
               <option value="categoria">Categoría</option>
@@ -148,7 +149,7 @@
                 <th class="th-categoria">Categoría</th>
                 <th class="th-posicion">Posición</th>
                 <th class="th-nacimiento">F. Nacimiento</th>
-                <th class="th-estado">Estado Cuota</th>
+                <th *ngIf="showFinancialStatus" class="th-estado">Estado Cuota</th>
                 <th class="th-acciones">Acciones</th>
               </tr>
             </thead>
@@ -170,7 +171,7 @@
                 </td>
                 <td class="col-posicion"><span class="badge-posicion">{{ p.posicion }}</span></td>
                 <td class="col-nacimiento">{{ p.fechaNacimiento }}</td>
-                <td class="col-estado">
+                <td *ngIf="showFinancialStatus" class="col-estado">
                   <span class="badge-status" [ngClass]="getBadgeClass(p.estadoCuota)">
                     {{ p.estadoCuota }}
                   </span>

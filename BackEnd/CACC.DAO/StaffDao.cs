@@ -452,5 +452,22 @@ namespace CACC.DAO
                 throw;
             }
         }
+
+        public async Task<bool> DarDeBajaAsync(int idStaff)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"
+                UPDATE u
+                SET activo = 0
+                FROM USUARIOS u
+                INNER JOIN STAFF s ON s.FK_id_usuario = u.PK_id_usuario
+                WHERE s.PK_id_staff = @IdStaff;";
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@IdStaff", idStaff);
+            return await command.ExecuteNonQueryAsync() > 0;
+        }
     }
 }

@@ -1,5 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { homeForRole, normalizeRole } from '../../core/auth/roles';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-route-status',
@@ -11,7 +13,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
         <p class="code">{{ code() }}</p>
         <h1>{{ title() }}</h1>
         <p>{{ message() }}</p>
-        <a routerLink="/">Volver al inicio</a>
+        <a [routerLink]="homePath">Volver al inicio</a>
       </section>
     </main>
   `,
@@ -25,7 +27,15 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 })
 export class RouteStatusComponent {
   private readonly data = inject(ActivatedRoute).snapshot.data;
+  private readonly auth = inject(AuthService);
   readonly code = () => this.data['code'] ?? '404';
   readonly title = () => this.data['title'] ?? 'Página no encontrada';
   readonly message = () => this.data['message'] ?? 'La dirección solicitada no existe.';
+  readonly homePath = this.resolveHomePath();
+
+  private resolveHomePath(): string {
+    if (!this.auth.estaAutenticado()) return '/login';
+    const role = normalizeRole(this.auth.getRol());
+    return role ? homeForRole(role) : '/login';
+  }
 }

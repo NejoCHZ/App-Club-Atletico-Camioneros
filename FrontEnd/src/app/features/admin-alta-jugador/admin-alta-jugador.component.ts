@@ -194,14 +194,8 @@ export class AdminAltaJugadorComponent implements OnInit {
     const dniLimpio = this.tutorDni.trim();
     if (!this.esMenorDeEdad || !dniLimpio) return;
 
-    this.http.get<any[]>('/api/jugadores').subscribe({
-      next: (data) => {
-        const jugadorConTutor = data.find(j => {
-          const t = j.tutor || j.Tutor;
-          return t && t.dni === dniLimpio;
-        });
-
-        const tutor = jugadorConTutor?.tutor || jugadorConTutor?.Tutor;
+    this.http.get<any>(`/api/jugadores/tutores/${dniLimpio}`).subscribe({
+      next: (tutor) => {
         if (tutor && tutor.nombre) {
           this.tutorNombre = tutor.nombre || '';
           this.tutorApellido = tutor.apellido || '';
@@ -269,7 +263,7 @@ export class AdminAltaJugadorComponent implements OnInit {
     this.guardando = true;
     this.jugadorService.crear(nuevoJugador).subscribe({
       next: (jugador) => {
-        this.nuevoJugadorId = Number(jugador.id) || null;
+        this.nuevoJugadorId = Number((jugador as any).idJugador ?? jugador.id) || null;
         this.dni = jugador.dni;
         this.nombre = jugador.nombre;
         this.apellido = jugador.apellido;

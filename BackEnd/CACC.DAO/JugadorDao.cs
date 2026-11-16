@@ -287,7 +287,8 @@ namespace CACC.DAO
                         club_origen = @ClubOrigen, 
                         peso = @Peso, 
                         altura = @Altura, 
-                        pie_habil = @PieHabil
+                        pie_habil = @PieHabil,
+                        ficha_medica_liga = @AptoFisico
                     WHERE PK_id_jugador = @Id;
 
                     IF @IdCategoria > 0
@@ -307,6 +308,7 @@ namespace CACC.DAO
                 cmdJugadores.Parameters.AddWithValue("@Peso", (object?)jugador.Peso ?? DBNull.Value);
                 cmdJugadores.Parameters.AddWithValue("@Altura", (object?)jugador.Altura ?? DBNull.Value);
                 cmdJugadores.Parameters.AddWithValue("@PieHabil", (object?)jugador.PieHabil ?? DBNull.Value);
+                cmdJugadores.Parameters.AddWithValue("@AptoFisico", jugador.FichaMedicaLiga);
 
                 int rowsJugador = await cmdJugadores.ExecuteNonQueryAsync();
                 if (rowsJugador == 0)
@@ -333,7 +335,9 @@ namespace CACC.DAO
                 }
 
                 // 4. Persistencia en FICHAS_MEDICAS
-                var queryFicha = @"
+                if (jugador.FichaMedica != null)
+                {
+                    var queryFicha = @"
                     IF EXISTS (SELECT 1 FROM FICHAS_MEDICAS WHERE FK_id_jugador = @Id)
                     BEGIN
                         UPDATE FICHAS_MEDICAS 
@@ -351,16 +355,65 @@ namespace CACC.DAO
                         VALUES (@Id, @Grupo, @Factor, @Patologias, @Lesiones, @Observaciones, GETDATE());
                     END;";
 
-                using var cmdFicha = new SqlCommand(queryFicha, connection, transaction);
-                cmdFicha.Parameters.AddWithValue("@Id", id);
-                cmdFicha.Parameters.AddWithValue("@Grupo", (object?)grupo ?? DBNull.Value);
-                cmdFicha.Parameters.AddWithValue("@Factor", (object?)factor ?? DBNull.Value);
-                cmdFicha.Parameters.AddWithValue("@Patologias", (object?)jugador.FichaMedica?.Patologias ?? DBNull.Value);
-                cmdFicha.Parameters.AddWithValue("@Lesiones", (object?)jugador.FichaMedica?.HistorialLesiones ?? DBNull.Value);
-                cmdFicha.Parameters.AddWithValue("@Observaciones", (object?)jugador.FichaMedica?.Observaciones ?? DBNull.Value);
-                await cmdFicha.ExecuteNonQueryAsync();
+                    using var cmdFicha = new SqlCommand(queryFicha, connection, transaction);
+                    cmdFicha.Parameters.AddWithValue("@Id", id);
+                    cmdFicha.Parameters.AddWithValue("@Grupo", (object?)grupo ?? DBNull.Value);
+                    cmdFicha.Parameters.AddWithValue("@Factor", (object?)factor ?? DBNull.Value);
+                    cmdFicha.Parameters.AddWithValue("@Patologias", (object?)jugador.FichaMedica.Patologias ?? DBNull.Value);
+                    cmdFicha.Parameters.AddWithValue("@Lesiones", (object?)jugador.FichaMedica.HistorialLesiones ?? DBNull.Value);
+                    cmdFicha.Parameters.AddWithValue("@Observaciones", (object?)jugador.FichaMedica.Observaciones ?? DBNull.Value);
+                    await cmdFicha.ExecuteNonQueryAsync();
+                }
 
-                // 5. Minutos jugados en partidos usando IdPartido o fecha/rival
+                // 5. Tutor / responsable legal
+                if (jugador.Tutor != null && !string.IsNullOrWhiteSpace(jugador.Tutor.Dni))
+                {
+                    const string tutorSql = @"
+                        DECLARE @IdPersonaTutor INT;
+                        DECLARE @IdResponsable INT;
+
+                        SELECT @IdPersonaTutor = PK_id_persona FROM PERSONAS WHERE dni = @TutorDni;
+                        IF @IdPersonaTutor IS NULL
+                        BEGIN
+                            INSERT INTO PERSONAS (nombre, apellido, dni)
+                            VALUES (@TutorNombre, @TutorApellido, @TutorDni);
+                            SET @IdPersonaTutor = CAST(SCOPE_IDENTITY() AS INT);
+                        END
+                        ELSE
+                            UPDATE PERSONAS SET nombre = @TutorNombre, apellido = @TutorApellido
+                            WHERE PK_id_persona = @IdPersonaTutor;
+
+                        SELECT @IdResponsable = PK_id_responsable FROM RESPONSABLES WHERE FK_id_persona = @IdPersonaTutor;
+                        IF @IdResponsable IS NULL
+                        BEGIN
+                            INSERT INTO RESPONSABLES (FK_id_persona, email, telefono)
+                            VALUES (@IdPersonaTutor, @TutorEmail, @TutorTelefono);
+                            SET @IdResponsable = CAST(SCOPE_IDENTITY() AS INT);
+                        END
+                        ELSE
+                            UPDATE RESPONSABLES SET email = @TutorEmail, telefono = @TutorTelefono
+                            WHERE PK_id_responsable = @IdResponsable;
+
+                        IF EXISTS (SELECT 1 FROM JUGADORES_RESPONSABLES WHERE FK_id_jugador = @Id)
+                            UPDATE JUGADORES_RESPONSABLES
+                            SET FK_id_responsable = @IdResponsable, parentesco = @TutorParentesco
+                            WHERE FK_id_jugador = @Id;
+                        ELSE
+                            INSERT INTO JUGADORES_RESPONSABLES (FK_id_responsable, FK_id_jugador, parentesco)
+                            VALUES (@IdResponsable, @Id, @TutorParentesco);";
+
+                    using var cmdTutor = new SqlCommand(tutorSql, connection, transaction);
+                    cmdTutor.Parameters.AddWithValue("@Id", id);
+                    cmdTutor.Parameters.AddWithValue("@TutorDni", jugador.Tutor.Dni.Trim());
+                    cmdTutor.Parameters.AddWithValue("@TutorNombre", jugador.Tutor.Nombre.Trim());
+                    cmdTutor.Parameters.AddWithValue("@TutorApellido", jugador.Tutor.Apellido.Trim());
+                    cmdTutor.Parameters.AddWithValue("@TutorTelefono", (object?)jugador.Tutor.Telefono ?? DBNull.Value);
+                    cmdTutor.Parameters.AddWithValue("@TutorEmail", (object?)jugador.Tutor.Email ?? DBNull.Value);
+                    cmdTutor.Parameters.AddWithValue("@TutorParentesco", (object?)jugador.Tutor.Parentesco ?? "Padre");
+                    await cmdTutor.ExecuteNonQueryAsync();
+                }
+
+                // 6. Minutos jugados en partidos usando IdPartido o fecha/rival
                 if (jugador.Partidos != null && jugador.Partidos.Count > 0)
                 {
                     var queryPartidos = @"
@@ -385,6 +438,90 @@ namespace CACC.DAO
                         await cmdPartido.ExecuteNonQueryAsync();
                     }
                 }
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> ActualizarDatosFisicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil)
+        {
+            const string query = @"
+                UPDATE JUGADORES
+                SET peso = @Peso,
+                    altura = @Altura,
+                    pie_habil = @PieHabil
+                WHERE PK_id_jugador = @Id;";
+
+            await using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            await using var command = new SqlCommand(query, connection);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Peso", SqlDbType.Decimal).Value = (object?)peso ?? DBNull.Value;
+            command.Parameters["@Peso"].Precision = 6;
+            command.Parameters["@Peso"].Scale = 2;
+            command.Parameters.Add("@Altura", SqlDbType.Decimal).Value = (object?)altura ?? DBNull.Value;
+            command.Parameters["@Altura"].Precision = 4;
+            command.Parameters["@Altura"].Scale = 2;
+            command.Parameters.Add("@PieHabil", SqlDbType.NVarChar, 20).Value = (object?)pieHabil ?? DBNull.Value;
+
+            return await command.ExecuteNonQueryAsync() > 0;
+        }
+
+        public async Task<bool> ActualizarDatosMedicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil, FichaMedica ficha)
+        {
+            await using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            await using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                const string playerSql = @"
+                    UPDATE JUGADORES
+                    SET peso = @Peso, altura = @Altura, pie_habil = @PieHabil
+                    WHERE PK_id_jugador = @Id;";
+                await using var playerCommand = new SqlCommand(playerSql, connection, transaction);
+                playerCommand.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+                playerCommand.Parameters.Add("@Peso", SqlDbType.Decimal).Value = (object?)peso ?? DBNull.Value;
+                playerCommand.Parameters["@Peso"].Precision = 6;
+                playerCommand.Parameters["@Peso"].Scale = 2;
+                playerCommand.Parameters.Add("@Altura", SqlDbType.Decimal).Value = (object?)altura ?? DBNull.Value;
+                playerCommand.Parameters["@Altura"].Precision = 4;
+                playerCommand.Parameters["@Altura"].Scale = 2;
+                playerCommand.Parameters.Add("@PieHabil", SqlDbType.NVarChar, 20).Value = (object?)pieHabil ?? DBNull.Value;
+
+                if (await playerCommand.ExecuteNonQueryAsync() == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+
+                const string medicalSql = @"
+                    IF EXISTS (SELECT 1 FROM FICHAS_MEDICAS WHERE FK_id_jugador = @Id)
+                        UPDATE FICHAS_MEDICAS
+                        SET grupo_sanguineo = @GrupoSanguineo,
+                            antecedentes_salud = @AntecedentesSalud,
+                            condiciones_cronicas = @HistorialLesiones,
+                            observaciones = @Observaciones,
+                            fecha_actualizacion = GETDATE()
+                        WHERE FK_id_jugador = @Id;
+                    ELSE
+                        INSERT INTO FICHAS_MEDICAS
+                            (FK_id_jugador, grupo_sanguineo, antecedentes_salud, condiciones_cronicas, observaciones, fecha_actualizacion)
+                        VALUES
+                            (@Id, @GrupoSanguineo, @AntecedentesSalud, @HistorialLesiones, @Observaciones, GETDATE());";
+                await using var medicalCommand = new SqlCommand(medicalSql, connection, transaction);
+                medicalCommand.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+                medicalCommand.Parameters.Add("@GrupoSanguineo", SqlDbType.NVarChar, 8).Value = (object?)ficha.GrupoSanguineo ?? DBNull.Value;
+                medicalCommand.Parameters.Add("@AntecedentesSalud", SqlDbType.NVarChar, -1).Value = (object?)ficha.AntecedentesSalud ?? DBNull.Value;
+                medicalCommand.Parameters.Add("@HistorialLesiones", SqlDbType.NVarChar, -1).Value = (object?)ficha.HistorialLesiones ?? DBNull.Value;
+                medicalCommand.Parameters.Add("@Observaciones", SqlDbType.NVarChar, -1).Value = (object?)ficha.Observaciones ?? DBNull.Value;
+                await medicalCommand.ExecuteNonQueryAsync();
 
                 await transaction.CommitAsync();
                 return true;
@@ -513,32 +650,21 @@ namespace CACC.DAO
                     }
                     else
                     {
-                        var queryMaxResp = "SELECT ISNULL(MAX(PK_id_responsable), 0) + 1 FROM RESPONSABLES;";
-                        using var cmdMaxResp = new SqlCommand(queryMaxResp, connection, transaction);
-                        int idResponsableMax = Convert.ToInt32(await cmdMaxResp.ExecuteScalarAsync());
-
                         var queryInsertResp = @"
-                            INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, email, telefono)
-                            VALUES (@IdResponsable, @IdPersonaTutor, @Email, @Telefono);";
+                            INSERT INTO RESPONSABLES (FK_id_persona, email, telefono)
+                            OUTPUT INSERTED.PK_id_responsable
+                            VALUES (@IdPersonaTutor, @Email, @Telefono);";
                         using var cmdInsertResp = new SqlCommand(queryInsertResp, connection, transaction);
-                        cmdInsertResp.Parameters.AddWithValue("@IdResponsable", idResponsableMax);
                         cmdInsertResp.Parameters.AddWithValue("@IdPersonaTutor", idPersonaTutor);
                         cmdInsertResp.Parameters.AddWithValue("@Email", dto.Tutor.Email ?? (object)DBNull.Value);
                         cmdInsertResp.Parameters.AddWithValue("@Telefono", dto.Tutor.Telefono ?? (object)DBNull.Value);
-                        await cmdInsertResp.ExecuteNonQueryAsync();
-
-                        idResponsable = idResponsableMax;
+                        idResponsable = Convert.ToInt32(await cmdInsertResp.ExecuteScalarAsync());
                     }
 
-                    var queryMaxVinculo = "SELECT ISNULL(MAX(PK_id_jugador_responsable), 0) + 1 FROM JUGADORES_RESPONSABLES;";
-                    using var cmdMaxVinculo = new SqlCommand(queryMaxVinculo, connection, transaction);
-                    int idVinculo = Convert.ToInt32(await cmdMaxVinculo.ExecuteScalarAsync());
-
                     var queryInsertVinculo = @"
-                        INSERT INTO JUGADORES_RESPONSABLES (PK_id_jugador_responsable, FK_id_jugador, FK_id_responsable, parentesco)
-                        VALUES (@IdVinculo, @IdJugador, @IdResponsable, @Parentesco);";
+                        INSERT INTO JUGADORES_RESPONSABLES (FK_id_jugador, FK_id_responsable, parentesco)
+                        VALUES (@IdJugador, @IdResponsable, @Parentesco);";
                     using var cmdInsertVinculo = new SqlCommand(queryInsertVinculo, connection, transaction);
-                    cmdInsertVinculo.Parameters.AddWithValue("@IdVinculo", idVinculo);
                     cmdInsertVinculo.Parameters.AddWithValue("@IdJugador", idJugador);
                     cmdInsertVinculo.Parameters.AddWithValue("@IdResponsable", idResponsable);
                     cmdInsertVinculo.Parameters.AddWithValue("@Parentesco", dto.Tutor.Parentesco ?? (object)DBNull.Value);
@@ -749,24 +875,15 @@ namespace CACC.DAO
                     }
                     else
                     {
-                        const string sqlNextRespId = "SELECT ISNULL(MAX(PK_id_responsable), 0) + 1 FROM RESPONSABLES;";
-                        int nextRespId;
-                        using (var cmdNextId = new SqlCommand(sqlNextRespId, connection, transaction))
-                        {
-                            nextRespId = Convert.ToInt32(await cmdNextId.ExecuteScalarAsync());
-                        }
-
                         const string queryInR = @"
-                            INSERT INTO RESPONSABLES (PK_id_responsable, FK_id_persona, telefono, email)
-                            VALUES (@IdResp, @IdPersona, @Telefono, @Email);";
+                            INSERT INTO RESPONSABLES (FK_id_persona, telefono, email)
+                            OUTPUT INSERTED.PK_id_responsable
+                            VALUES (@IdPersona, @Telefono, @Email);";
                         using var cmdInR = new SqlCommand(queryInR, connection, transaction);
-                        cmdInR.Parameters.AddWithValue("@IdResp", nextRespId);
                         cmdInR.Parameters.AddWithValue("@IdPersona", idPersonaTutor);
                         cmdInR.Parameters.AddWithValue("@Telefono", telefono.Trim());
                         cmdInR.Parameters.AddWithValue("@Email", (object?)email?.Trim() ?? DBNull.Value);
-                        await cmdInR.ExecuteNonQueryAsync();
-
-                        idResponsable = nextRespId;
+                        idResponsable = Convert.ToInt32(await cmdInR.ExecuteScalarAsync());
                     }
                 }
 
@@ -791,18 +908,10 @@ namespace CACC.DAO
                     }
                     else
                     {
-                        const string sqlNextVinculoId = "SELECT ISNULL(MAX(PK_id_jugador_responsable), 0) + 1 FROM JUGADORES_RESPONSABLES;";
-                        int nextVinculoId;
-                        using (var cmdNextVId = new SqlCommand(sqlNextVinculoId, connection, transaction))
-                        {
-                            nextVinculoId = Convert.ToInt32(await cmdNextVId.ExecuteScalarAsync());
-                        }
-
                         const string queryInV = @"
-                            INSERT INTO JUGADORES_RESPONSABLES (PK_id_jugador_responsable, FK_id_responsable, FK_id_jugador, parentesco)
-                            VALUES (@IdVinculo, @IdResp, @IdJugador, @Parentesco);";
+                            INSERT INTO JUGADORES_RESPONSABLES (FK_id_responsable, FK_id_jugador, parentesco)
+                            VALUES (@IdResp, @IdJugador, @Parentesco);";
                         using var cmdInV = new SqlCommand(queryInV, connection, transaction);
-                        cmdInV.Parameters.AddWithValue("@IdVinculo", nextVinculoId);
                         cmdInV.Parameters.AddWithValue("@IdResp", idResponsable);
                         cmdInV.Parameters.AddWithValue("@IdJugador", idJugador);
                         cmdInV.Parameters.AddWithValue("@Parentesco", parentesco.Trim());

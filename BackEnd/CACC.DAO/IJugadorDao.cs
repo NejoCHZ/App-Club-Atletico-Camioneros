@@ -10,6 +10,8 @@ namespace CACC.DAO
         Task<JugadorDetalle?> ObtenerPorIdAsync(int id);
         Task<IEnumerable<JugadorDetalle>> ObtenerPorCategoriaAsync(int idCategoria);
         Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador);
+        Task<bool> ActualizarDatosFisicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil);
+        Task<bool> ActualizarDatosMedicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil, FichaMedica ficha);
         Task<int> CrearAsync(JugadorAlta dto);
         Task<bool> EliminarAsync(int idJugador);
         Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni);

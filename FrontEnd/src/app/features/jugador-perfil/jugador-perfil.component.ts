@@ -8,7 +8,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { JugadorModel } from '../../shared/models/jugador.model';
 import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
-import { RoleId } from '../../core/auth/roles';
+import { categoryNavLabel, normalizeRole, RoleId } from '../../core/auth/roles';
 
 export interface PartidoFichaItem {
   idPartido: number;
@@ -82,7 +82,7 @@ export class JugadorPerfilComponent implements OnInit {
     { label: 'Inicio', icon: 'home', active: false },
     { label: 'Jugadores', icon: 'group', active: true },
     { label: 'Staff', icon: 'badge', active: false },
-    { label: 'Categorias', icon: 'category', active: false }
+    { label: categoryNavLabel(normalizeRole(this.authService.getRol())), icon: 'category', active: false }
   ];
 
   ngOnInit(): void {
@@ -344,22 +344,24 @@ export class JugadorPerfilComponent implements OnInit {
   private normalizarRutaRol(): string {
     const roleId = this.authService.getRoleId();
     if (roleId === RoleId.Medico) return 'medico';
-    if (roleId === RoleId.DirectorTecnico || roleId === RoleId.PreparadorFisico) return 'dt';
+    if (roleId === RoleId.DirectorTecnico) return 'dt';
+    if (roleId === RoleId.PreparadorFisico) return 'preparador-fisico';
     if (roleId === RoleId.Coordinador) return 'coordinador';
     return 'admin';
   }
 
-  editarFichaMedica(): void {
-    if (this.jugador && this.puedeEditarFichaMedica) {
+  verFichaMedicaCompleta(): void {
+    if (this.jugador && this.puedeVerFichaMedica) {
       this.router.navigate(['/', this.normalizarRutaRol(), 'jugadores', this.jugador.id, 'ficha-medica']);
     }
   }
 
   private rutaPorRol(seccion: string): string {
     const roleId = this.authService.getRoleId();
-    const categorias = seccion === 'Categorias' || seccion === 'Categorías';
+    const categorias = seccion === 'Categorias' || seccion === 'Categorías' || seccion === 'Mis categorías';
     if (roleId === RoleId.Medico) return seccion === 'Inicio' ? '/medico' : categorias ? '/medico/categorias' : '/medico/jugadores';
-    if (roleId === RoleId.DirectorTecnico || roleId === RoleId.PreparadorFisico) return seccion === 'Inicio' ? '/dt' : categorias ? '/dt/categorias' : '/dt/jugadores';
+    if (roleId === RoleId.DirectorTecnico) return seccion === 'Inicio' ? '/dt' : categorias ? '/dt/categorias' : '/dt/jugadores';
+    if (roleId === RoleId.PreparadorFisico) return seccion === 'Inicio' ? '/preparador-fisico' : categorias ? '/preparador-fisico/categorias' : '/preparador-fisico/jugadores';
     if (roleId === RoleId.Coordinador) return seccion === 'Inicio' ? '/coordinador' : categorias ? '/coordinador/categorias' : '/coordinador/jugadores';
     return seccion === 'Inicio' ? '/admin' : categorias ? '/admin/categorias' : seccion === 'Staff' ? '/admin/staff' : '/admin/jugadores';
   }

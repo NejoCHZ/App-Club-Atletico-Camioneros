@@ -229,5 +229,18 @@ namespace CACC.API.Controllers
                 return StatusCode(500, new { message = "Error interno al actualizar la ficha del staff.", details = ex.Message });
             }
         }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = AppRoles.Administradores)]
+        public async Task<IActionResult> DarDeBajaStaff(int id)
+        {
+            bool actualizado = await _staffDao.DarDeBajaAsync(id);
+            if (!actualizado)
+            {
+                return NotFound(new { message = $"Colaborador con ID {id} no encontrado." });
+            }
+
+            return Ok(new { message = "Colaborador dado de baja correctamente." });
+        }
     }
 }

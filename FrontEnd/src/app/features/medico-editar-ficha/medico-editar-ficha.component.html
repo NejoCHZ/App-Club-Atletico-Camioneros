@@ -46,8 +46,8 @@
                   <span width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="cacc-icon cacc-icon-weight"></span>
                 </div>
                 <div class="item-content">
-                  <span class="item-label">Peso</span>
-                  <span class="item-val">{{ player.peso }}</span>
+                  <label class="item-label" for="medical-weight">Peso (kg)</label>
+                  <input id="medical-weight" class="physical-input" type="text" inputmode="decimal" [(ngModel)]="player.peso" placeholder="Ej: 72,5" />
                 </div>
               </div>
 
@@ -57,8 +57,8 @@
                   <span width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="cacc-icon cacc-icon-height"></span>
                 </div>
                 <div class="item-content">
-                  <span class="item-label">Altura</span>
-                  <span class="item-val">{{ player.altura }}</span>
+                  <label class="item-label" for="medical-height">Altura (m)</label>
+                  <input id="medical-height" class="physical-input" type="text" inputmode="decimal" [(ngModel)]="player.altura" placeholder="Ej: 1,78" />
                 </div>
               </div>
 
@@ -68,8 +68,13 @@
                   <span width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="cacc-icon cacc-icon-foot"></span>
                 </div>
                 <div class="item-content">
-                  <span class="item-label">Pie habil</span>
-                  <span class="item-val">{{ player.pieHabil }}</span>
+                  <label class="item-label" for="medical-foot">Pie hábil</label>
+                  <select id="medical-foot" class="physical-input" [(ngModel)]="player.pieHabil">
+                    <option value="">Sin informar</option>
+                    <option value="Derecho">Derecho</option>
+                    <option value="Izquierdo">Izquierdo</option>
+                    <option value="Ambidiestro">Ambidiestro</option>
+                  </select>
                 </div>
               </div>
 
@@ -79,8 +84,11 @@
                   <span width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="cacc-icon cacc-icon-blood"></span>
                 </div>
                 <div class="item-content">
-                  <span class="item-label">Grupo sanguíneo</span>
-                  <span class="item-val">{{ player.grupoSanguineo }}</span>
+                  <label class="item-label" for="medical-blood-type">Grupo sanguíneo</label>
+                  <select id="medical-blood-type" class="physical-input" [(ngModel)]="player.grupoSanguineo">
+                    <option value="">Sin informar</option>
+                    <option *ngFor="let grupo of ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']" [value]="grupo">{{ grupo }}</option>
+                  </select>
                 </div>
               </div>
 
@@ -120,39 +128,7 @@
           </div>
         </section>
 
-        <!-- COLUMN 2: Historial de Partidos -->
-        <section class="card-col col-partidos">
-          <h2 class="card-title-centered">HISTORIAL DE PARTIDOS</h2>
-
-          <div class="table-responsive-partidos">
-            <table class="partidos-table">
-              <thead>
-                <tr>
-                  <th>DIA</th>
-                  <th>FECHA</th>
-                  <th>RIVAL</th>
-                  <th>RESULTADO</th>
-                  <th>MINUTOS</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let m of player.historialPartidos; let i = index" [class.even-row]="i % 2 === 1">
-                  <td>{{ m.dia }}</td>
-                  <td>{{ m.fecha }}</td>
-                  <td class="col-rival">{{ m.rival }}</td>
-                  <td>{{ m.resultado }}</td>
-                  <td>{{ m.minutos }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="table-footer-summary">
-            <span>TOTAL MINUTOS JUGADOS: <strong>{{ player.totalMinutosJugados }}</strong></span>
-          </div>
-        </section>
-
-        <!-- COLUMN 3: Ficha Médica Editable -->
+        <!-- Ficha Médica Editable -->
         <section class="card-col col-medica">
           <h2 class="card-title-centered">FICHA MEDICA</h2>
           <div class="title-divider-line"></div>
@@ -185,9 +161,12 @@
                   </div>
                 </li>
               </ul>
-              <button type="button" class="btn-add-lesion" (click)="agregarLesion()">
-                <span class="plus-sign">+</span> Agregar lesion
-              </button>
+              <div class="new-lesion-row">
+                <input type="text" class="new-lesion-input" [(ngModel)]="nuevaLesion" (keyup.enter)="agregarLesion()" placeholder="Ej: Esguince de tobillo" aria-label="Descripción de la nueva lesión" />
+                <button type="button" class="btn-add-lesion" (click)="agregarLesion()" [disabled]="!nuevaLesion.trim()">
+                  <span class="plus-sign">+</span> Agregar lesión
+                </button>
+              </div>
             </div>
 
             <!-- Observaciones medicas -->

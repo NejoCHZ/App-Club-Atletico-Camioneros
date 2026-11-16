@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
-import { normalizeRole } from '../../core/auth/roles';
+import { categoryNavLabel, normalizeRole } from '../../core/auth/roles';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
+import { playerPositionLabel } from '../../shared/utils/player-position';
 
 interface TutorInfo {
   nombre?: string;
@@ -29,6 +30,14 @@ interface Player {
 interface Categoria {
   idCategoria: number;
   nombreCategoria: string;
+}
+
+interface KpiCard {
+  title: string;
+  shortTitle: string;
+  value: string;
+  type: 'jugadores' | 'categorias' | 'cuotas';
+  icon?: 'categorias';
 }
 
 @Component({
@@ -64,10 +73,10 @@ export class AdminHomeComponent implements OnInit {
     { label: 'Inicio', icon: 'home', active: true },
     { label: 'Jugadores', icon: 'group', active: false },
     { label: 'Staff', icon: 'badge', active: false },
-    { label: 'Categorias', icon: 'category', active: false }
+    { label: categoryNavLabel(this.access.role), icon: 'category', active: false }
   ];
 
-  kpiCards = [
+  kpiCards: KpiCard[] = [
     { title: 'Jugadores Registrados', shortTitle: 'Jugadores', value: '...', type: 'jugadores' },
     { title: 'Categorías Activas', shortTitle: 'Categorías', value: '...', type: 'categorias' },
     { title: 'Cuotas al Día', shortTitle: 'Cuotas', value: '...', type: 'cuotas' }
@@ -75,17 +84,28 @@ export class AdminHomeComponent implements OnInit {
 
   players: Player[] = [];
   listaCategorias: Categoria[] = [];
+  readonly showFinancialStatus = this.access.role !== 'medico';
 
   get esAdministrador(): boolean {
     return this.limpiarNombreRol(this.authService.getRol() ?? '') === 'Administrador';
   }
 
   get tituloPanel(): string {
-    return `Panel Principal de ${this.limpiarNombreRol(this.authService.getRol() ?? '')}`;
+    return `Panel Principal del ${this.limpiarNombreRol(this.authService.getRol() ?? '')}`;
   }
 
   ngOnInit(): void {
     const rol = this.limpiarNombreRol(this.authService.getRol() ?? '');
+    const rolNormalizado = normalizeRole(this.authService.getRol());
+    if (rolNormalizado === 'dt' || rolNormalizado === 'preparador-fisico') {
+      this.kpiCards = [
+        { title: 'Jugadores a cargo', shortTitle: 'A cargo', value: '...', type: 'jugadores' },
+        { title: 'Categorías asignadas', shortTitle: 'Asignadas', value: '...', type: 'categorias', icon: 'categorias' }
+      ];
+    } else if (rolNormalizado === 'medico') {
+      this.kpiCards = this.kpiCards.filter((card) => card.type !== 'cuotas');
+    }
+
     if (rol !== 'Administrador' && rol !== 'Coordinador') {
       this.navItems = this.navItems.filter((item) => item.label !== 'Staff');
     }
@@ -134,7 +154,7 @@ export class AdminHomeComponent implements OnInit {
             nombreCompleto: `${j.nombre} ${j.apellido}`.trim(),
             dni: j.dni,
             categoria: j.nombreCategoria || 'Sin categoría',
-            posicion: j.posicionCancha || j.posicion || 'Sin posición',
+            posicion: playerPositionLabel(j.posicionCancha || j.posicion),
             fechaNacimiento: fechaFormateada,
             estadoCuota: j.estadoCuota || 'AL DÍA',
             tutor: j.tutor || j.Tutor || null
@@ -142,13 +162,17 @@ export class AdminHomeComponent implements OnInit {
         });
 
         const alDia = this.players.filter(p => p.estadoCuota === 'AL DÍA').length;
-        this.kpiCards[0].value = `+${this.players.length}`;
-        this.kpiCards[2].value = `${alDia}/${this.players.length}`;
+        const jugadoresCard = this.kpiCards.find((card) => card.type === 'jugadores');
+        const cuotasCard = this.kpiCards.find((card) => card.type === 'cuotas');
+        if (jugadoresCard) jugadoresCard.value = `+${this.players.length}`;
+        if (cuotasCard) cuotasCard.value = `${alDia}/${this.players.length}`;
       },
       error: (err) => {
         console.error('Error al cargar jugadores', err);
-        this.kpiCards[0].value = '0';
-        this.kpiCards[2].value = '0';
+        const jugadoresCard = this.kpiCards.find((card) => card.type === 'jugadores');
+        const cuotasCard = this.kpiCards.find((card) => card.type === 'cuotas');
+        if (jugadoresCard) jugadoresCard.value = '0';
+        if (cuotasCard) cuotasCard.value = '0';
       }
     });
   }
@@ -157,11 +181,13 @@ export class AdminHomeComponent implements OnInit {
     this.http.get<Categoria[]>('/api/categorias').subscribe({
       next: (data) => {
         this.listaCategorias = this.access.visibleCategories(data);
-        this.kpiCards[1].value = `+${this.listaCategorias.length}`;
+        const categoriasCard = this.kpiCards.find((card) => card.type === 'categorias');
+        if (categoriasCard) categoriasCard.value = `+${this.listaCategorias.length}`;
       },
       error: (err) => {
         console.error('Error al cargar categorías', err);
-        this.kpiCards[1].value = '0';
+        const categoriasCard = this.kpiCards.find((card) => card.type === 'categorias');
+        if (categoriasCard) categoriasCard.value = '0';
       }
     });
   }
@@ -254,7 +280,7 @@ export class AdminHomeComponent implements OnInit {
 
     if (label === 'Jugadores') this.router.navigate([`${portalBase}/jugadores`]);
     else if (label === 'Inicio') this.router.navigate([portalBase]);
-    else if (label === 'Categorias' || label === 'Categorías') this.router.navigate([`${portalBase}/categorias`]);
+    else if (label === 'Categorias' || label === 'Categorías' || label === 'Mis categorías') this.router.navigate([`${portalBase}/categorias`]);
     else if (label === 'Staff') this.router.navigate([`${portalBase}/staff`]);
   }
 

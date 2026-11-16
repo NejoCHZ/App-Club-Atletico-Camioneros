@@ -152,6 +152,8 @@ public class AsistenciasControllerTests
         public Task<IEnumerable<JugadorDetalle>> ObtenerTodosAsync() => Task.FromResult<IEnumerable<JugadorDetalle>>([]);
         public Task<IEnumerable<JugadorDetalle>> ObtenerPorCategoriaAsync(int idCategoria) => Task.FromResult<IEnumerable<JugadorDetalle>>([]);
         public Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador) => Task.FromResult(false);
+        public Task<bool> ActualizarDatosFisicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil) => Task.FromResult(false);
+        public Task<bool> ActualizarDatosMedicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil, FichaMedica ficha) => Task.FromResult(false);
         public Task<int> CrearAsync(JugadorAlta dto) => Task.FromResult(0);
         public Task<bool> EliminarAsync(int idJugador) => Task.FromResult(false);
         public Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni) => Task.FromResult<TutorDetalle?>(null);

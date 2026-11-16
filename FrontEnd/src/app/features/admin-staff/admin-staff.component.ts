@@ -222,4 +222,13 @@ export class AdminStaffComponent implements OnInit {
   verFicha(id: number): void {
     this.router.navigate(['/admin/staff', id]);
   }
+
+  darDeBaja(t: StaffMember): void {
+    if (!confirm(`¿Deseás dar de baja a ${t.nombreCompleto}?`)) return;
+
+    this.http.delete(`/api/staff/${t.id}`).subscribe({
+      next: () => this.cargarStaff(),
+      error: (err) => alert(err.error?.message || 'No se pudo dar de baja al trabajador.')
+    });
+  }
 }

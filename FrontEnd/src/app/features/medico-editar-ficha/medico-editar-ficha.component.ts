@@ -41,6 +41,7 @@ export interface PlayerFicha {
 })
 export class MedicoEditarFichaComponent implements OnInit {
   playerId = 1;
+  nuevaLesion = '';
   player: PlayerFicha = {
     id: 1,
     nombreCompleto: 'NOMBRE Y APELLIDO',
@@ -80,8 +81,14 @@ export class MedicoEditarFichaComponent implements OnInit {
   }
 
   agregarLesion() {
-    const num = this.player.lesiones.length + 1;
-    this.player.lesiones.push(`Lesion ${num}`);
+    const descripcion = this.nuevaLesion.trim();
+    if (!descripcion) return;
+
+    const fecha = new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    }).format(new Date());
+    this.player.lesiones.push(`${descripcion} (${fecha})`);
+    this.nuevaLesion = '';
   }
 
   editarLesion(index: number) {

@@ -300,6 +300,11 @@ export class AdminListaCategoria implements OnInit {
 
   // --- Modal de Gestión (Jugadores, Cuerpo Técnico y Partidos) ---
   verCategoria(cat: CategoriaItem): void {
+    if (this.access.role === 'dt' || this.access.role === 'preparador-fisico') {
+      this.router.navigate([this.portalRoot, 'categorias', cat.id]);
+      return;
+    }
+
     this.categoriaActiva = cat;
     this.tabActivaModal = 'jugadores';
     this.modalPlantelVisible = true;

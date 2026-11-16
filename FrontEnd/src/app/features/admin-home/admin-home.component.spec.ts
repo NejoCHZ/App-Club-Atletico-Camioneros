@@ -64,6 +64,18 @@ describe('AdminHomeComponent navigation', () => {
     expect(navigate.calls.argsFor(1)).toEqual([['/medico/categorias']]);
   });
 
+  it('does not expose financial status to the medical role', () => {
+    auth.role = 'Médico';
+    const fixture = TestBed.createComponent(AdminHomeComponent);
+    fixture.componentInstance.ngOnInit();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.showFinancialStatus).toBeFalse();
+    expect(fixture.componentInstance.kpiCards.some(card => card.type === 'cuotas')).toBeFalse();
+    expect(fixture.nativeElement.textContent).not.toContain('Estado Cuota');
+    expect(fixture.nativeElement.textContent).not.toContain('Cuotas al Día');
+  });
+
   it('keeps coordinator navigation inside the coordinator portal', () => {
     auth.role = 'Coordinador';
     const component = TestBed.createComponent(AdminHomeComponent).componentInstance;

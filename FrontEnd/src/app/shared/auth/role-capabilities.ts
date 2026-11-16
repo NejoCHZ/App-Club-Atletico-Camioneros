@@ -42,6 +42,14 @@ export const ROLE_CAPABILITIES: Record<AppRole, RoleCapabilities> = {
     canManageCategoryRoster: false,
     canManageCategories: false,
   },
+  'preparador-fisico': {
+    canViewAllPlayers: false,
+    canEditPlayers: false,
+    canViewMedicalRecord: true,
+    canEditMedicalRecord: false,
+    canManageCategoryRoster: false,
+    canManageCategories: false,
+  },
   'don-qr': {
     canViewAllPlayers: false,
     canEditPlayers: false,

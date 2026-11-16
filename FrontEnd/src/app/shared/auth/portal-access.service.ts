@@ -18,13 +18,13 @@ export class PortalAccessService {
   }
 
   categoryIsVisible(category: Pick<CategorySummary, 'idCategoria' | 'nombreCategoria'>): boolean {
-    if (this.role !== 'dt') return true;
+    if (!this.isCategoryScopedRole) return true;
     const scope = assignedCategoryScope(this.auth.getToken());
     return scope.ids.has(category.idCategoria) || scope.names.has(this.normalize(category.nombreCategoria));
   }
 
   playerIsVisible(player: Pick<PlayerSummary, 'idCategoria' | 'nombreCategoria'>): boolean {
-    if (this.role !== 'dt') return true;
+    if (!this.isCategoryScopedRole) return true;
     const scope = assignedCategoryScope(this.auth.getToken());
     return (player.idCategoria != null && scope.ids.has(Number(player.idCategoria))) ||
       (player.nombreCategoria != null && scope.names.has(this.normalize(player.nombreCategoria)));
@@ -36,6 +36,10 @@ export class PortalAccessService {
 
   visiblePlayers<T extends PlayerSummary>(players: T[]): T[] {
     return players.filter((player) => this.playerIsVisible(player));
+  }
+
+  private get isCategoryScopedRole(): boolean {
+    return this.role === 'dt' || this.role === 'preparador-fisico';
   }
 
   private normalize(value: string): string {

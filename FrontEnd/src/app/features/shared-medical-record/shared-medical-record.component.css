@@ -4,11 +4,17 @@
 .eyebrow{margin:0 0 4px;color:#008443;font-size:12px;font-weight:800;text-transform:uppercase}
 .medical-page h1{margin:0;color:#101828;font-size:26px;line-height:1.2}
 .player-name{margin:5px 0 0;color:#526175;font-size:14px;font-weight:700;text-transform:uppercase}
-.back-link,.cancel-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;color:#08783f;background:#fff;border:1px solid #08783f;border-radius:9px;font-size:14px;font-weight:750;text-decoration:none;white-space:nowrap}
+.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.back-link,.cancel-button,.edit-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;color:#08783f;background:#fff;border:1px solid #08783f;border-radius:9px;font-size:14px;font-weight:750;text-decoration:none;white-space:nowrap;cursor:pointer}
+.edit-button{color:#fff;background:#008443}
 .record-card{display:grid;gap:18px;min-height:calc(100vh - 260px);padding:24px 28px;background:#fff;border:1px solid #dce4e1;border-radius:14px;box-shadow:0 4px 14px #0f172a10}
 .record-section{display:grid;align-content:start;gap:8px}
 .record-section>label,.section-label{color:#24334a;font-size:13px;font-weight:800;text-transform:uppercase}
 .record-section textarea{width:100%;min-height:92px;padding:13px 14px;color:#172033;background:#fff;border:1px solid #cbd8d3;border-radius:9px;font:14px/1.45 inherit;resize:vertical;box-sizing:border-box}
+.physical-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.physical-grid label{display:grid;gap:7px;color:#24334a;font-size:13px;font-weight:800;text-transform:uppercase}
+.physical-grid input,.physical-grid select{width:100%;min-height:42px;padding:0 12px;color:#172033;background:#fff;border:1px solid #cbd8d3;border-radius:8px;font:14px inherit;box-sizing:border-box}
+.physical-grid input[readonly],.physical-grid select:disabled,.record-section textarea[readonly]{color:#334155;background:#f7f9fa;opacity:1}
 .record-section textarea:focus,.injury-input-row input:focus{outline:2px solid #00844333;border-color:#008443}
 .injury-list{display:grid;gap:7px}
 .injury-item{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:42px;padding:0 12px;background:#f7f9fa;border:1px solid #dae3e8;border-radius:8px}
@@ -27,4 +33,5 @@
 .actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding-top:4px}
 .save-button{min-height:44px}.save-button:disabled{opacity:.65;cursor:wait}
 .state{margin:0 0 12px;padding:12px 16px;border-radius:8px;background:#f1f5f9}.state.error{color:#991b1b;background:#fee2e2}.state.success{color:#166534;background:#dcfce7}
-@media(max-width:767px){.medical-page{width:100%;min-height:100%;margin:0;padding:14px;box-sizing:border-box}.medical-page-header{align-items:flex-start;padding:16px}.medical-page h1{font-size:21px}.back-link{min-height:40px;padding:0 12px;font-size:12px}.record-card{min-height:0;padding:16px;gap:17px}.injury-input-row{grid-template-columns:1fr}.add-injury{width:100%}.actions{display:grid;grid-template-columns:1fr 1fr}.cancel-button,.save-button{width:100%;box-sizing:border-box}}
+@media(max-width:900px){.physical-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:767px){.medical-page{width:100%;min-height:100%;margin:0;padding:14px;box-sizing:border-box}.medical-page-header{align-items:flex-start;padding:16px;flex-direction:column}.header-actions{width:100%;justify-content:flex-start}.medical-page h1{font-size:21px}.back-link,.edit-button{min-height:40px;padding:0 12px;font-size:12px}.record-card{min-height:0;padding:16px;gap:17px}.physical-grid{grid-template-columns:1fr}.injury-input-row{grid-template-columns:1fr}.add-injury{width:100%}.actions{display:grid;grid-template-columns:1fr 1fr}.cancel-button,.save-button{width:100%;box-sizing:border-box}}

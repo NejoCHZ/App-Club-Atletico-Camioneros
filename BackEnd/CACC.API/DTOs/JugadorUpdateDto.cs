@@ -42,6 +42,12 @@ namespace CACC.API.DTOs
         [JsonPropertyName("pieHabil")]
         public string? PieHabil { get; set; }
 
+        [JsonPropertyName("aptoFisico")]
+        public bool AptoFisico { get; set; }
+
+        [JsonPropertyName("tutor")]
+        public GuardarTutorDto? Tutor { get; set; }
+
         [JsonPropertyName("partidos")]
         public List<PartidoUpdateDto> Partidos { get; set; } = new List<PartidoUpdateDto>();
     }

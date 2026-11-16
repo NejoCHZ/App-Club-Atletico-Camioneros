@@ -168,7 +168,7 @@
                 </div>
                 <div class="data-label-group">
                   <span class="data-label">Altura (m)</span>
-                  <input type="number" step="0.01" class="edit-form-control" name="altura" [(ngModel)]="perfil.altura" placeholder="0.00">
+                  <input type="text" inputmode="decimal" class="edit-form-control" name="altura" [(ngModel)]="perfil.altura" placeholder="Ej: 1,78 o 178">
                 </div>
               </div>
 
@@ -218,6 +218,12 @@
             </div>
 
             <div class="tutor-edit-grid">
+              <div class="data-item-card">
+                <div class="data-label-group">
+                  <span class="data-label">DNI del tutor</span>
+                  <input type="text" class="edit-form-control" name="tutorDni" [(ngModel)]="perfil.tutor.dni" placeholder="DNI">
+                </div>
+              </div>
               <div class="data-item-card tutor-name-card">
                 <div class="data-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3H4Z"/></svg>
@@ -238,6 +244,15 @@
                 <div class="data-label-group">
                   <span class="data-label">Teléfono de contacto</span>
                   <input type="text" class="edit-form-control" name="tutorTelefono" [(ngModel)]="perfil.tutor.telefono" placeholder="Ej: 3510000000">
+                </div>
+              </div>
+              <div class="data-item-card">
+                <div class="data-label-group">
+                  <span class="data-label">Parentesco / vínculo</span>
+                  <select class="edit-form-control" name="tutorParentesco" [(ngModel)]="perfil.tutor.parentesco">
+                    <option value="Padre">Padre</option><option value="Madre">Madre</option>
+                    <option value="Tutor Legal">Tutor Legal</option><option value="Otro">Otro</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -337,6 +352,11 @@
                 </label>
               </div>
             </div>
+
+            <label class="medical-section mt-2">
+              <input type="checkbox" name="aptoFisico" [(ngModel)]="perfil.aptoFisico">
+              <span class="medical-subtitle">Apto físico / médico vigente</span>
+            </label>
 
             <div class="medical-section mt-2">
               <span class="medical-subtitle">Observaciones médicas</span>

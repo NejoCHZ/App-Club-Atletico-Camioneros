@@ -9,7 +9,8 @@ export const routes: Routes = [
   { path: 'admin', component: MainLayout, data: { roles: ['admin'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/admin.routes').then((m) => m.ADMIN_ROUTES) },
   { path: 'coordinador', component: MainLayout, data: { roles: ['coordinador'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/coordinador.routes').then((m) => m.COORDINADOR_ROUTES) },
   { path: 'medico', component: MainLayout, data: { roles: ['medico'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/medico.routes').then((m) => m.MEDICO_ROUTES) },
-  { path: 'dt', component: MainLayout, data: { roles: ['dt'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/dt.routes').then((m) => m.DT_ROUTES) },
+  { path: 'dt', component: MainLayout, data: { roles: ['dt', 'preparador-fisico'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/dt.routes').then((m) => m.DT_ROUTES) },
+  { path: 'preparador-fisico', component: MainLayout, data: { roles: ['preparador-fisico'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadChildren: () => import('./routes/dt.routes').then((m) => m.DT_ROUTES) },
   { path: 'semaforo-qr', title: 'Escáner QR', data: { roles: ['don-qr'] }, canMatch: [roleMatchGuard], canActivate: [roleGuard], loadComponent: () => import('./features/semaforo-qr/semaforo-qr').then((m) => m.SemaforoQrComponent) },
 
   // Legacy URLs redirect to their canonical counterpart.

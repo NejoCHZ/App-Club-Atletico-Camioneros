@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RolePlayerViewService } from '../../shared/services/role-player-view.service';
+import { PortalAccessService } from '../../shared/auth/portal-access.service';
 
 export interface PlayerCategoriaDT {
   id: number;
@@ -10,6 +11,8 @@ export interface PlayerCategoriaDT {
   dni: string;
   posicion: 'Arqueros' | 'Defensores' | 'Volantes' | 'Delanteros';
   edad: string;
+  fechaNacimiento: string;
+  categoria: string;
 }
 
 @Component({
@@ -20,7 +23,12 @@ export interface PlayerCategoriaDT {
   styleUrl: './dt-categoria-jugadores.css'
 })
 export class DtCategoriaJugadoresComponent implements OnInit {
-  constructor(private router: Router, private route: ActivatedRoute, private views: RolePlayerViewService) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private views: RolePlayerViewService,
+    private access: PortalAccessService,
+  ) {}
 
   nombreCategoria = 'Plantel';
   searchTerm = '';
@@ -57,7 +65,17 @@ export class DtCategoriaJugadoresComponent implements OnInit {
   }
 
   verFicha(id: number) {
-    this.router.navigate(['/dt/jugadores', id]);
+    this.router.navigate([`/${this.access.role}`, 'jugadores', id]);
+  }
+
+  positionLabel(position: PlayerCategoriaDT['posicion']): string {
+    const labels: Record<PlayerCategoriaDT['posicion'], string> = {
+      Arqueros: 'Arquero',
+      Defensores: 'Defensor',
+      Volantes: 'Volante',
+      Delanteros: 'Delantero',
+    };
+    return labels[position];
   }
 
 }

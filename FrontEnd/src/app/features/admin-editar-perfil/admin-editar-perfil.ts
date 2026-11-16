@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { HttpClient } from '@angular/common/http';
+import { of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-admin-editar-perfil',
@@ -17,10 +19,13 @@ export class AdminEditarPerfil implements OnInit {
   private readonly router = inject(Router);
   private readonly jugadorService = inject(JugadorService);
   private readonly authService = inject(AuthService);
+  private readonly http = inject(HttpClient);
 
   jugadorId = '';
   cargando = true;
   guardando = false;
+  fichaMedicaId: number | null = null;
+  fichaMedicaOriginal: any = null;
   errorCarga = '';
 
   usuarioActual = {
@@ -95,8 +100,9 @@ export class AdminEditarPerfil implements OnInit {
           peso: data.peso || data.Peso,
           altura: data.altura || data.Altura,
           pieHabil: data.pieHabil || data.PieHabil,
+          aptoFisico: data.fichaMedicaLiga ?? data.FichaMedicaLiga ?? false,
           domicilio: data.domicilio || data.Domicilio || '',
-          tutor: data.tutor || data.Tutor || { nombre: '', apellido: '', telefono: '', email: '' },
+          tutor: data.tutor || data.Tutor || { dni: '', nombre: '', apellido: '', telefono: '', email: '', parentesco: 'Padre' },
           fichaMedica: data.fichaMedica || data.FichaMedica || { patologias: '', historialLesiones: '', observaciones: '', grupoSanguineo: '' },
           partidos: (data.partidos || data.Partidos || []).map((p: any) => ({
             fecha: p.fecha || p.Fecha,
@@ -113,10 +119,33 @@ export class AdminEditarPerfil implements OnInit {
           .map((l: string) => l.trim())
           .filter((l: string) => l.length > 0);
 
-        this.cargando = false;
+        this.cargarFichaMedica();
       },
       error: () => {
         this.errorCarga = 'Error al cargar los datos para edición.';
+        this.cargando = false;
+      }
+    });
+  }
+
+  private cargarFichaMedica(): void {
+    this.http.get<any>(`/api/fichas-medicas/jugador/${this.jugadorId}`).subscribe({
+      next: ficha => {
+        this.fichaMedicaId = ficha.idFichaMedica;
+        this.fichaMedicaOriginal = ficha;
+        this.perfil.fichaMedica = {
+          ...this.perfil.fichaMedica,
+          grupoSanguineo: ficha.grupoSanguineo
+            ? `${ficha.grupoSanguineo}${ficha.factor || ''}`
+            : '',
+          patologias: ficha.patologias || ficha.antecedentesSalud || '',
+          historialLesiones: ficha.historialLesiones || ficha.condicionesCronicas || '',
+          observaciones: ficha.observaciones || ''
+        };
+        this.cargando = false;
+      },
+      error: () => {
+        this.fichaMedicaId = null;
         this.cargando = false;
       }
     });
@@ -163,9 +192,37 @@ export class AdminEditarPerfil implements OnInit {
   }
 
   guardar(): void {
+    if (this.guardando) return;
+
+    const alturaNormalizada = this.normalizarAltura(this.perfil.altura);
+    if (this.perfil.altura !== null && this.perfil.altura !== undefined && this.perfil.altura !== '' && alturaNormalizada === null) {
+      alert('La altura debe ingresarse como 178, 1,78 o 1.78.');
+      return;
+    }
+    this.perfil.altura = alturaNormalizada;
     this.guardando = true;
 
-    this.jugadorService.actualizarPerfil(this.jugadorId, this.perfil).subscribe({
+    const datosJugador = { ...this.perfil };
+    delete datosJugador.fichaMedica;
+
+    this.jugadorService.actualizarPerfil(this.jugadorId, datosJugador).pipe(
+      switchMap(() => {
+        if (!this.fichaMedicaId) return of(null);
+        const grupoCompleto = (this.perfil.fichaMedica.grupoSanguineo || '').trim();
+        const factor = grupoCompleto.endsWith('+') || grupoCompleto.endsWith('-') ? grupoCompleto.slice(-1) : null;
+        const grupo = factor ? grupoCompleto.slice(0, -1) : grupoCompleto;
+        return this.http.put(`/api/fichas-medicas/${this.fichaMedicaId}`, {
+          ...this.fichaMedicaOriginal,
+          idFichaMedica: this.fichaMedicaId,
+          idJugador: Number(this.jugadorId),
+          grupoSanguineo: grupo || null,
+          factor,
+          patologias: this.perfil.fichaMedica.patologias || null,
+          historialLesiones: this.perfil.fichaMedica.historialLesiones || null,
+          observaciones: this.perfil.fichaMedica.observaciones || null
+        });
+      })
+    ).subscribe({
       next: () => {
         alert('¡Cambios guardados exitosamente en la base de datos!');
         this.volver();
@@ -176,6 +233,14 @@ export class AdminEditarPerfil implements OnInit {
         this.guardando = false;
       }
     });
+  }
+
+  private normalizarAltura(valor: unknown): number | null {
+    if (valor === null || valor === undefined || valor === '') return null;
+    const numero = Number(String(valor).trim().replace(',', '.'));
+    if (!Number.isFinite(numero) || numero <= 0) return null;
+    const metros = numero >= 100 ? numero / 100 : numero;
+    return metros >= 1 && metros <= 2.5 ? Math.round(metros * 100) / 100 : null;
   }
 
   toggleMenuUsuario(event: MouseEvent): void {

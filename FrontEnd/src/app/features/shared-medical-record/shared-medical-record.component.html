@@ -1,54 +1,28 @@
 <main class="medical-page">
   <header class="medical-page-header">
-    <div>
-      <p class="eyebrow">Seguimiento del jugador</p>
-      <h1>Ficha médica</h1>
-      <p class="player-name" *ngIf="player">{{ player.nombre }} {{ player.apellido }}</p>
+    <div><p class="eyebrow">Seguimiento del jugador</p><h1>Ficha médica</h1><p class="player-name" *ngIf="player">{{ player.nombreCompleto }}</p></div>
+    <div class="header-actions">
+      <button *ngIf="canEdit && !editMode" type="button" class="edit-button" (click)="startEditing()">Editar ficha médica</button>
+      <a [routerLink]="['/', role, 'jugadores', playerId]" class="back-link">← Volver al perfil</a>
     </div>
-    <a [routerLink]="['/', role, 'jugadores', playerId]" class="back-link">← Volver al perfil</a>
   </header>
-  <p *ngIf="loading" class="state">Cargando ficha médica…</p>
-  <p *ngIf="error" class="state error">{{ error }}</p>
-  <p *ngIf="success" class="state success">{{ success }}</p>
-
-  <form *ngIf="record as ficha" (ngSubmit)="save()" class="record-card">
-    <section class="record-section">
-      <label for="pathologies">Patologías</label>
-      <textarea id="pathologies" name="patologias" [(ngModel)]="ficha.patologias" [disabled]="!canEdit"></textarea>
-    </section>
-
-    <section class="record-section">
-      <span class="section-label">Historial de lesiones</span>
-      <div class="injury-list" *ngIf="injuries.length; else noInjuries">
-        <div class="injury-item" *ngFor="let injury of injuries; let i = index">
-          <span><i aria-hidden="true"></i>{{ injury }}</span>
-          <button *ngIf="canEdit" type="button" class="delete-injury" (click)="removeInjury(i)" [attr.aria-label]="'Eliminar ' + injury">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/></svg>
-          </button>
-        </div>
+  <p *ngIf="loading" class="state">Cargando ficha médica…</p><p *ngIf="error" class="state error">{{ error }}</p><p *ngIf="success" class="state success">{{ success }}</p>
+  <form *ngIf="player as ficha" (ngSubmit)="save()" class="record-card">
+    <section class="record-section physical-section"><span class="section-label">Datos físicos</span>
+      <div class="physical-grid">
+        <label>Peso<input name="peso" [(ngModel)]="ficha.peso" [readonly]="!editMode" placeholder="Sin informar"></label>
+        <label>Altura<input name="altura" [(ngModel)]="ficha.altura" [readonly]="!editMode" placeholder="Sin informar"></label>
+        <label>Pie hábil<select name="pieHabil" [(ngModel)]="ficha.pieHabil" [disabled]="!editMode"><option value="">Sin informar</option><option value="Derecho">Derecho</option><option value="Izquierdo">Izquierdo</option><option value="Ambidiestro">Ambidiestro</option></select></label>
+        <label>Grupo sanguíneo<select name="grupoSanguineo" [(ngModel)]="ficha.grupoSanguineo" [disabled]="!editMode"><option value="">Sin informar</option><option *ngFor="let group of ['A+','A-','B+','B-','AB+','AB-','O+','O-']" [value]="group">{{ group }}</option></select></label>
       </div>
+    </section>
+    <section class="record-section"><label for="pathologies">Patologías</label><textarea id="pathologies" name="patologias" [(ngModel)]="ficha.patologias" [readonly]="!editMode"></textarea></section>
+    <section class="record-section"><span class="section-label">Historial de lesiones</span>
+      <div class="injury-list" *ngIf="injuries.length; else noInjuries"><div class="injury-item" *ngFor="let injury of injuries; let i = index"><span><i aria-hidden="true"></i>{{ injury }}</span><button *ngIf="editMode" type="button" class="delete-injury" (click)="removeInjury(i)" [attr.aria-label]="'Eliminar ' + injury"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 10v6M14 10v6"/></svg></button></div></div>
       <ng-template #noInjuries><p class="empty-state">Sin lesiones registradas.</p></ng-template>
-
-      <div class="injury-editor" *ngIf="canEdit">
-        <div class="injury-input-row">
-          <input name="newInjury" [(ngModel)]="newInjury" placeholder="Ej: Esguince de tobillo" (keyup.enter)="$event.preventDefault(); addInjury()">
-          <button type="button" class="add-injury" (click)="addInjury()">+ Agregar</button>
-        </div>
-        <label class="date-option">
-          <input type="checkbox" name="addToday" [(ngModel)]="addToday">
-          <span>Agregar automáticamente la fecha de hoy</span>
-        </label>
-      </div>
+      <div class="injury-editor" *ngIf="editMode"><div class="injury-input-row"><input name="newInjury" [(ngModel)]="newInjury" placeholder="Ej: Esguince de tobillo" (keyup.enter)="$event.preventDefault(); addInjury()"><button type="button" class="add-injury" (click)="addInjury()">+ Agregar</button></div><label class="date-option"><input type="checkbox" name="addToday" [(ngModel)]="addToday"><span>Agregar automáticamente la fecha de hoy</span></label></div>
     </section>
-
-    <section class="record-section">
-      <label for="medicalNotes">Observaciones médicas</label>
-      <textarea id="medicalNotes" name="observaciones" [(ngModel)]="ficha.observaciones" [disabled]="!canEdit"></textarea>
-    </section>
-
-    <div class="actions" *ngIf="canEdit">
-      <a [routerLink]="['/', role, 'jugadores', playerId]" class="cancel-button">Cancelar</a>
-      <button type="submit" class="save-button" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button>
-    </div>
+    <section class="record-section"><label for="medicalNotes">Observaciones médicas</label><textarea id="medicalNotes" name="observaciones" [(ngModel)]="ficha.observacionesMedicas" [readonly]="!editMode"></textarea></section>
+    <div class="actions" *ngIf="editMode"><button type="button" class="cancel-button" (click)="cancelEditing()">Cancelar</button><button type="submit" class="save-button" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button></div>
   </form>
 </main>
