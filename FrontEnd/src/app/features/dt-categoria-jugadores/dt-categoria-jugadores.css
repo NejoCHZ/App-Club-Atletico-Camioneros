@@ -53,3 +53,5 @@
   .btn-action-outline svg{width:20px;height:20px}
   .btn-action-outline .action-label{display:none}
 }
+
+.category-page-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.category-page-heading .page-section-title{margin-bottom:0}.btn-history{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;border:1px solid #007a3d;border-radius:8px;background:#fff;color:#007a3d;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}.btn-history:hover{background:#007a3d;color:#fff}.btn-history svg{width:18px;height:18px;flex:0 0 auto}@media(max-width:767px){.category-page-heading{align-items:stretch;flex-direction:column;margin-bottom:14px}.category-page-heading .page-section-title{margin:0}.btn-history{width:100%;min-height:42px}}

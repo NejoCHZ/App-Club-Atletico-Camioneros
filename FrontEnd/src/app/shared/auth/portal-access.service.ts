@@ -1,29 +1,30 @@
 import { Injectable, inject } from '@angular/core';
-import { AppRole, normalizeRole } from '../../core/auth/roles';
+import { AppRole, normalizeRole, roleCapabilities, RoleCapabilities } from '../../core/auth/roles';
 import { CategorySummary, PlayerSummary } from '../models/portal.models';
 import { AuthService } from '../services/auth.service';
 import { assignedCategoryScope } from './assigned-categories';
-import { ROLE_CAPABILITIES, RoleCapabilities } from './role-capabilities';
 
 @Injectable({ providedIn: 'root' })
 export class PortalAccessService {
   private readonly auth = inject(AuthService);
 
-  get role(): AppRole {
-    return normalizeRole(this.auth.getRol()) ?? 'admin';
+  get role(): AppRole | null {
+    return normalizeRole(this.auth.getRol());
   }
 
-  get capabilities(): RoleCapabilities {
-    return ROLE_CAPABILITIES[this.role];
+  get capabilities(): Readonly<RoleCapabilities> {
+    return roleCapabilities(this.role);
   }
 
   categoryIsVisible(category: Pick<CategorySummary, 'idCategoria' | 'nombreCategoria'>): boolean {
+    if (!this.role) return false;
     if (!this.isCategoryScopedRole) return true;
     const scope = assignedCategoryScope(this.auth.getToken());
     return scope.ids.has(category.idCategoria) || scope.names.has(this.normalize(category.nombreCategoria));
   }
 
   playerIsVisible(player: Pick<PlayerSummary, 'idCategoria' | 'nombreCategoria'>): boolean {
+    if (!this.role) return false;
     if (!this.isCategoryScopedRole) return true;
     const scope = assignedCategoryScope(this.auth.getToken());
     return (player.idCategoria != null && scope.ids.has(Number(player.idCategoria))) ||

@@ -102,6 +102,12 @@ export class AdminHomeComponent implements OnInit {
         { title: 'Jugadores a cargo', shortTitle: 'A cargo', value: '...', type: 'jugadores' },
         { title: 'Categorías asignadas', shortTitle: 'Asignadas', value: '...', type: 'categorias', icon: 'categorias' }
       ];
+      if (rolNormalizado === 'dt') {
+        this.navItems = [
+          ...this.navItems,
+          { label: 'Tomar asistencia', icon: 'qr', active: false }
+        ];
+      }
     } else if (rolNormalizado === 'medico') {
       this.kpiCards = this.kpiCards.filter((card) => card.type !== 'cuotas');
     }
@@ -282,6 +288,7 @@ export class AdminHomeComponent implements OnInit {
     else if (label === 'Inicio') this.router.navigate([portalBase]);
     else if (label === 'Categorias' || label === 'Categorías' || label === 'Mis categorías') this.router.navigate([`${portalBase}/categorias`]);
     else if (label === 'Staff') this.router.navigate([`${portalBase}/staff`]);
+    else if (label === 'Tomar asistencia' && role === 'dt') this.router.navigate(['/dt/tomar-asistencia']);
   }
 
   getBadgeClass(estado: Player['estadoCuota']): string {

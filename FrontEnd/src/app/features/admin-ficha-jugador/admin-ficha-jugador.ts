@@ -9,6 +9,7 @@ import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-cred
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
 import { categoryNavLabel } from '../../core/auth/roles';
 import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
+import { normalizeBloodType } from '../../shared/utils/blood-type';
 
 export interface JugadorFichaModel extends JugadorModel {
   domicilio?: string | null;
@@ -105,6 +106,11 @@ export class AdminFichaJugador implements OnInit {
       next: (data: any) => {
         const fechaRaw = data.fechaDeNacimiento || data.FechaDeNacimiento || '';
         const fechaCorta = fechaRaw ? fechaRaw.split('T')[0] : '';
+        const fichaMedicaRaw = data.fichaMedica || data.FichaMedica;
+        const fichaMedica = fichaMedicaRaw ? {
+          ...fichaMedicaRaw,
+          grupoSanguineo: normalizeBloodType(fichaMedicaRaw.grupoSanguineo || fichaMedicaRaw.GrupoSanguineo),
+        } : null;
 
         this.jugador = {
           id: data.idJugador || data.IdJugador || 0,
@@ -121,7 +127,7 @@ export class AdminFichaJugador implements OnInit {
           peso: data.peso || data.Peso || null,
           altura: data.altura || data.Altura || null,
           pieHabil: data.pieHabil || data.PieHabil || null,
-          fichaMedica: data.fichaMedica || data.FichaMedica || null,
+          fichaMedica,
           partidos: (data.partidos || data.Partidos || []).map((p: any) => ({
             fecha: p.fecha || p.Fecha,
             rival: p.rival || p.Rival || '',

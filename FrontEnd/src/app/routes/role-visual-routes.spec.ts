@@ -70,5 +70,21 @@ describe('role-specific visual routes', () => {
       expect((await (roleRoutes[historyIndex].loadComponent!() as Promise<any>)).name).toMatch(/^HistorialAsistenciaComponent/);
     }
   });
+
+  it('protects the shared attendance-taking route for DT only', async () => {
+    const route = DT_ROUTES.find(candidate => candidate.path === 'tomar-asistencia');
+
+    expect(route?.data?.['roles']).toEqual(['dt']);
+    expect(route?.data?.['fullScreen']).toBeTrue();
+    expect(route?.canActivate?.length).toBe(1);
+    expect((await (route!.loadComponent!() as Promise<any>)).name).toMatch(/^SemaforoQrComponent/);
+  });
+
+  it('reuses the admin category match-history component for DT and physical trainer portals', async () => {
+    const route = DT_ROUTES.find(candidate => candidate.path === 'categorias/:id/partidos');
+    expect(route).toBeDefined();
+    expect(route?.data?.['desktopOwnShell']).toBeTrue();
+    expect((await (route!.loadComponent!() as Promise<any>)).name).toMatch(/^AdminPartidosCategoria/);
+  });
 });
 

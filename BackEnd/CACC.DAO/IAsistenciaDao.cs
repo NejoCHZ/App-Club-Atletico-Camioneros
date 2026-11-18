@@ -8,4 +8,9 @@ public interface IAsistenciaDao
         DateTime? desde,
         DateTime? hasta,
         string? estado);
+    Task<IReadOnlyList<Asistencia>> ObtenerHistorialStaffAsync(
+        int idStaff,
+        DateTime? desde,
+        DateTime? hasta,
+        string? estado);
 }

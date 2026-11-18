@@ -47,6 +47,7 @@ describe('PortalAccessService', () => {
       canEditMedicalRecord: false,
       canManageCategoryRoster: false,
       canManageCategories: false,
+      canTakeAttendance: false,
     });
   });
 
@@ -61,6 +62,41 @@ describe('PortalAccessService', () => {
 
     expect(service.visiblePlayers(players)).toEqual(players);
     expect(service.capabilities.canEditMedicalRecord).toBeTrue();
+    expect(service.capabilities.canEditPlayers).toBeFalse();
+  });
+
+  it('fails closed when the stored role is unknown', () => {
+    role = 'rol-inexistente';
+    const service = TestBed.inject(PortalAccessService);
+
+    expect(service.role).toBeNull();
+    expect(Object.values(service.capabilities).every((allowed) => !allowed)).toBeTrue();
+  });
+
+  it('fails closed when the stored role is absent', () => {
+    role = '';
+    const service = TestBed.inject(PortalAccessService);
+
+    expect(service.role).toBeNull();
+    expect(service.capabilities.canEditPlayers).toBeFalse();
+    expect(service.capabilities.canManageCategories).toBeFalse();
+  });
+
+  it('keeps the real administrator capabilities', () => {
+    role = 'Administrador (Tesorero)';
+    const service = TestBed.inject(PortalAccessService);
+
+    expect(service.role).toBe('admin');
+    expect(service.capabilities.canEditPlayers).toBeTrue();
+    expect(service.capabilities.canManageCategories).toBeTrue();
+  });
+
+  it('derives Don QR attendance access from the same canonical capability source', () => {
+    role = 'Don QR';
+    const service = TestBed.inject(PortalAccessService);
+
+    expect(service.capabilities.canTakeAttendance).toBeTrue();
+    expect(service.capabilities.canViewAllPlayers).toBeFalse();
     expect(service.capabilities.canEditPlayers).toBeFalse();
   });
 });

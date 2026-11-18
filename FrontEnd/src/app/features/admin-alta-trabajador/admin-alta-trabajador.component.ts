@@ -165,7 +165,7 @@ export class AdminAltaTrabajadorComponent implements OnInit {
   }
 
   guardarYGenerarQR(): void {
-    if (this.isLoading) return;
+    if (this.isLoading || this.mensajeExito || this.nuevoStaffId !== null) return;
 
     if (!this.dni || !this.nombre || !this.apellido || !this.fechaNacimiento || !this.rol) {
       alert('Por favor complete los campos obligatorios (*) de los Datos del Empleado.');
@@ -240,13 +240,24 @@ export class AdminAltaTrabajadorComponent implements OnInit {
     }).subscribe({
       next: (blob) => {
         downloadBlob(blob, credentialFileName('staff', this.nombre, this.apellido));
-        this.mostrarPopupCredencial = false;
+        this.finalizarAlta();
       },
       error: (err) => {
         console.error('Error al generar la credencial del staff:', err);
         alert('No se pudo generar la credencial. Verificá la configuración del servidor.');
       }
     });
+  }
+
+  cerrarCredencial(): void {
+    this.finalizarAlta();
+  }
+
+  private finalizarAlta(): void {
+    this.mostrarPopupCredencial = false;
+    if (this.nuevoStaffId) {
+      this.router.navigate(['/admin/staff', this.nuevoStaffId]);
+    }
   }
 
   toggleSidebar(): void {

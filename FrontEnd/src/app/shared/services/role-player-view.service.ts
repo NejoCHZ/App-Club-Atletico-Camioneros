@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map } from 'rxjs';
 import { PortalAccessService } from '../auth/portal-access.service';
 import { ClubPortalApiService } from './club-portal-api.service';
+import { normalizeBloodType } from '../utils/blood-type';
 
 export interface RolePlayerRow { id: number; nombreCompleto: string; dni: string; posicion: string; edad: string; categoria: string; fechaNacimiento: string; }
 export interface RoleCategoryRow { id: number; nombre: string; cantidadJugadores: string; asociacion: string; }
@@ -26,7 +27,10 @@ export class RolePlayerViewService {
   }
 
   categoryPlayers(categoryId: number): Observable<RolePlayerRow[]> {
-    return this.api.listRoster(categoryId).pipe(map(rows => rows.map(row => this.toRow(row))));
+    return forkJoin({
+      rows: this.api.listRoster(categoryId),
+      category: this.api.getCategory(categoryId),
+    }).pipe(map(({ rows, category }) => rows.map(row => this.toRow(row, category.nombreCategoria))));
   }
 
   categories(dtOnly = false): Observable<RoleCategoryRow[]> {
@@ -47,7 +51,7 @@ export class RolePlayerViewService {
       peso: this.parseMeasurement(profile.peso),
       altura: this.parseHeight(profile.altura),
       pieHabil: profile.pieHabil?.trim() || null,
-      grupoSanguineo: profile.grupoSanguineo?.trim() || null,
+      grupoSanguineo: normalizeBloodType(profile.grupoSanguineo) || null,
       antecedentesSalud: profile.patologias,
       historialLesiones: profile.lesiones.join('\n'),
       observaciones: profile.observacionesMedicas,
@@ -66,7 +70,7 @@ export class RolePlayerViewService {
     return parsed != null && parsed > 3 && parsed <= 300 ? parsed / 100 : parsed;
   }
 
-  private toRow(row: any): RolePlayerRow {
+  private toRow(row: any, fallbackCategory = ''): RolePlayerRow {
     const birth = row.fechaDeNacimiento ?? row.fechaNacimiento;
     const birthDate = this.parseDate(birth);
     const today = new Date();
@@ -81,7 +85,7 @@ export class RolePlayerViewService {
       dni: row.dni ?? '',
       posicion: String(row.posicionCancha ?? row.posicion ?? '').toUpperCase(),
       edad: age ? `${age} AÑOS` : 'SIN INFORMAR',
-      categoria: row.nombreCategoria ?? row.categoria ?? 'Sin categoría',
+      categoria: row.nombreCategoria ?? row.categoria ?? (fallbackCategory || 'Sin categoría'),
       fechaNacimiento: birthDate ? birthDate.toLocaleDateString('es-AR') : 'Sin informar',
     };
   }
@@ -105,7 +109,7 @@ export class RolePlayerViewService {
     return {
       ...row, fechaNacimiento: player.fechaDeNacimiento ?? player.fechaNacimiento ?? 'Sin informar',
       peso: player.peso != null ? String(player.peso) : '', altura: player.altura != null ? String(player.altura) : '',
-      pieHabil: player.pieHabil ?? '', grupoSanguineo: medical?.grupoSanguineo ?? '',
+      pieHabil: player.pieHabil ?? '', grupoSanguineo: normalizeBloodType(medical?.grupoSanguineo),
       tutor: `${tutor.nombre ?? ''} ${tutor.apellido ?? ''}`.trim() || 'Sin informar', telefonoTutor: tutor.telefono ?? 'Sin informar',
       domicilio: player.domicilio ?? 'Sin informar', patologias: medical?.antecedentesSalud ?? medical?.patologias ?? '',
       lesiones: String(medical?.historialLesiones ?? '').split(/\r?\n/).filter(Boolean), observacionesMedicas: medical?.observaciones ?? '',

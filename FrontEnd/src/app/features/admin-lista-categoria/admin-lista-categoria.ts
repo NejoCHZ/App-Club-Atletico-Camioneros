@@ -5,6 +5,10 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
+import { clasificarResultadoPartido } from '../../shared/utils/partido-resultado';
+import { MAX_MINUTOS_PARTIDO, validarParticipacionesPartido } from '../../shared/utils/partido-participacion';
+import { normalizarNombreCategoria } from '../../shared/utils/categoria-identity';
+import { finalize } from 'rxjs';
 
 export interface CategoriaItem {
   id: number;
@@ -49,6 +53,7 @@ export interface PartidoItem {
   styleUrl: './admin-lista-categoria.css',
 })
 export class AdminListaCategoria implements OnInit {
+  readonly maxMinutosPartido = MAX_MINUTOS_PARTIDO;
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
@@ -57,7 +62,12 @@ export class AdminListaCategoria implements OnInit {
   readonly canManageRoster = this.access.capabilities.canManageCategoryRoster;
   readonly isCoordinator = this.access.role === 'coordinador';
   readonly isAdmin = this.access.role === 'admin';
+  readonly categoryActionLabel = this.access.role === 'medico' ? 'Ver plantel' : 'Gestionar División';
   readonly portalRoot = `/${this.access.role}`;
+
+  resultadoClass(resultado: string): string {
+    return `resultado-${clasificarResultadoPartido(resultado)}`;
+  }
 
   usuarioActual = {
     nombre: 'Cargando...',
@@ -87,6 +97,7 @@ export class AdminListaCategoria implements OnInit {
   categoriaFormId: number = 0;
   categoriaFormNombre: string = '';
   categoriaFormAsociacion: string = 'Liga Cordobesa';
+  guardandoCategoria = false;
 
   // Modal de Confirmación de Eliminación
   modalEliminarVisible = false;
@@ -231,38 +242,38 @@ export class AdminListaCategoria implements OnInit {
   }
 
   cerrarModalCategoria(): void {
+    if (this.guardandoCategoria) return;
     this.modalCategoriaVisible = false;
   }
 
   guardarCategoria(): void {
-    if (!this.canManageCategories) return;
-    if (!this.categoriaFormNombre.trim()) {
+    if (!this.canManageCategories || this.guardandoCategoria) return;
+    const nombreNormalizado = normalizarNombreCategoria(this.categoriaFormNombre);
+    if (!nombreNormalizado) {
       alert('Ingrese el nombre de la categoría.');
       return;
     }
 
     const payload = {
-      nombreCategoria: this.categoriaFormNombre.trim(),
+      nombreCategoria: nombreNormalizado,
       asociacion: this.categoriaFormAsociacion || 'Liga Cordobesa'
     };
 
-    if (this.modoEdicion) {
-      this.http.put(`/api/categorias/${this.categoriaFormId}`, payload).subscribe({
+    this.guardandoCategoria = true;
+    const request = this.modoEdicion
+      ? this.http.put(`/api/categorias/${this.categoriaFormId}`, payload)
+      : this.http.post('/api/categorias', payload);
+
+    request.pipe(finalize(() => { this.guardandoCategoria = false; })).subscribe({
         next: () => {
-          this.cerrarModalCategoria();
+          this.modalCategoriaVisible = false;
           this.cargarDatos();
         },
-        error: (err) => alert('Error al actualizar la categoría: ' + (err.error?.message || 'Error del servidor'))
+        error: (err) => alert(
+          `Error al ${this.modoEdicion ? 'actualizar' : 'crear'} la categoría: ` +
+          (err.error?.message || 'Error del servidor')
+        )
       });
-    } else {
-      this.http.post('/api/categorias', payload).subscribe({
-        next: () => {
-          this.cerrarModalCategoria();
-          this.cargarDatos();
-        },
-        error: (err) => alert('Error al crear la categoría: ' + (err.error?.message || 'Error del servidor'))
-      });
-    }
   }
 
   // --- Eliminar Categoría ---
@@ -300,7 +311,7 @@ export class AdminListaCategoria implements OnInit {
 
   // --- Modal de Gestión (Jugadores, Cuerpo Técnico y Partidos) ---
   verCategoria(cat: CategoriaItem): void {
-    if (this.access.role === 'dt' || this.access.role === 'preparador-fisico') {
+    if (this.access.role === 'dt' || this.access.role === 'preparador-fisico' || this.access.role === 'medico') {
       this.router.navigate([this.portalRoot, 'categorias', cat.id]);
       return;
     }
@@ -513,11 +524,22 @@ export class AdminListaCategoria implements OnInit {
   }
 
   guardarPartido(): void {
+    if (this.guardandoPartido) return;
     if (this.isCoordinator) return;
     if (!this.categoriaActiva) return;
 
     if (!this.partidoForm.fechaPartido || !this.partidoForm.rival.trim() || !this.marcadorResultado.trim()) {
       alert('Complete la fecha, el rival y el marcador del partido (ej. 2-1).');
+      return;
+    }
+
+    const jugadoresMinutos = this.jugadoresPlantel.map(j => ({
+      idJugador: j.idJugador,
+      minutosJugados: Number(j.minutosJugados)
+    }));
+    const errorParticipaciones = validarParticipacionesPartido(jugadoresMinutos);
+    if (errorParticipaciones) {
+      alert(errorParticipaciones);
       return;
     }
 
@@ -529,10 +551,7 @@ export class AdminListaCategoria implements OnInit {
       condicionLocalia: this.partidoForm.condicionLocalia,
       resultado: resultadoFinal,
       observaciones: this.partidoForm.observaciones.trim() || null,
-      jugadoresMinutos: this.jugadoresPlantel.map(j => ({
-        idJugador: j.idJugador,
-        minutosJugados: Number(j.minutosJugados) || 0
-      }))
+      jugadoresMinutos
     };
 
     this.guardandoPartido = true;

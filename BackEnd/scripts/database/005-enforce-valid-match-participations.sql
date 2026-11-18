@@ -1,0 +1,54 @@
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET ARITHABORT ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET NUMERIC_ROUNDABORT OFF;
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
+
+IF EXISTS (
+    SELECT 1
+    FROM dbo.JUGADORES_PARTIDOS
+    WHERE FK_id_partido IS NULL
+       OR FK_id_jugador IS NULL
+       OR minutos_jugados IS NULL
+       OR minutos_jugados < 0
+       OR minutos_jugados > 120
+)
+    THROW 51040, 'No se puede proteger JUGADORES_PARTIDOS: existen claves nulas o minutos fuera del rango 0-120.', 1;
+
+IF EXISTS (
+    SELECT FK_id_partido, FK_id_jugador
+    FROM dbo.JUGADORES_PARTIDOS
+    GROUP BY FK_id_partido, FK_id_jugador
+    HAVING COUNT(*) > 1
+)
+    THROW 51041, 'No se puede proteger JUGADORES_PARTIDOS: existen jugadores repetidos en un mismo partido.', 1;
+
+ALTER TABLE dbo.JUGADORES_PARTIDOS ALTER COLUMN FK_id_partido int NOT NULL;
+ALTER TABLE dbo.JUGADORES_PARTIDOS ALTER COLUMN FK_id_jugador int NOT NULL;
+ALTER TABLE dbo.JUGADORES_PARTIDOS ALTER COLUMN minutos_jugados int NOT NULL;
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE object_id = OBJECT_ID(N'dbo.JUGADORES_PARTIDOS')
+      AND name = N'UX_JUGADORES_PARTIDOS_PARTIDO_JUGADOR'
+)
+    CREATE UNIQUE INDEX UX_JUGADORES_PARTIDOS_PARTIDO_JUGADOR
+        ON dbo.JUGADORES_PARTIDOS(FK_id_partido, FK_id_jugador);
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.check_constraints
+    WHERE parent_object_id = OBJECT_ID(N'dbo.JUGADORES_PARTIDOS')
+      AND name = N'CK_JUGADORES_PARTIDOS_MINUTOS'
+)
+    ALTER TABLE dbo.JUGADORES_PARTIDOS WITH CHECK
+        ADD CONSTRAINT CK_JUGADORES_PARTIDOS_MINUTOS
+        CHECK (minutos_jugados >= 0 AND minutos_jugados <= 120);
+
+ALTER TABLE dbo.JUGADORES_PARTIDOS
+    CHECK CONSTRAINT CK_JUGADORES_PARTIDOS_MINUTOS;
+
+COMMIT TRANSACTION;

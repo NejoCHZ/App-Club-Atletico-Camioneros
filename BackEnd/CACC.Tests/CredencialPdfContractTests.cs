@@ -27,7 +27,7 @@ public class CredencialPdfContractTests
              directory is not null;
              directory = directory.Parent)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "Bbdd CACC.sql")))
+            if (File.Exists(Path.Combine(directory.FullName, "BaseDatos-ClubCamioneros.sql")))
             {
                 return directory.FullName;
             }

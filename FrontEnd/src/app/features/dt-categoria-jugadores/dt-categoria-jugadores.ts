@@ -31,6 +31,7 @@ export class DtCategoriaJugadoresComponent implements OnInit {
   ) {}
 
   nombreCategoria = 'Plantel';
+  categoriaId = 0;
   searchTerm = '';
   posicionFiltro = '';
 
@@ -38,6 +39,7 @@ export class DtCategoriaJugadoresComponent implements OnInit {
   players: PlayerCategoriaDT[] = [];
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.categoriaId = id;
     const source = id > 0 ? this.views.categoryPlayers(id) : this.views.players();
     source.subscribe(players => this.players = players.map(player => ({ ...player, posicion: this.pluralPosition(player.posicion) })) as PlayerCategoriaDT[]);
   }
@@ -66,6 +68,12 @@ export class DtCategoriaJugadoresComponent implements OnInit {
 
   verFicha(id: number) {
     this.router.navigate([`/${this.access.role}`, 'jugadores', id]);
+  }
+
+  verHistorialPartidos(): void {
+    if (this.categoriaId > 0) {
+      this.router.navigate([`/${this.access.role}`, 'categorias', this.categoriaId, 'partidos']);
+    }
   }
 
   positionLabel(position: PlayerCategoriaDT['posicion']): string {

@@ -222,7 +222,7 @@
 
         <div class="right-buttons">
           <button type="button" class="btn-cancel-white" (click)="volver()">Cancelar</button>
-          <button type="button" class="btn-save-qr" [disabled]="isLoading" (click)="guardarYGenerarQR()">
+          <button type="button" class="btn-save-qr" [disabled]="isLoading || mensajeExito" (click)="guardarYGenerarQR()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             {{ isLoading ? 'Guardando...' : 'Guardar y Generar QR' }}
           </button>
@@ -235,7 +235,7 @@
   <app-admin-popup-credencial [isVisible]="mostrarPopupCredencial"
                               [nombre]="(nombre + ' ' + apellido) || 'Nombre y apellido'"
                               [documento]="dni ? ('DNI: ' + dni) : 'Documento Nro'"
-                              (close)="mostrarPopupCredencial = false"
+                              (close)="cerrarCredencial()"
                               (descargar)="descargarCredencial()">
   </app-admin-popup-credencial>
 </div>

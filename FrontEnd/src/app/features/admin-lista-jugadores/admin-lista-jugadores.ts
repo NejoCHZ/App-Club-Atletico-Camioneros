@@ -48,6 +48,9 @@ export class AdminListaJugadores implements OnInit {
   readonly canEditPlayers = this.access.capabilities.canEditPlayers;
   readonly showFinancialStatus = this.access.role !== 'medico';
   readonly portalRoot = `/${this.access.role}`;
+  readonly categoriaIdContexto = Number(this.route.snapshot.paramMap.get('id'));
+  readonly showCategoryMatchHistory = this.categoriaIdContexto > 0 &&
+    (this.access.role === 'dt' || this.access.role === 'preparador-fisico');
 
   usuarioActual = {
     nombre: 'Cargando...',
@@ -137,7 +140,7 @@ export class AdminListaJugadores implements OnInit {
   }
 
   cargarJugadores(): void {
-    const categoriaId = Number(this.route.snapshot.paramMap.get('id'));
+    const categoriaId = this.categoriaIdContexto;
     const url = categoriaId > 0
       ? `/api/jugadores?categoriaId=${categoriaId}`
       : '/api/jugadores';
@@ -181,7 +184,7 @@ export class AdminListaJugadores implements OnInit {
     this.http.get<Categoria[]>('/api/categorias').subscribe({
       next: (data) => {
         this.listaCategorias = data;
-        const categoriaId = Number(this.route.snapshot.paramMap.get('id'));
+        const categoriaId = this.categoriaIdContexto;
         this.categoriaContexto = categoriaId > 0
           ? data.find((categoria) => categoria.idCategoria === categoriaId)?.nombreCategoria ?? ''
           : '';
@@ -190,6 +193,12 @@ export class AdminListaJugadores implements OnInit {
         console.error('Error al cargar categorías', err);
       }
     });
+  }
+
+  verHistorialPartidosCategoria(): void {
+    if (this.showCategoryMatchHistory) {
+      this.router.navigate([this.portalRoot, 'categorias', this.categoriaIdContexto, 'partidos']);
+    }
   }
 
   getCategoriasList(categoriaStr: string): string[] {

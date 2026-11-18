@@ -192,7 +192,7 @@ namespace CACC.DAO
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            using var transaction = connection.BeginTransaction();
+            using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
 
             try
             {
@@ -224,6 +224,21 @@ namespace CACC.DAO
 
                     var scalarPersona = await cmdPersona.ExecuteScalarAsync();
                     idPersona = Convert.ToInt32(scalarPersona);
+                }
+
+                const string queryIdentityConflict = @"
+                    SELECT TOP (1) 1
+                    FROM USUARIOS WITH (UPDLOCK, HOLDLOCK)
+                    WHERE FK_id_persona = @IdPersona
+                       OR email = @Email;";
+
+                using var cmdIdentityConflict = new SqlCommand(queryIdentityConflict, connection, transaction);
+                cmdIdentityConflict.Parameters.AddWithValue("@IdPersona", idPersona);
+                cmdIdentityConflict.Parameters.AddWithValue("@Email", staff.Email.Trim());
+
+                if (await cmdIdentityConflict.ExecuteScalarAsync() != null)
+                {
+                    throw new StaffIdentityConflictException();
                 }
 
                 // 2. Insertar en USUARIOS contemplando IDENTITY

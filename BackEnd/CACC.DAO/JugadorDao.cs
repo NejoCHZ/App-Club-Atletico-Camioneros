@@ -250,6 +250,8 @@ namespace CACC.DAO
 
         public async Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador)
         {
+            EnsureTutorIsNotPlayer(jugador.Dni, jugador.Tutor?.Dni);
+
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
             using var transaction = connection.BeginTransaction();
@@ -338,7 +340,7 @@ namespace CACC.DAO
                 if (jugador.FichaMedica != null)
                 {
                     var queryFicha = @"
-                    IF EXISTS (SELECT 1 FROM FICHAS_MEDICAS WHERE FK_id_jugador = @Id)
+                    IF EXISTS (SELECT 1 FROM FICHAS_MEDICAS WITH (UPDLOCK, HOLDLOCK) WHERE FK_id_jugador = @Id)
                     BEGIN
                         UPDATE FICHAS_MEDICAS 
                         SET grupo_sanguineo = @Grupo, 
@@ -383,7 +385,7 @@ namespace CACC.DAO
                             UPDATE PERSONAS SET nombre = @TutorNombre, apellido = @TutorApellido
                             WHERE PK_id_persona = @IdPersonaTutor;
 
-                        SELECT @IdResponsable = PK_id_responsable FROM RESPONSABLES WHERE FK_id_persona = @IdPersonaTutor;
+                        SELECT @IdResponsable = PK_id_responsable FROM RESPONSABLES WITH (UPDLOCK, HOLDLOCK) WHERE FK_id_persona = @IdPersonaTutor;
                         IF @IdResponsable IS NULL
                         BEGIN
                             INSERT INTO RESPONSABLES (FK_id_persona, email, telefono)
@@ -394,7 +396,7 @@ namespace CACC.DAO
                             UPDATE RESPONSABLES SET email = @TutorEmail, telefono = @TutorTelefono
                             WHERE PK_id_responsable = @IdResponsable;
 
-                        IF EXISTS (SELECT 1 FROM JUGADORES_RESPONSABLES WHERE FK_id_jugador = @Id)
+                        IF EXISTS (SELECT 1 FROM JUGADORES_RESPONSABLES WITH (UPDLOCK, HOLDLOCK) WHERE FK_id_jugador = @Id)
                             UPDATE JUGADORES_RESPONSABLES
                             SET FK_id_responsable = @IdResponsable, parentesco = @TutorParentesco
                             WHERE FK_id_jugador = @Id;
@@ -447,6 +449,33 @@ namespace CACC.DAO
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task<bool> ExisteDniAsync(string dni, int? idJugadorExcluir = null)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            const string query = @"
+                SELECT CASE WHEN EXISTS (
+                    SELECT 1
+                    FROM PERSONAS p
+                    WHERE p.dni = @Dni
+                      AND (
+                          @IdJugadorExcluir IS NULL
+                          OR p.PK_id_persona <> (
+                              SELECT j.FK_id_persona
+                              FROM JUGADORES j
+                              WHERE j.PK_id_jugador = @IdJugadorExcluir
+                          )
+                      )
+                ) THEN 1 ELSE 0 END;";
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add("@Dni", SqlDbType.VarChar, 20).Value = dni.Trim();
+            command.Parameters.Add("@IdJugadorExcluir", SqlDbType.Int).Value =
+                idJugadorExcluir.HasValue ? idJugadorExcluir.Value : DBNull.Value;
+            return Convert.ToInt32(await command.ExecuteScalarAsync()) == 1;
         }
 
         public async Task<bool> ActualizarDatosFisicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil)
@@ -502,7 +531,7 @@ namespace CACC.DAO
                 }
 
                 const string medicalSql = @"
-                    IF EXISTS (SELECT 1 FROM FICHAS_MEDICAS WHERE FK_id_jugador = @Id)
+                    IF EXISTS (SELECT 1 FROM FICHAS_MEDICAS WITH (UPDLOCK, HOLDLOCK) WHERE FK_id_jugador = @Id)
                         UPDATE FICHAS_MEDICAS
                         SET grupo_sanguineo = @GrupoSanguineo,
                             antecedentes_salud = @AntecedentesSalud,
@@ -535,6 +564,8 @@ namespace CACC.DAO
 
         public async Task<int> CrearAsync(JugadorAlta dto)
         {
+            EnsureTutorIsNotPlayer(dto.Dni, dto.Tutor?.Dni);
+
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
             using var transaction = connection.BeginTransaction();
@@ -629,7 +660,7 @@ namespace CACC.DAO
                         idPersonaTutor = Convert.ToInt32(await cmdInsertPersonaTutor.ExecuteScalarAsync());
                     }
 
-                    var queryCheckResp = "SELECT PK_id_responsable FROM RESPONSABLES WHERE FK_id_persona = @IdPersonaTutor;";
+                    var queryCheckResp = "SELECT PK_id_responsable FROM RESPONSABLES WITH (UPDLOCK, HOLDLOCK) WHERE FK_id_persona = @IdPersonaTutor;";
                     using var cmdCheckResp = new SqlCommand(queryCheckResp, connection, transaction);
                     cmdCheckResp.Parameters.AddWithValue("@IdPersonaTutor", idPersonaTutor);
                     var resultResp = await cmdCheckResp.ExecuteScalarAsync();
@@ -812,17 +843,23 @@ namespace CACC.DAO
 
             try
             {
-                // 1. Verificar existencia del jugador
-                const string checkJugadorSql = "SELECT COUNT(1) FROM JUGADORES WHERE PK_id_jugador = @idJugador";
+                // 1. Verificar existencia del jugador y bloquear su identidad durante la operación.
+                const string checkJugadorSql = @"
+                    SELECT p.dni
+                    FROM JUGADORES j WITH (UPDLOCK, HOLDLOCK)
+                    INNER JOIN PERSONAS p WITH (UPDLOCK, HOLDLOCK) ON p.PK_id_persona = j.FK_id_persona
+                    WHERE j.PK_id_jugador = @idJugador;";
                 using (var cmdCheckJug = new SqlCommand(checkJugadorSql, connection, transaction))
                 {
                     cmdCheckJug.Parameters.AddWithValue("@idJugador", idJugador);
-                    int count = Convert.ToInt32(await cmdCheckJug.ExecuteScalarAsync());
-                    if (count == 0)
+                    var jugadorDni = await cmdCheckJug.ExecuteScalarAsync();
+                    if (jugadorDni == null || jugadorDni == DBNull.Value)
                     {
                         await transaction.RollbackAsync();
                         return false;
                     }
+
+                    EnsureTutorIsNotPlayer(Convert.ToString(jugadorDni), dni);
                 }
 
                 // 2. Buscar si la persona ya existe por DNI
@@ -858,7 +895,7 @@ namespace CACC.DAO
 
                 // 3. Buscar si ya existe el registro en RESPONSABLES para esa persona (reutilización relacional)
                 int idResponsable;
-                const string queryCheckResp = "SELECT PK_id_responsable FROM RESPONSABLES WHERE FK_id_persona = @IdPersona;";
+                const string queryCheckResp = "SELECT PK_id_responsable FROM RESPONSABLES WITH (UPDLOCK, HOLDLOCK) WHERE FK_id_persona = @IdPersona;";
                 using (var cmdCheckResp = new SqlCommand(queryCheckResp, connection, transaction))
                 {
                     cmdCheckResp.Parameters.AddWithValue("@IdPersona", idPersonaTutor);
@@ -888,7 +925,7 @@ namespace CACC.DAO
                 }
 
                 // 4. Vincular al jugador en JUGADORES_RESPONSABLES (actualizar o crear nuevo vínculo)
-                const string queryCheckVinculo = "SELECT PK_id_jugador_responsable FROM JUGADORES_RESPONSABLES WHERE FK_id_jugador = @IdJugador;";
+                const string queryCheckVinculo = "SELECT PK_id_jugador_responsable FROM JUGADORES_RESPONSABLES WITH (UPDLOCK, HOLDLOCK) WHERE FK_id_jugador = @IdJugador;";
                 using (var cmdCheckV = new SqlCommand(queryCheckVinculo, connection, transaction))
                 {
                     cmdCheckV.Parameters.AddWithValue("@IdJugador", idJugador);
@@ -926,6 +963,14 @@ namespace CACC.DAO
             {
                 await transaction.RollbackAsync();
                 throw;
+            }
+        }
+
+        private static void EnsureTutorIsNotPlayer(string? jugadorDni, string? tutorDni)
+        {
+            if (DniIdentity.AreSame(jugadorDni, tutorDni))
+            {
+                throw new TutorSelfReferenceException();
             }
         }
     }

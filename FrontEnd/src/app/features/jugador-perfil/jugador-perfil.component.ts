@@ -9,6 +9,7 @@ import { JugadorModel } from '../../shared/models/jugador.model';
 import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { categoryNavLabel, normalizeRole, RoleId } from '../../core/auth/roles';
+import { normalizeBloodType } from '../../shared/utils/blood-type';
 
 export interface PartidoFichaItem {
   idPartido: number;
@@ -68,6 +69,19 @@ export class JugadorPerfilComponent implements OnInit {
   get puedeVerFichaMedica(): boolean { return this.authService.puede('medical:read'); }
   get puedeEditarFichaMedica(): boolean { return this.authService.puede('medical:write'); }
   get puedeGenerarCredencial(): boolean { return this.authService.getRoleId() === RoleId.Administrador; }
+
+  get tituloPanel(): string {
+    const role = normalizeRole(this.authService.getRol());
+    const labels = {
+      admin: 'Administrador',
+      coordinador: 'Coordinador',
+      medico: 'Médico',
+      dt: 'Director Técnico',
+      'preparador-fisico': 'Preparador Físico',
+      'don-qr': 'Don QR',
+    } as const;
+    return `Panel Principal del ${role ? labels[role] : this.limpiarNombreRol(this.authService.getRol() ?? '')}`;
+  }
 
   menuUsuarioAbierto = false;
   sidebarOculto = false;
@@ -158,6 +172,11 @@ export class JugadorPerfilComponent implements OnInit {
         const fechaRaw = data.fechaDeNacimiento || data.FechaDeNacimiento || '';
         const fechaCorta = fechaRaw ? fechaRaw.split('T')[0] : '';
         const tutorRaw = data.tutor || data.Tutor;
+        const fichaMedicaRaw = data.fichaMedica || data.FichaMedica;
+        const fichaMedica = fichaMedicaRaw ? {
+          ...fichaMedicaRaw,
+          grupoSanguineo: normalizeBloodType(fichaMedicaRaw.grupoSanguineo || fichaMedicaRaw.GrupoSanguineo),
+        } : null;
 
         this.jugador = {
           id: data.idJugador || data.IdJugador || 0,
@@ -181,7 +200,7 @@ export class JugadorPerfilComponent implements OnInit {
           peso: data.peso || data.Peso || null,
           altura: data.altura || data.Altura || null,
           pieHabil: data.pieHabil || data.PieHabil || null,
-          fichaMedica: data.fichaMedica || data.FichaMedica || null,
+          fichaMedica,
           partidos: (data.partidos || data.Partidos || []).map((p: any) => ({
             idPartido: p.idPartido || p.IdPartido || 0,
             idCategoria: p.idCategoria || p.IdCategoria || 0,

@@ -79,12 +79,22 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[CATEGORIAS](
 	[PK_id_categoria] [int] IDENTITY(1,1) NOT NULL,
-	[nombre_categoria] [varchar](100) NULL,
+	[nombre_categoria] [varchar](100) COLLATE Modern_Spanish_CI_AS NOT NULL,
+	CONSTRAINT [CK_CATEGORIAS_NOMBRE_NORMALIZADO] CHECK (
+		[nombre_categoria] = LTRIM(RTRIM([nombre_categoria]))
+		AND [nombre_categoria] NOT LIKE '%  %'
+		AND CHARINDEX(CHAR(9), [nombre_categoria]) = 0
+		AND CHARINDEX(CHAR(10), [nombre_categoria]) = 0
+		AND CHARINDEX(CHAR(13), [nombre_categoria]) = 0
+	),
 PRIMARY KEY CLUSTERED
 (
 	[PK_id_categoria] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
+GO
+CREATE UNIQUE INDEX [UX_CATEGORIAS_NOMBRE]
+ON [dbo].[CATEGORIAS]([nombre_categoria])
 GO
 /****** Object:  Table [dbo].[FICHAS_MEDICAS]    Script Date: 10/4/2026 8:40:22 PM ******/
 SET ANSI_NULLS ON
@@ -93,7 +103,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[FICHAS_MEDICAS](
 	[PK_id_ficha_medica] [int] IDENTITY(1,1) NOT NULL,
-	[FK_id_jugador] [int] NULL,
+	[FK_id_jugador] [int] NOT NULL,
 	[obra_social] [varchar](150) NULL,
 	[numero_afiliado_os] [int] NULL,
 	[grupo_sanguineo] [varchar](10) NULL,
@@ -174,9 +184,9 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[JUGADORES_PARTIDOS](
 	[PK_id_jugador_partido] [int] IDENTITY(1,1) NOT NULL,
-	[FK_id_partido] [int] NULL,
-	[FK_id_jugador] [int] NULL,
-	[minutos_jugados] [int] NULL,
+	[FK_id_partido] [int] NOT NULL,
+	[FK_id_jugador] [int] NOT NULL,
+	[minutos_jugados] [int] NOT NULL,
 	[goles] [int] NULL,
 	[tarjetas_amarillas] [int] NULL,
 	[tarjeta_roja] [bit] NULL,
@@ -186,6 +196,14 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+CREATE UNIQUE INDEX [UX_JUGADORES_PARTIDOS_PARTIDO_JUGADOR]
+ON [dbo].[JUGADORES_PARTIDOS]([FK_id_partido], [FK_id_jugador])
+GO
+ALTER TABLE [dbo].[JUGADORES_PARTIDOS] WITH CHECK ADD CONSTRAINT [CK_JUGADORES_PARTIDOS_MINUTOS]
+CHECK ([minutos_jugados] >= 0 AND [minutos_jugados] <= 120)
+GO
+ALTER TABLE [dbo].[JUGADORES_PARTIDOS] CHECK CONSTRAINT [CK_JUGADORES_PARTIDOS_MINUTOS]
+GO
 /****** Object:  Table [dbo].[JUGADORES_RESPONSABLES]    Script Date: 10/4/2026 8:40:22 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -193,8 +211,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[JUGADORES_RESPONSABLES](
 	[PK_id_jugador_responsable] [int] IDENTITY(1,1) NOT NULL,
-	[FK_id_responsable] [int] NULL,
-	[FK_id_jugador] [int] NULL,
+	[FK_id_responsable] [int] NOT NULL,
+	[FK_id_jugador] [int] NOT NULL,
 	[parentesco] [varchar](50) NULL,
 PRIMARY KEY CLUSTERED
 (
@@ -228,7 +246,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[RESPONSABLES](
 	[PK_id_responsable] [int] IDENTITY(1,1) NOT NULL,
-	[FK_id_persona] [int] NULL,
+	[FK_id_persona] [int] NOT NULL,
 	[email] [varchar](255) NULL,
 	[telefono] [varchar](50) NULL,
 PRIMARY KEY CLUSTERED
@@ -273,8 +291,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[STAFF_CATEGORIAS](
 	[PK_id_staff_categoria] [int] IDENTITY(1,1) NOT NULL,
-	[FK_id_staff] [int] NULL,
-	[FK_id_categoria] [int] NULL,
+	[FK_id_staff] [int] NOT NULL,
+	[FK_id_categoria] [int] NOT NULL,
 PRIMARY KEY CLUSTERED
 (
 	[PK_id_staff_categoria] ASC
@@ -319,14 +337,14 @@ GO
 SET IDENTITY_INSERT [dbo].[CATEGORIAS] ON
 
 INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (1, N'AFA 20067')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (2, N'Pt  AFA 2008')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (3, N'Pt  AFA 2009')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (4, N'Pt  AFA 2010')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (5, N'Pt  AFA 2011')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (6, N'Pt  AFA 2012')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (7, N'Pt  preAFA 2013')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (8, N'Pt  preAFA 2014')
-INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (9, N'Pt  preAFA 2015')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (2, N'Pt AFA 2008')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (3, N'Pt AFA 2009')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (4, N'Pt AFA 2010')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (5, N'Pt AFA 2011')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (6, N'Pt AFA 2012')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (7, N'Pt preAFA 2013')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (8, N'Pt preAFA 2014')
+INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (9, N'Pt preAFA 2015')
 INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (10, N'Pt 2016')
 INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (11, N'Pt 2017')
 INSERT [dbo].[CATEGORIAS] ([PK_id_categoria], [nombre_categoria]) VALUES (12, N'Cebollitas')
@@ -356,6 +374,10 @@ INSERT [dbo].[HISTORIAL_PARTIDOS] ([PK_id_partido], [FK_id_categoria], [fecha_pa
 INSERT [dbo].[HISTORIAL_PARTIDOS] ([PK_id_partido], [FK_id_categoria], [fecha_partido], [rival], [condicion_localia], [resultado], [observaciones]) VALUES (107, 1, CAST(N'2026-09-12' AS Date), N'Luján', N'Visitante', N'G 3-1', NULL)
 INSERT [dbo].[HISTORIAL_PARTIDOS] ([PK_id_partido], [FK_id_categoria], [fecha_partido], [rival], [condicion_localia], [resultado], [observaciones]) VALUES (108, 1, CAST(N'2026-09-19' AS Date), N'Argentino de Rosario', N'Local', N'G 2-0', NULL)
 SET IDENTITY_INSERT [dbo].[HISTORIAL_PARTIDOS] OFF
+GO
+CREATE UNIQUE INDEX [UX_HISTORIAL_PARTIDOS_IDENTIDAD]
+ON [dbo].[HISTORIAL_PARTIDOS]([FK_id_categoria], [fecha_partido], [rival], [condicion_localia])
+WHERE [FK_id_categoria] IS NOT NULL AND [fecha_partido] IS NOT NULL AND [rival] IS NOT NULL
 GO
 SET IDENTITY_INSERT [dbo].[JUGADORES] ON
 
@@ -396,14 +418,6 @@ SET IDENTITY_INSERT [dbo].[JUGADORES_RESPONSABLES] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PERSONAS] ON
 
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (1, N'Masculino', CAST(N'2007-03-15' AS Date), N'47265479', N'JULIAN', N'ARRASCAETA', NULL)
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (2, N'Masculino', CAST(N'2007-06-20' AS Date), N'47473488', N'SANTINO DAVID', N'BARRETO', NULL)
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (3, N'Masculino', CAST(N'2007-01-10' AS Date), N'47001022', N'LUCIANO', N'CAMMERTONI', NULL)
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (4, N'Masculino', CAST(N'2007-09-05' AS Date), N'47249871', N'AGUSTÍN', N'CAMPOS', NULL)
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (5, N'Masculino', CAST(N'2008-02-12' AS Date), N'48126446', N'AGUSTÍN', N'ALESSANDRINI', NULL)
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (6, N'Masculino', CAST(N'2008-04-18' AS Date), N'48537550', N'BENJAMÍN ALEJO', N'ALLENDE', NULL)
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (7, N'Masculino', CAST(N'2008-07-22' AS Date), N'48754845', N'BAUTISTA', N'ARGÜELLO', NULL)
-INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (8, N'Masculino', CAST(N'2008-11-30' AS Date), N'48533629', N'KEVIN GUSTAVO', N'ARGÜELLO', NULL)
 INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (9, N'Masculino', CAST(N'2009-03-11' AS Date), N'49112233', N'LUCAS', N'GÓMEZ', NULL)
 INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (10, N'Femenino', CAST(N'2006-05-14' AS Date), N'46112233', N'MARTINA', N'PEREYRA', NULL)
 INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (11, N'Masculino', CAST(N'2009-07-16' AS Date), N'47265479', N'JULIAN', N'ARRASCAETA', NULL)
@@ -426,6 +440,10 @@ INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni]
 INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (1021, NULL, NULL, N'123123132', N'Nejo', N'CORNEJO', NULL)
 INSERT [dbo].[PERSONAS] ([PK_id_persona], [genero], [fecha_de_nacimiento], [dni], [nombre], [apellido], [domicilio]) VALUES (1022, NULL, CAST(N'2009-03-02' AS Date), N'14342423', N'dwadad', N'dwadwad', NULL)
 SET IDENTITY_INSERT [dbo].[PERSONAS] OFF
+GO
+CREATE UNIQUE INDEX [UX_PERSONAS_DNI]
+ON [dbo].[PERSONAS]([dni])
+WHERE [dni] IS NOT NULL
 GO
 SET IDENTITY_INSERT [dbo].[RESPONSABLES] ON
 
@@ -457,6 +475,27 @@ INSERT [dbo].[USUARIOS] ([PK_id_usuario], [FK_id_persona], [FK_id_rol], [email],
 INSERT [dbo].[USUARIOS] ([PK_id_usuario], [FK_id_persona], [FK_id_rol], [email], [contrasenia], [activo]) VALUES (22, 22, 7, N'rdelolmo', N'$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW', 1)
 INSERT [dbo].[USUARIOS] ([PK_id_usuario], [FK_id_persona], [FK_id_rol], [email], [contrasenia], [activo]) VALUES (23, 23, 3, N'screspo', N'$2a$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW', 1)
 SET IDENTITY_INSERT [dbo].[USUARIOS] OFF
+GO
+CREATE UNIQUE INDEX [UX_USUARIOS_EMAIL]
+ON [dbo].[USUARIOS]([email])
+WHERE [email] IS NOT NULL
+GO
+CREATE UNIQUE INDEX [UX_USUARIOS_PERSONA]
+ON [dbo].[USUARIOS]([FK_id_persona])
+WHERE [FK_id_persona] IS NOT NULL
+GO
+CREATE UNIQUE INDEX [UX_STAFF_USUARIO]
+ON [dbo].[STAFF]([FK_id_usuario])
+WHERE [FK_id_usuario] IS NOT NULL
+GO
+CREATE UNIQUE INDEX [UX_FICHAS_MEDICAS_JUGADOR]
+ON [dbo].[FICHAS_MEDICAS]([FK_id_jugador])
+GO
+CREATE UNIQUE INDEX [UX_RESPONSABLES_PERSONA]
+ON [dbo].[RESPONSABLES]([FK_id_persona])
+GO
+CREATE UNIQUE INDEX [UX_JUGADORES_RESPONSABLES_JUGADOR]
+ON [dbo].[JUGADORES_RESPONSABLES]([FK_id_jugador])
 GO
 ALTER TABLE [dbo].[ASISTENCIAS]  WITH CHECK ADD  CONSTRAINT [FK_ASISTENCIAS_JUGADORES] FOREIGN KEY([FK_id_jugador])
 REFERENCES [dbo].[JUGADORES] ([PK_id_jugador])
@@ -596,6 +635,32 @@ BEGIN
     SELECT [PK_id_jugador], [FK_id_categoria]
     FROM [dbo].[JUGADORES]
     WHERE [FK_id_categoria] IS NOT NULL;
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE object_id = OBJECT_ID(N'dbo.JUGADORES_CATEGORIAS')
+      AND is_unique = 1
+      AND name IN (N'UQ_JUGADORES_CATEGORIAS', N'UX_JUGADORES_CATEGORIAS_JUGADOR_CATEGORIA')
+)
+BEGIN
+    CREATE UNIQUE INDEX [UX_JUGADORES_CATEGORIAS_JUGADOR_CATEGORIA]
+    ON [dbo].[JUGADORES_CATEGORIAS]([FK_id_jugador], [FK_id_categoria]);
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE object_id = OBJECT_ID(N'dbo.STAFF_CATEGORIAS')
+      AND is_unique = 1
+      AND name = N'UX_STAFF_CATEGORIAS_STAFF_CATEGORIA'
+)
+BEGIN
+    CREATE UNIQUE INDEX [UX_STAFF_CATEGORIAS_STAFF_CATEGORIA]
+    ON [dbo].[STAFF_CATEGORIAS]([FK_id_staff], [FK_id_categoria]);
 END
 GO
 

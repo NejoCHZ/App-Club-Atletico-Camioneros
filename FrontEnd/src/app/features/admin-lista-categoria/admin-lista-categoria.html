@@ -72,7 +72,7 @@
                   <div class="actions-wrapper">
                     <button type="button" class="btn-action-outline" (click)="verCategoria(c)">
                       <span class="cacc-icon cacc-icon-category" aria-hidden="true"></span>
-                      Gestionar División
+                      {{ categoryActionLabel }}
                     </button>
                     <button *ngIf="canManageCategories" type="button" class="action-btn edit-btn" (click)="abrirModalEditar(c)" title="Editar Categoría">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -117,8 +117,10 @@
         </div>
       </div>
       <div class="popup-footer">
-        <button type="button" class="btn-cancel" (click)="cerrarModalCategoria()">Cancelar</button>
-        <button type="button" class="btn-solid-green" (click)="guardarCategoria()">Guardar</button>
+        <button type="button" class="btn-cancel" [disabled]="guardandoCategoria" (click)="cerrarModalCategoria()">Cancelar</button>
+        <button type="button" class="btn-solid-green" [disabled]="guardandoCategoria" (click)="guardarCategoria()">
+          {{ guardandoCategoria ? 'Guardando...' : 'Guardar' }}
+        </button>
       </div>
     </div>
   </div>
@@ -385,7 +387,7 @@
               <div class="minuto-item" *ngFor="let j of jugadoresPlantel">
                 <span class="minuto-jugador-name">{{ j.nombreCompleto }}</span>
                 <div class="minuto-input-wrapper">
-                  <input type="number" [(ngModel)]="j.minutosJugados" min="0" max="120" class="input-minutos" />
+                  <input type="number" [(ngModel)]="j.minutosJugados" min="0" [max]="maxMinutosPartido" step="1" class="input-minutos" />
                   <span class="min-unit">min</span>
                 </div>
               </div>
@@ -418,7 +420,7 @@
                 <td class="col-bold match-date">{{ p.fecha }}</td>
                 <td class="match-rival">{{ p.rival }}</td>
                 <td class="match-condition"><span class="badge-posicion">{{ p.condicion }}</span></td>
-                <td class="match-result"><strong class="text-resultado">{{ p.resultado }}</strong></td>
+                <td class="match-result"><strong class="text-resultado" [ngClass]="resultadoClass(p.resultado)">{{ p.resultado }}</strong></td>
               </tr>
               <tr *ngIf="!cargandoPartidos && partidosCategoria.length === 0">
                 <td colspan="4" class="no-records">No hay partidos registrados para esta categoría todavía.</td>

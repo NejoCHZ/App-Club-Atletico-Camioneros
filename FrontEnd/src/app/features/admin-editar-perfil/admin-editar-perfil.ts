@@ -5,7 +5,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { HttpClient } from '@angular/common/http';
-import { of, switchMap } from 'rxjs';
+import { normalizeBloodType } from '../../shared/utils/blood-type';
+import { isSameDni } from '../../shared/utils/dni-identity';
 
 @Component({
   selector: 'app-admin-editar-perfil',
@@ -51,7 +52,7 @@ export class AdminEditarPerfil implements OnInit {
 
   posiciones = ['ARQUERO', 'DEFENSOR', 'VOLANTE', 'DELANTERO'];
   pies = ['Derecho', 'Izquierdo', 'Ambidiestro'];
-  gruposSanguineos = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
+  gruposSanguineos = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -135,9 +136,9 @@ export class AdminEditarPerfil implements OnInit {
         this.fichaMedicaOriginal = ficha;
         this.perfil.fichaMedica = {
           ...this.perfil.fichaMedica,
-          grupoSanguineo: ficha.grupoSanguineo
-            ? `${ficha.grupoSanguineo}${ficha.factor || ''}`
-            : '',
+          grupoSanguineo: normalizeBloodType(
+            ficha.grupoSanguineo ? `${ficha.grupoSanguineo}${ficha.factor || ''}` : '',
+          ),
           patologias: ficha.patologias || ficha.antecedentesSalud || '',
           historialLesiones: ficha.historialLesiones || ficha.condicionesCronicas || '',
           observaciones: ficha.observaciones || ''
@@ -194,6 +195,11 @@ export class AdminEditarPerfil implements OnInit {
   guardar(): void {
     if (this.guardando) return;
 
+    if (isSameDni(this.perfil?.dni, this.perfil?.tutor?.dni)) {
+      alert('El jugador no puede ser su propio tutor o responsable.');
+      return;
+    }
+
     const alturaNormalizada = this.normalizarAltura(this.perfil.altura);
     if (this.perfil.altura !== null && this.perfil.altura !== undefined && this.perfil.altura !== '' && alturaNormalizada === null) {
       alert('La altura debe ingresarse como 178, 1,78 o 1.78.');
@@ -202,27 +208,17 @@ export class AdminEditarPerfil implements OnInit {
     this.perfil.altura = alturaNormalizada;
     this.guardando = true;
 
-    const datosJugador = { ...this.perfil };
-    delete datosJugador.fichaMedica;
+    const datosJugador = {
+      ...this.perfil,
+      fichaMedica: {
+        grupoSanguineo: normalizeBloodType(this.perfil.fichaMedica.grupoSanguineo) || null,
+        patologias: this.perfil.fichaMedica.patologias || null,
+        historialLesiones: this.perfil.fichaMedica.historialLesiones || null,
+        observaciones: this.perfil.fichaMedica.observaciones || null
+      }
+    };
 
-    this.jugadorService.actualizarPerfil(this.jugadorId, datosJugador).pipe(
-      switchMap(() => {
-        if (!this.fichaMedicaId) return of(null);
-        const grupoCompleto = (this.perfil.fichaMedica.grupoSanguineo || '').trim();
-        const factor = grupoCompleto.endsWith('+') || grupoCompleto.endsWith('-') ? grupoCompleto.slice(-1) : null;
-        const grupo = factor ? grupoCompleto.slice(0, -1) : grupoCompleto;
-        return this.http.put(`/api/fichas-medicas/${this.fichaMedicaId}`, {
-          ...this.fichaMedicaOriginal,
-          idFichaMedica: this.fichaMedicaId,
-          idJugador: Number(this.jugadorId),
-          grupoSanguineo: grupo || null,
-          factor,
-          patologias: this.perfil.fichaMedica.patologias || null,
-          historialLesiones: this.perfil.fichaMedica.historialLesiones || null,
-          observaciones: this.perfil.fichaMedica.observaciones || null
-        });
-      })
-    ).subscribe({
+    this.jugadorService.actualizarPerfil(this.jugadorId, datosJugador).subscribe({
       next: () => {
         alert('¡Cambios guardados exitosamente en la base de datos!');
         this.volver();

@@ -47,9 +47,28 @@ describe('AdminHomeComponent navigation', () => {
 
     component.selectNav('Jugadores');
     component.selectNav('Categorias');
+    component.selectNav('Tomar asistencia');
 
     expect(navigate.calls.argsFor(0)).toEqual([['/dt/jugadores']]);
     expect(navigate.calls.argsFor(1)).toEqual([['/dt/categorias']]);
+    expect(navigate.calls.argsFor(2)).toEqual([['/dt/tomar-asistencia']]);
+  });
+
+  it('renders attendance taking in the DT home sidebar only', () => {
+    auth.role = 'Director Técnico';
+    const dtFixture = TestBed.createComponent(AdminHomeComponent);
+    dtFixture.detectChanges();
+
+    expect(dtFixture.componentInstance.navItems.some(item => item.label === 'Tomar asistencia')).toBeTrue();
+    expect(dtFixture.nativeElement.textContent).toContain('Tomar asistencia');
+
+    dtFixture.destroy();
+    auth.role = 'Preparador Físico';
+    const physicalTrainerFixture = TestBed.createComponent(AdminHomeComponent);
+    physicalTrainerFixture.detectChanges();
+
+    expect(physicalTrainerFixture.componentInstance.navItems.some(item => item.label === 'Tomar asistencia')).toBeFalse();
+    expect(physicalTrainerFixture.nativeElement.textContent).not.toContain('Tomar asistencia');
   });
 
   it('keeps medical navigation inside the medical portal', () => {

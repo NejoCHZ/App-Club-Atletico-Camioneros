@@ -142,6 +142,10 @@ namespace CACC.API.Controllers
                     nombreCompleto = $"{dto.Nombre} {dto.Apellido}".Trim()
                 });
             }
+            catch (StaffIdentityConflictException)
+            {
+                return StatusCode(409, new { message = "Ya existe un miembro del staff o usuario registrado con ese DNI o Email en el club." });
+            }
             catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
             {
                 return StatusCode(409, new { message = "Ya existe un registro con ese DNI o Email en el sistema." });

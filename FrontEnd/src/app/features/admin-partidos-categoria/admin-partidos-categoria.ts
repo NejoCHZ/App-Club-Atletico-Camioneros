@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../shared/services/auth.service';
+import { PortalAccessService } from '../../shared/auth/portal-access.service';
+import { AppRole } from '../../core/auth/roles';
+import { clasificarResultadoPartido, codigoResultadoPartido } from '../../shared/utils/partido-resultado';
+import { MAX_MINUTOS_PARTIDO, validarParticipacionesPartido } from '../../shared/utils/partido-participacion';
 
 export interface PartidoItem {
   idPartido: number;
@@ -32,10 +36,12 @@ export interface JugadorPlantelMinuto {
   styleUrl: './admin-partidos-categoria.css'
 })
 export class AdminPartidosCategoria implements OnInit {
+  readonly maxMinutosPartido = MAX_MINUTOS_PARTIDO;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly access = inject(PortalAccessService);
 
   categoriaId: number = 0;
   categoriaNombre: string = 'Cargando...';
@@ -60,6 +66,25 @@ export class AdminPartidosCategoria implements OnInit {
     { label: 'Staff', icon: 'badge', active: false },
     { label: 'Categorias', icon: 'category', active: true }
   ];
+
+  get portalRole(): AppRole | null {
+    return this.access.role;
+  }
+
+  get canManagePartidos(): boolean {
+    return this.portalRole === 'admin' || this.portalRole === 'dt';
+  }
+
+  get canAccessStaff(): boolean {
+    return this.portalRole === 'admin';
+  }
+
+  get portalTitle(): string {
+    if (this.portalRole === 'dt') return 'Director Técnico';
+    if (this.portalRole === 'preparador-fisico') return 'Preparador Físico';
+    if (this.portalRole === 'admin') return 'Administrador';
+    return 'Acceso no disponible';
+  }
 
   partidos: PartidoItem[] = [];
   cargando = false;
@@ -87,6 +112,9 @@ export class AdminPartidosCategoria implements OnInit {
   jugadoresMinutos: JugadorPlantelMinuto[] = [];
 
   ngOnInit(): void {
+    if (!this.canAccessStaff) {
+      this.navItems = this.navItems.filter(item => item.label !== 'Staff');
+    }
     this.cargarUsuario();
     this.route.params.subscribe(params => {
       const id = params['id'];
@@ -107,7 +135,7 @@ export class AdminPartidosCategoria implements OnInit {
 
   private cargarUsuario(): void {
     const token = this.authService.getToken();
-    const rol = this.authService.getRol() || 'Administrador';
+    const rol = this.authService.getRol() || 'Sin rol';
 
     if (token) {
       try {
@@ -164,10 +192,10 @@ export class AdminPartidosCategoria implements OnInit {
     let empatados = 0;
     let perdidos = 0;
     this.partidos.forEach(p => {
-      const r = (p.resultado || '').toUpperCase();
-      if (r.startsWith('G')) ganados++;
-      else if (r.startsWith('E')) empatados++;
-      else if (r.startsWith('P')) perdidos++;
+      const clasificacion = clasificarResultadoPartido(p.resultado);
+      if (clasificacion === 'ganado') ganados++;
+      else if (clasificacion === 'empatado') empatados++;
+      else if (clasificacion === 'perdido') perdidos++;
     });
     return { ganados, empatados, perdidos, total: this.partidos.length };
   }
@@ -178,7 +206,7 @@ export class AdminPartidosCategoria implements OnInit {
         const term = this.searchTerm.trim().toLowerCase();
         const matchSearch = !term || p.rival.toLowerCase().includes(term);
         const matchCond = !this.condicionFiltro || p.condicion.toUpperCase() === this.condicionFiltro.toUpperCase();
-        const matchRes = !this.resultadoFiltro || p.resultado.toUpperCase().startsWith(this.resultadoFiltro);
+        const matchRes = !this.resultadoFiltro || codigoResultadoPartido(p.resultado) === this.resultadoFiltro;
         return matchSearch && matchCond && matchRes;
       })
       .sort((a, b) => {
@@ -187,6 +215,14 @@ export class AdminPartidosCategoria implements OnInit {
         }
         return 0; // Por defecto orden descendente por fecha recibido de la API
       });
+  }
+
+  resultadoBadgeClass(resultado: string): string {
+    const clasificacion = clasificarResultadoPartido(resultado);
+    if (clasificacion === 'ganado') return 'badge-aldia';
+    if (clasificacion === 'empatado') return 'badge-pendiente';
+    if (clasificacion === 'perdido') return 'badge-adeuda';
+    return '';
   }
 
   abrirNuevoPartido(): void {
@@ -250,8 +286,19 @@ export class AdminPartidosCategoria implements OnInit {
   }
 
   guardarPartido(): void {
+    if (this.guardando) return;
     if (!this.fechaPartido || !this.rival.trim() || !this.marcador.trim()) {
       alert('Complete la fecha, el equipo rival y el marcador (ej: 2-1).');
+      return;
+    }
+
+    const jugadoresMinutos = this.jugadoresMinutos.map(j => ({
+      idJugador: j.idJugador,
+      minutosJugados: Number(j.minutosJugados)
+    }));
+    const errorParticipaciones = validarParticipacionesPartido(jugadoresMinutos);
+    if (errorParticipaciones) {
+      alert(errorParticipaciones);
       return;
     }
 
@@ -262,10 +309,7 @@ export class AdminPartidosCategoria implements OnInit {
       condicionLocalia: this.condicionLocalia,
       resultado: resultadoFinal,
       observaciones: this.observaciones.trim() || null,
-      jugadoresMinutos: this.jugadoresMinutos.map(j => ({
-        idJugador: j.idJugador,
-        minutosJugados: Number(j.minutosJugados) || 0
-      }))
+      jugadoresMinutos
     };
 
     this.guardando = true;
@@ -329,7 +373,12 @@ export class AdminPartidosCategoria implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/admin/categorias']);
+    if (!this.portalRole) {
+      this.authService.logout();
+      void this.router.navigate(['/login']);
+      return;
+    }
+    this.router.navigate([`/${this.portalRole}/categorias`]);
   }
 
   toggleSidebar(): void {
@@ -360,11 +409,17 @@ export class AdminPartidosCategoria implements OnInit {
   }
 
   selectNav(label: string): void {
+    if (!this.portalRole) {
+      this.authService.logout();
+      void this.router.navigate(['/login']);
+      return;
+    }
     this.navItems.forEach(item => item.active = (item.label === label));
     this.activeTab = label;
-    if (label === 'Inicio') this.router.navigate(['/admin']);
-    else if (label === 'Jugadores') this.router.navigate(['/admin/jugadores']);
-    else if (label === 'Categorias' || label === 'Categorías') this.router.navigate(['/admin/categorias']);
-    else if (label === 'Staff') this.router.navigate(['/admin/staff']);
+    const base = `/${this.portalRole}`;
+    if (label === 'Inicio') this.router.navigate([base]);
+    else if (label === 'Jugadores') this.router.navigate([base, 'jugadores']);
+    else if (label === 'Categorias' || label === 'Categorías') this.router.navigate([base, 'categorias']);
+    else if (label === 'Staff' && this.canAccessStaff) this.router.navigate(['/admin/staff']);
   }
 }

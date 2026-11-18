@@ -1,5 +1,11 @@
 <div class="content-body">
-      <h1 class="page-section-title">{{ nombreCategoria }}</h1>
+      <div class="category-page-heading">
+        <h1 class="page-section-title">{{ nombreCategoria }}</h1>
+        <button type="button" class="btn-history" (click)="verHistorialPartidos()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M3 9h18"></path><path d="m9 15 2 2 4-4"></path></svg>
+          Ver historial de partidos
+        </button>
+      </div>
 
       <!-- Filter Controls Bar Card -->
       <section class="filter-bar-card">

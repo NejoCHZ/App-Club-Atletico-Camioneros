@@ -23,5 +23,6 @@ export const ADMIN_ROUTES: Routes = [
   { path: 'staff', title: 'Personal', data: { desktopOwnShell: true }, loadComponent: () => import('../features/admin-staff/admin-staff.component').then((m) => m.AdminStaffComponent) },
   { path: 'staff/nuevo', title: 'Registrar trabajador', data: { desktopOwnShell: true }, loadComponent: () => import('../features/admin-alta-trabajador/admin-alta-trabajador.component').then((m) => m.AdminAltaTrabajadorComponent) },
   { path: 'staff/:id/editar', title: 'Editar trabajador', data: { desktopOwnShell: true }, loadComponent: () => import('../features/admin-staff-editar-ficha/admin-staff-editar-ficha').then((m) => m.AdminStaffEditarFicha) },
+  { path: 'staff/:id/asistencias', title: 'Historial de asistencia', data: { entityType: 'staff' }, loadComponent: () => import('../features/historial-asistencia/historial-asistencia.component').then((m) => m.HistorialAsistenciaComponent) },
   { path: 'staff/:id', title: 'Perfil del trabajador', data: { desktopOwnShell: true }, loadComponent: () => import('../features/admin-staff-ver-ficha/admin-staff-ver-ficha').then((m) => m.AdminStaffVerFicha) },
 ];

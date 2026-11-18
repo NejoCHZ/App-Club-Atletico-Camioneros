@@ -114,10 +114,19 @@ namespace CACC.DAO
 
         public async Task<int> CrearAsync(string nombreCategoria, string asociacion)
         {
+            var nombreNormalizado = CategoriaIdentity.NormalizeName(nombreCategoria);
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
 
             const string query = @"
+        IF EXISTS (
+            SELECT 1
+            FROM CATEGORIAS WITH (UPDLOCK, HOLDLOCK)
+            WHERE nombre_categoria = @Nombre
+        )
+            THROW 50001, 'Ya existe una categoría con el mismo nombre.', 1;
+
         IF COLUMNPROPERTY(OBJECT_ID('CATEGORIAS'), 'PK_id_categoria', 'IsIdentity') = 1
         BEGIN
             INSERT INTO CATEGORIAS (nombre_categoria, asociacion) VALUES (@Nombre, @Asociacion);
@@ -130,41 +139,69 @@ namespace CACC.DAO
             SELECT @NewId;
         END";
 
-            using var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Nombre", nombreCategoria.Trim());
-            command.Parameters.AddWithValue("@Asociacion", string.IsNullOrWhiteSpace(asociacion) ? "Liga Cordobesa" : asociacion.Trim());
+            try
+            {
+                using var command = new SqlCommand(query, connection, transaction);
+                command.Parameters.AddWithValue("@Nombre", nombreNormalizado);
+                command.Parameters.AddWithValue("@Asociacion", string.IsNullOrWhiteSpace(asociacion) ? "Liga Cordobesa" : asociacion.Trim());
 
-            var scalar = await command.ExecuteScalarAsync();
-            return Convert.ToInt32(scalar);
+                var scalar = await command.ExecuteScalarAsync();
+                await transaction.CommitAsync();
+                return Convert.ToInt32(scalar);
+            }
+            catch (SqlException ex) when (ex.Number == 50001 || ex.Number == 2601 || ex.Number == 2627)
+            {
+                await transaction.RollbackAsync();
+                throw new CategoriaDuplicadaException(ex);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> ActualizarAsync(int idCategoria, string nombreCategoria, string asociacion)
         {
+            var nombreNormalizado = CategoriaIdentity.NormalizeName(nombreCategoria);
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
 
-            const string query = "UPDATE CATEGORIAS SET nombre_categoria = @Nombre, asociacion = @Asociacion WHERE PK_id_categoria = @Id;";
-            using var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Nombre", nombreCategoria.Trim());
-            command.Parameters.AddWithValue("@Asociacion", string.IsNullOrWhiteSpace(asociacion) ? "Liga Cordobesa" : asociacion.Trim());
-            command.Parameters.AddWithValue("@Id", idCategoria);
+            const string query = @"
+        IF EXISTS (
+            SELECT 1
+            FROM CATEGORIAS WITH (UPDLOCK, HOLDLOCK)
+            WHERE nombre_categoria = @Nombre
+              AND PK_id_categoria <> @Id
+        )
+            THROW 50001, 'Ya existe una categoría con el mismo nombre.', 1;
 
-            int filas = await command.ExecuteNonQueryAsync();
-            return filas > 0;
-        }
+        UPDATE CATEGORIAS
+        SET nombre_categoria = @Nombre, asociacion = @Asociacion
+        WHERE PK_id_categoria = @Id;";
 
-        public async Task<bool> ActualizarAsync(int idCategoria, string nombreCategoria)
-        {
-            using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            try
+            {
+                using var command = new SqlCommand(query, connection, transaction);
+                command.Parameters.AddWithValue("@Nombre", nombreNormalizado);
+                command.Parameters.AddWithValue("@Asociacion", string.IsNullOrWhiteSpace(asociacion) ? "Liga Cordobesa" : asociacion.Trim());
+                command.Parameters.AddWithValue("@Id", idCategoria);
 
-            const string query = "UPDATE CATEGORIAS SET nombre_categoria = @Nombre WHERE PK_id_categoria = @Id;";
-            using var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Nombre", nombreCategoria.Trim());
-            command.Parameters.AddWithValue("@Id", idCategoria);
-
-            int filas = await command.ExecuteNonQueryAsync();
-            return filas > 0;
+                int filas = await command.ExecuteNonQueryAsync();
+                await transaction.CommitAsync();
+                return filas > 0;
+            }
+            catch (SqlException ex) when (ex.Number == 50001 || ex.Number == 2601 || ex.Number == 2627)
+            {
+                await transaction.RollbackAsync();
+                throw new CategoriaDuplicadaException(ex);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> EliminarAsync(int idCategoria)
@@ -341,20 +378,39 @@ namespace CACC.DAO
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
 
             const string query = @"
-                IF NOT EXISTS (SELECT 1 FROM JUGADORES_CATEGORIAS WHERE FK_id_jugador = @IdJugador AND FK_id_categoria = @IdCategoria)
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM JUGADORES_CATEGORIAS WITH (UPDLOCK, HOLDLOCK)
+                    WHERE FK_id_jugador = @IdJugador AND FK_id_categoria = @IdCategoria
+                )
                 BEGIN
                     INSERT INTO JUGADORES_CATEGORIAS (FK_id_jugador, FK_id_categoria)
                     VALUES (@IdJugador, @IdCategoria);
                 END";
 
-            using var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@IdCategoria", idCategoria);
-            command.Parameters.AddWithValue("@IdJugador", idJugador);
+            try
+            {
+                using var command = new SqlCommand(query, connection, transaction);
+                command.Parameters.AddWithValue("@IdCategoria", idCategoria);
+                command.Parameters.AddWithValue("@IdJugador", idJugador);
 
-            int filas = await command.ExecuteNonQueryAsync();
-            return filas > 0;
+                int filas = await command.ExecuteNonQueryAsync();
+                await transaction.CommitAsync();
+                return filas > 0;
+            }
+            catch (SqlException ex) when (ex.Number is 2601 or 2627)
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> QuitarJugadorAsync(int idCategoria, int idJugador)
@@ -469,9 +525,14 @@ namespace CACC.DAO
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
 
             const string query = @"
-                IF NOT EXISTS (SELECT 1 FROM STAFF_CATEGORIAS WHERE FK_id_staff = @IdStaff AND FK_id_categoria = @IdCategoria)
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM STAFF_CATEGORIAS WITH (UPDLOCK, HOLDLOCK)
+                    WHERE FK_id_staff = @IdStaff AND FK_id_categoria = @IdCategoria
+                )
                 BEGIN
                     IF COLUMNPROPERTY(OBJECT_ID('STAFF_CATEGORIAS'), 'PK_id_staff_categoria', 'IsIdentity') = 1
                     BEGIN
@@ -480,18 +541,35 @@ namespace CACC.DAO
                     END
                     ELSE
                     BEGIN
-                        DECLARE @NewId INT = (SELECT ISNULL(MAX(PK_id_staff_categoria), 0) + 1 FROM STAFF_CATEGORIAS);
+                        DECLARE @NewId INT = (
+                            SELECT ISNULL(MAX(PK_id_staff_categoria), 0) + 1
+                            FROM STAFF_CATEGORIAS WITH (UPDLOCK, HOLDLOCK)
+                        );
                         INSERT INTO STAFF_CATEGORIAS (PK_id_staff_categoria, FK_id_staff, FK_id_categoria)
                         VALUES (@NewId, @IdStaff, @IdCategoria);
                     END
                 END";
 
-            using var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@IdCategoria", idCategoria);
-            command.Parameters.AddWithValue("@IdStaff", idStaff);
+            try
+            {
+                using var command = new SqlCommand(query, connection, transaction);
+                command.Parameters.AddWithValue("@IdCategoria", idCategoria);
+                command.Parameters.AddWithValue("@IdStaff", idStaff);
 
-            int filas = await command.ExecuteNonQueryAsync();
-            return filas > 0;
+                int filas = await command.ExecuteNonQueryAsync();
+                await transaction.CommitAsync();
+                return filas > 0;
+            }
+            catch (SqlException ex) when (ex.Number is 2601 or 2627)
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> QuitarStaffAsync(int idCategoria, int idStaff)
@@ -550,12 +628,33 @@ namespace CACC.DAO
 
         public async Task<int> RegistrarPartidoAsync(PartidoAlta partido)
         {
+            ValidarParticipaciones(partido.JugadoresMinutos);
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            using var transaction = connection.BeginTransaction();
+            using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
 
             try
             {
+                const string queryDuplicado = @"
+            SELECT TOP (1) PK_id_partido
+            FROM HISTORIAL_PARTIDOS WITH (UPDLOCK, HOLDLOCK)
+            WHERE FK_id_categoria = @IdCategoria
+              AND fecha_partido = @FechaPartido
+              AND UPPER(LTRIM(RTRIM(rival))) = UPPER(LTRIM(RTRIM(@Rival)))
+              AND UPPER(ISNULL(LTRIM(RTRIM(condicion_localia)), '')) = UPPER(ISNULL(LTRIM(RTRIM(@CondicionLocalia)), ''));";
+
+                using (var cmdDuplicado = new SqlCommand(queryDuplicado, connection, transaction))
+                {
+                    cmdDuplicado.Parameters.AddWithValue("@IdCategoria", partido.IdCategoria);
+                    cmdDuplicado.Parameters.AddWithValue("@FechaPartido", partido.FechaPartido.Date);
+                    cmdDuplicado.Parameters.AddWithValue("@Rival", partido.Rival.Trim());
+                    cmdDuplicado.Parameters.AddWithValue("@CondicionLocalia", partido.CondicionLocalia.Trim());
+                    if (await cmdDuplicado.ExecuteScalarAsync() != null)
+                    {
+                        throw new PartidoDuplicadoException();
+                    }
+                }
+
                 const string queryPartido = @"
             INSERT INTO HISTORIAL_PARTIDOS (FK_id_categoria, fecha_partido, rival, condicion_localia, resultado, observaciones)
             VALUES (@IdCategoria, @FechaPartido, @Rival, @CondicionLocalia, @Resultado, @Observaciones);
@@ -589,6 +688,19 @@ namespace CACC.DAO
 
                 await transaction.CommitAsync();
                 return idPartido;
+            }
+            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            {
+                await transaction.RollbackAsync();
+                if (EsConflictoParticipacion(ex))
+                    throw new ParticipacionPartidoDuplicadaException(ex);
+                throw new PartidoDuplicadoException(ex);
+            }
+            catch (SqlException ex) when (ex.Number == 547 && EsMinutajeInvalido(ex))
+            {
+                await transaction.RollbackAsync();
+                throw new ParticipacionPartidoInvalidaException(
+                    $"Los minutos jugados deben estar entre 0 y {PartidoParticipationRules.MaxMinutes}.", ex);
             }
             catch
             {
@@ -666,12 +778,35 @@ namespace CACC.DAO
 
         public async Task<bool> ActualizarPartidoAsync(PartidoEdicion partido)
         {
+            ValidarParticipaciones(partido.JugadoresMinutos);
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
-            using var transaction = connection.BeginTransaction();
+            using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
 
             try
             {
+                const string queryDuplicado = @"
+            SELECT TOP (1) PK_id_partido
+            FROM HISTORIAL_PARTIDOS WITH (UPDLOCK, HOLDLOCK)
+            WHERE FK_id_categoria = @IdCategoria
+              AND PK_id_partido <> @IdPartido
+              AND fecha_partido = @FechaPartido
+              AND UPPER(LTRIM(RTRIM(rival))) = UPPER(LTRIM(RTRIM(@Rival)))
+              AND UPPER(ISNULL(LTRIM(RTRIM(condicion_localia)), '')) = UPPER(ISNULL(LTRIM(RTRIM(@CondicionLocalia)), ''));";
+
+                using (var cmdDuplicado = new SqlCommand(queryDuplicado, connection, transaction))
+                {
+                    cmdDuplicado.Parameters.AddWithValue("@IdCategoria", partido.IdCategoria);
+                    cmdDuplicado.Parameters.AddWithValue("@IdPartido", partido.IdPartido);
+                    cmdDuplicado.Parameters.AddWithValue("@FechaPartido", partido.FechaPartido.Date);
+                    cmdDuplicado.Parameters.AddWithValue("@Rival", partido.Rival.Trim());
+                    cmdDuplicado.Parameters.AddWithValue("@CondicionLocalia", partido.CondicionLocalia.Trim());
+                    if (await cmdDuplicado.ExecuteScalarAsync() != null)
+                    {
+                        throw new PartidoDuplicadoException();
+                    }
+                }
+
                 const string queryUpdate = @"
             UPDATE HISTORIAL_PARTIDOS
             SET fecha_partido = @FechaPartido,
@@ -721,6 +856,19 @@ namespace CACC.DAO
                 await transaction.CommitAsync();
                 return true;
             }
+            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            {
+                await transaction.RollbackAsync();
+                if (EsConflictoParticipacion(ex))
+                    throw new ParticipacionPartidoDuplicadaException(ex);
+                throw new PartidoDuplicadoException(ex);
+            }
+            catch (SqlException ex) when (ex.Number == 547 && EsMinutajeInvalido(ex))
+            {
+                await transaction.RollbackAsync();
+                throw new ParticipacionPartidoInvalidaException(
+                    $"Los minutos jugados deben estar entre 0 y {PartidoParticipationRules.MaxMinutes}.", ex);
+            }
             catch
             {
                 await transaction.RollbackAsync();
@@ -761,5 +909,22 @@ namespace CACC.DAO
                 throw;
             }
         }
+
+        private static void ValidarParticipaciones(IEnumerable<JugadorMinutoAlta>? participaciones)
+        {
+            var error = PartidoParticipationRules.Validate(participaciones);
+            if (error == null) return;
+
+            if (error.Contains("más de una vez", StringComparison.OrdinalIgnoreCase))
+                throw new ParticipacionPartidoDuplicadaException();
+
+            throw new ParticipacionPartidoInvalidaException(error);
+        }
+
+        private static bool EsConflictoParticipacion(SqlException exception) =>
+            exception.Message.Contains("UX_JUGADORES_PARTIDOS_PARTIDO_JUGADOR", StringComparison.OrdinalIgnoreCase);
+
+        private static bool EsMinutajeInvalido(SqlException exception) =>
+            exception.Message.Contains("CK_JUGADORES_PARTIDOS_MINUTOS", StringComparison.OrdinalIgnoreCase);
     }
 }

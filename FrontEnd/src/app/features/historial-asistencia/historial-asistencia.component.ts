@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
 import {
@@ -10,7 +11,7 @@ import {
 } from '../../shared/services/asistencia.service';
 import { JugadorService } from '../../shared/services/jugador.service';
 
-interface JugadorResumen {
+interface PersonaResumen {
   nombre: string;
   apellido: string;
   dni: string;
@@ -34,11 +35,13 @@ export class HistorialAsistenciaComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly asistenciaService = inject(AsistenciaService);
   private readonly jugadorService = inject(JugadorService);
+  private readonly http = inject(HttpClient);
   private readonly access = inject(PortalAccessService);
 
   readonly role = this.access.role;
-  idJugador = 0;
-  jugador: JugadorResumen | null = null;
+  idEntidad = 0;
+  esStaff = false;
+  persona: PersonaResumen | null = null;
   asistencias: AsistenciaHistorialItem[] = [];
   desde = '';
   hasta = '';
@@ -48,24 +51,30 @@ export class HistorialAsistenciaComponent implements OnInit {
   errorFiltros = '';
 
   ngOnInit(): void {
-    this.idJugador = Number(this.route.snapshot.paramMap.get('id'));
-    if (!Number.isInteger(this.idJugador) || this.idJugador <= 0) {
-      this.error = 'El jugador solicitado no es válido.';
+    this.esStaff = this.route.snapshot.data?.['entityType'] === 'staff';
+    this.idEntidad = Number(this.route.snapshot.paramMap.get('id'));
+    if (!Number.isInteger(this.idEntidad) || this.idEntidad <= 0) {
+      this.error = `${this.esStaff ? 'El colaborador' : 'El jugador'} solicitado no es válido.`;
       this.cargando = false;
       return;
     }
 
-    this.jugadorService.obtenerPorId(String(this.idJugador)).subscribe({
+    const resumen$ = this.esStaff
+      ? this.http.get<any>(`/api/staff/${this.idEntidad}`)
+      : this.jugadorService.obtenerPorId(String(this.idEntidad));
+    resumen$.subscribe({
       next: (data: any) => {
-        this.jugador = {
+        this.persona = {
           nombre: data.nombre || data.Nombre || '',
           apellido: data.apellido || data.Apellido || '',
           dni: data.dni || data.Dni || '',
-          categoria: data.nombreCategoria || data.NombreCategoria || 'Sin categoría',
+          categoria: this.esStaff
+            ? data.categoriaAsignada || data.CategoriaAsignada || 'Todas / General'
+            : data.nombreCategoria || data.NombreCategoria || 'Sin categoría',
         };
       },
       error: () => {
-        this.error = 'No se pudo cargar la información del jugador.';
+        this.error = `No se pudo cargar la información del ${this.esStaff ? 'colaborador' : 'jugador'}.`;
       },
     });
 
@@ -87,7 +96,10 @@ export class HistorialAsistenciaComponent implements OnInit {
 
     this.cargando = true;
     this.error = '';
-    this.asistenciaService.obtenerHistorial(this.idJugador, filtros).subscribe({
+    const historial$ = this.esStaff
+      ? this.asistenciaService.obtenerHistorialStaff(this.idEntidad, filtros)
+      : this.asistenciaService.obtenerHistorial(this.idEntidad, filtros);
+    historial$.subscribe({
       next: asistencias => {
         this.asistencias = asistencias;
         this.cargando = false;
@@ -130,7 +142,7 @@ export class HistorialAsistenciaComponent implements OnInit {
   }
 
   volverAlPerfil(): void {
-    void this.router.navigate(['/', this.role, 'jugadores', this.idJugador]);
+    void this.router.navigate(['/', this.role, this.esStaff ? 'staff' : 'jugadores', this.idEntidad]);
   }
 
   private nombreMetodo(method?: string): string | null {

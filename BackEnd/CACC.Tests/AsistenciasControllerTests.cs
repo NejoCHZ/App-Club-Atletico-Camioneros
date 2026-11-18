@@ -26,6 +26,7 @@ public class AsistenciasControllerTests
         using var doc = JsonDocument.Parse(JsonSerializer.Serialize(ok.Value));
         Assert.Equal(acceso, doc.RootElement.GetProperty("accesoPermitido").GetBoolean());
         Assert.Equal(registrada, doc.RootElement.GetProperty("asistenciaRegistrada").GetBoolean());
+        Assert.Equal(EstadosRegistroAsistencia.Registrada, doc.RootElement.GetProperty("estadoRegistro").GetString());
         Assert.Equal(acceso ? "PERMITIDO" : "DENEGADO", doc.RootElement.GetProperty("estadoAcceso").GetString());
         if (!acceso) Assert.Contains("intento de ingreso fue registrado", doc.RootElement.GetProperty("mensaje").GetString());
         Assert.Equal(1, dao.WriteCalls);
@@ -33,13 +34,14 @@ public class AsistenciasControllerTests
     }
 
     [Fact]
-    public async Task ReportsRepeatedDeniedAttemptAsRecordedWithoutDuplicating()
+    public async Task ReportsRepeatedAttemptWithExplicitIdempotentState()
     {
         var dao = new FakeAsistenciaDao(new ResultadoIngreso { PersonaEncontrada = true, CuotasVencidas = 2, AccesoPermitido = false, EstadoAcceso = "DENEGADO", AsistenciaRegistrada = true, YaRegistrada = true });
         var ok = Assert.IsType<OkObjectResult>(await CreateController(dao).VerificarYRegistrar(new AsistenciaRequestDto { Dni = "99000002", MetodoRegistro = "QR" }));
         using var doc = JsonDocument.Parse(JsonSerializer.Serialize(ok.Value));
         Assert.True(doc.RootElement.GetProperty("yaRegistrada").GetBoolean());
-        Assert.Contains("ya estaba registrado", doc.RootElement.GetProperty("mensaje").GetString());
+        Assert.Equal(EstadosRegistroAsistencia.YaRegistrada, doc.RootElement.GetProperty("estadoRegistro").GetString());
+        Assert.Equal("Asistencia ya tomada.", doc.RootElement.GetProperty("mensaje").GetString());
         Assert.Equal("QR", dao.LastMethod);
     }
 
@@ -60,6 +62,18 @@ public class AsistenciasControllerTests
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Single(Assert.IsAssignableFrom<IEnumerable<AsistenciaResponseDto>>(ok.Value));
         Assert.Equal((11, new DateTime(2026, 10, 1), new DateTime(2026, 10, 20), "PERMITIDO"), dao.LastQuery);
+    }
+
+    [Fact]
+    public async Task ReturnsFilteredStaffHistory()
+    {
+        var rows = new[] { new Asistencia { IdAsistencia = 8, IdStaff = 4, FechaHora = new DateTime(2026, 10, 20, 16, 0, 0), EstadoAcceso = "PERMITIDO" } };
+        var dao = new FakeAsistenciaDao(new ResultadoIngreso(), staffRows: rows);
+        var result = await CreateController(dao).ObtenerHistorialStaff(4, new DateTime(2026, 10, 1), new DateTime(2026, 10, 20), " PERMITIDO ");
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var item = Assert.Single(Assert.IsAssignableFrom<IEnumerable<AsistenciaResponseDto>>(ok.Value));
+        Assert.Equal(4, item.IdStaff);
+        Assert.Equal((4, new DateTime(2026, 10, 1), new DateTime(2026, 10, 20), "PERMITIDO"), dao.LastStaffQuery);
     }
 
     [Fact]
@@ -89,13 +103,13 @@ public class AsistenciasControllerTests
     {
         Assert.Null(typeof(AsistenciasController).GetCustomAttributes<AuthorizeAttribute>().Single().Roles);
         var post = typeof(AsistenciasController).GetMethod(nameof(AsistenciasController.VerificarYRegistrar))!;
-        Assert.Equal(AppRoles.Administradores + "," + AppRoles.DonQr, post.GetCustomAttribute<AuthorizeAttribute>()?.Roles);
+        Assert.Equal(AppRoles.Administradores + "," + AppRoles.DonQr + "," + AppRoles.DirectorTecnico, post.GetCustomAttribute<AuthorizeAttribute>()?.Roles);
         var get = typeof(AsistenciasController).GetMethod(nameof(AsistenciasController.ObtenerHistorialJugador))!;
         Assert.Null(get.GetCustomAttribute<AuthorizeAttribute>());
     }
 
     private static AsistenciasController CreateController(FakeAsistenciaDao? dao = null, ICurrentUserAccess? access = null) =>
-        new(dao ?? new FakeAsistenciaDao(new ResultadoIngreso()), new FakeJugadorDao(), access ?? new FakeAccess(true), new FakeCredentialTokenService(), new FakeCredentialDao());
+        new(dao ?? new FakeAsistenciaDao(new ResultadoIngreso()), new FakeJugadorDao(), new FakeStaffDao(), access ?? new FakeAccess(true), new FakeCredentialTokenService(), new FakeCredentialDao());
 
     private sealed class FakeCredentialTokenService : CACC.API.Services.ICredentialTokenService
     {
@@ -123,17 +137,33 @@ public class AsistenciasControllerTests
         return new CurrentUserAccess(new HttpContextAccessor { HttpContext = context });
     }
 
-    private sealed class FakeAsistenciaDao(ResultadoIngreso writeResult, IReadOnlyList<Asistencia>? rows = null) : IAsistenciaDao
+    private sealed class FakeAsistenciaDao(ResultadoIngreso writeResult, IReadOnlyList<Asistencia>? rows = null, IReadOnlyList<Asistencia>? staffRows = null) : IAsistenciaDao
     {
         public int WriteCalls { get; private set; }
         public string? LastMethod { get; private set; }
         public (int, DateTime?, DateTime?, string?) LastQuery { get; private set; }
+        public (int, DateTime?, DateTime?, string?) LastStaffQuery { get; private set; }
         public Task<ResultadoIngreso> ProcesarIngresoAsync(string dni, string metodoRegistro) { WriteCalls++; LastMethod = metodoRegistro; return Task.FromResult(writeResult); }
         public Task<IReadOnlyList<Asistencia>> ObtenerHistorialJugadorAsync(int id, DateTime? desde, DateTime? hasta, string? estado)
         {
             LastQuery = (id, desde, hasta, estado);
             return Task.FromResult(rows ?? (IReadOnlyList<Asistencia>)[]);
         }
+        public Task<IReadOnlyList<Asistencia>> ObtenerHistorialStaffAsync(int id, DateTime? desde, DateTime? hasta, string? estado)
+        {
+            LastStaffQuery = (id, desde, hasta, estado);
+            return Task.FromResult(staffRows ?? (IReadOnlyList<Asistencia>)[]);
+        }
+    }
+
+    private sealed class FakeStaffDao : IStaffDao
+    {
+        public Task<IEnumerable<Persona>> ObtenerStaffGeneralAsync() => Task.FromResult<IEnumerable<Persona>>([]);
+        public Task<IEnumerable<StaffDetalle>> ObtenerTodosAsync(int? rolId = null) => Task.FromResult<IEnumerable<StaffDetalle>>([]);
+        public Task<StaffDetalle?> ObtenerPorIdAsync(int idStaff) => Task.FromResult<StaffDetalle?>(new StaffDetalle { IdStaff = idStaff });
+        public Task<int> CrearAsync(StaffAlta staff) => Task.FromResult(0);
+        public Task<bool> ActualizarAsync(StaffEdicion staff) => Task.FromResult(false);
+        public Task<bool> DarDeBajaAsync(int idStaff) => Task.FromResult(false);
     }
 
     private sealed class FakeAccess(bool allowed) : ICurrentUserAccess
@@ -155,6 +185,7 @@ public class AsistenciasControllerTests
         public Task<bool> ActualizarDatosFisicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil) => Task.FromResult(false);
         public Task<bool> ActualizarDatosMedicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil, FichaMedica ficha) => Task.FromResult(false);
         public Task<int> CrearAsync(JugadorAlta dto) => Task.FromResult(0);
+        public Task<bool> ExisteDniAsync(string dni, int? idJugadorExcluir = null) => Task.FromResult(false);
         public Task<bool> EliminarAsync(int idJugador) => Task.FromResult(false);
         public Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni) => Task.FromResult<TutorDetalle?>(null);
         public Task<bool> GuardarTutorAsync(int idJugador, string dni, string nombre, string apellido, string parentesco, string telefono, string? email) => Task.FromResult(false);

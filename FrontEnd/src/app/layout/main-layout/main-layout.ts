@@ -2,9 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Subject, filter, takeUntil } from 'rxjs';
-import { AppRole } from '../../core/auth/roles';
+import { AppRole, RoleCapabilities } from '../../core/auth/roles';
 import { PortalAccessService } from '../../shared/auth/portal-access.service';
-import { RoleCapabilities } from '../../shared/auth/role-capabilities';
 import { AuthService } from '../../shared/services/auth.service';
 import { isResponsiveComponentLoader } from '../../routes/responsive-component';
 
@@ -12,7 +11,7 @@ type Capability = keyof RoleCapabilities;
 
 export interface PortalShellNavItem {
   label: string;
-  icon: 'home' | 'group' | 'badge' | 'category';
+  icon: 'home' | 'group' | 'badge' | 'category' | 'qr';
   path: string;
   capability?: Capability;
 }
@@ -40,6 +39,7 @@ const PORTAL_SHELLS: Record<Exclude<AppRole, 'don-qr'>, PortalShellConfig> = {
     nav: [
       { label: 'Inicio', icon: 'home', path: '/coordinador' },
       { label: 'Jugadores', icon: 'group', path: '/coordinador/jugadores', capability: 'canViewAllPlayers' },
+      { label: 'Staff', icon: 'badge', path: '/coordinador/staff', capability: 'canManageCategoryRoster' },
       { label: 'Categorías', icon: 'category', path: '/coordinador/categorias', capability: 'canManageCategoryRoster' },
     ],
   },
@@ -59,6 +59,7 @@ const PORTAL_SHELLS: Record<Exclude<AppRole, 'don-qr'>, PortalShellConfig> = {
       { label: 'Inicio', icon: 'home', path: '/dt' },
       { label: 'Jugadores', icon: 'group', path: '/dt/jugadores', capability: 'canViewMedicalRecord' },
       { label: 'Mis categorías', icon: 'category', path: '/dt/categorias', capability: 'canViewMedicalRecord' },
+      { label: 'Tomar asistencia', icon: 'qr', path: '/dt/tomar-asistencia', capability: 'canTakeAttendance' },
     ],
   },
   'preparador-fisico': {
@@ -70,6 +71,12 @@ const PORTAL_SHELLS: Record<Exclude<AppRole, 'don-qr'>, PortalShellConfig> = {
       { label: 'Mis categorías', icon: 'category', path: '/preparador-fisico/categorias', capability: 'canViewMedicalRecord' },
     ],
   },
+};
+
+const DENIED_PORTAL_SHELL: PortalShellConfig = {
+  heading: 'Acceso no disponible',
+  homePath: '/login',
+  nav: [],
 };
 
 @Component({
@@ -88,13 +95,16 @@ export class MainLayout implements OnInit, OnDestroy {
 
   readonly role = this.access.role;
   readonly capabilities = this.access.capabilities;
-  readonly shell = PORTAL_SHELLS[this.role === 'don-qr' ? 'admin' : this.role];
+  readonly shell = this.role && this.role !== 'don-qr'
+    ? PORTAL_SHELLS[this.role]
+    : DENIED_PORTAL_SHELL;
   readonly user = this.auth.obtenerDatosUsuario();
 
   sidebarCollapsed = false;
   mobileSidebarOpen = false;
   userMenuOpen = false;
   desktopChildOwnsShell = false;
+  fullScreenChild = false;
   pageTitle = this.shell.heading;
 
   get navItems(): readonly PortalShellNavItem[] {
@@ -106,7 +116,7 @@ export class MainLayout implements OnInit, OnDestroy {
       admin: 'Administrador', coordinador: 'Coordinador', medico: 'Médico',
       dt: 'Director Técnico', 'preparador-fisico': 'Preparador Físico', 'don-qr': 'Don QR',
     };
-    return labels[this.role];
+    return this.role ? labels[this.role] : 'Sin rol';
   }
 
   get userIdentifier(): string {
@@ -181,6 +191,7 @@ export class MainLayout implements OnInit, OnDestroy {
     let route = this.router.routerState.snapshot.root;
     while (route.firstChild) route = route.firstChild;
     this.desktopChildOwnsShell = route.data['desktopOwnShell'] === true;
+    this.fullScreenChild = route.data['fullScreen'] === true;
     if (!this.isMobileViewport()) {
       this.pageTitle = this.shell.heading;
       return;

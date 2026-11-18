@@ -49,7 +49,7 @@
         <button type="button" class="sidebar-toggle-btn" (click)="toggleSidebar()" title="Ocultar/Mostrar Menú">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="header-title">Historial Oficial de Partidos — {{ categoriaNombre }}</h1>
+        <h1 class="header-title">Panel Principal del {{ portalTitle }}</h1>
       </div>
 
       <div class="header-right">
@@ -58,7 +58,7 @@
             <span width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="cacc-icon cacc-icon-profile"></span>
           </div>
           <div class="profile-info">
-            <span class="profile-name">Administrador</span>
+            <span class="profile-name">{{ portalTitle }}</span>
             <span class="profile-email">{{ usuarioActual.email }}</span>
           </div>
           <span class="chevron-down" [class.rotated]="menuUsuarioAbierto">
@@ -117,7 +117,7 @@
           </div>
 
           <!-- Botón Cargar Nuevo Partido (Ubicado antes del resumen) -->
-          <button type="button" class="btn-add-player" (click)="abrirNuevoPartido()">
+          <button *ngIf="canManagePartidos" type="button" class="btn-add-player" (click)="abrirNuevoPartido()">
             <span class="plus-icon">+</span> Cargar Nuevo Partido
           </button>
 
@@ -151,10 +151,7 @@
                   <span class="badge-posicion">{{ p.condicion }}</span>
                 </td>
                 <td class="col-resultado">
-                  <span class="badge-status"
-                        [class.badge-aldia]="p.resultado.toUpperCase().startsWith('G')"
-                        [class.badge-pendiente]="p.resultado.toUpperCase().startsWith('E')"
-                        [class.badge-adeuda]="p.resultado.toUpperCase().startsWith('P')">
+                  <span class="badge-status" [ngClass]="resultadoBadgeClass(p.resultado)">
                     {{ p.resultado }}
                   </span>
                 </td>
@@ -164,10 +161,10 @@
                     <button type="button" class="action-btn view-btn" (click)="verDetalle(p)" title="Ver minutos jugados">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#007A3D" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </button>
-                    <button type="button" class="action-btn edit-btn" (click)="abrirEditarPartido(p)" title="Editar partido">
+                    <button *ngIf="canManagePartidos" type="button" class="action-btn edit-btn" (click)="abrirEditarPartido(p)" title="Editar partido">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
-                    <button type="button" class="action-btn delete-btn" (click)="abrirEliminar(p)" title="Eliminar partido">
+                    <button *ngIf="canManagePartidos" type="button" class="action-btn delete-btn" (click)="abrirEliminar(p)" title="Eliminar partido">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
                   </div>
@@ -240,7 +237,7 @@
             <div class="minuto-item" *ngFor="let j of jugadoresMinutos">
               <span class="minuto-jugador-name">{{ j.nombreCompleto }} (DNI: {{ j.dni }})</span>
               <div class="minuto-input-wrapper">
-                <input type="number" [(ngModel)]="j.minutosJugados" min="0" max="120" class="input-minutos" />
+                <input type="number" [(ngModel)]="j.minutosJugados" min="0" [max]="maxMinutosPartido" step="1" class="input-minutos" />
                 <span class="min-unit">min</span>
               </div>
             </div>

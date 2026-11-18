@@ -158,6 +158,10 @@ export class AdminStaffVerFicha implements OnInit {
     this.router.navigate(['/admin/staff', this.staffId, 'editar']);
   }
 
+  verHistorialAsistencia(): void {
+    this.router.navigate(['/admin/staff', this.staffId, 'asistencias']);
+  }
+
   volver(): void {
     this.router.navigate(['/admin/staff']);
   }

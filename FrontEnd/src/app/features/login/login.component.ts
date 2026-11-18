@@ -44,13 +44,19 @@ export class LoginComponent {
         this.isLoading = false;
         const role = normalizeRole(this.authService.getRol());
         if (!role) {
+          const rawRole = String(this.authService.getRol() ?? '').trim().toLowerCase();
           this.authService.logout();
-          this.errorMessage = 'Tu usuario no tiene un rol habilitado.';
+          this.errorMessage = rawRole === '2' || rawRole.normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'administrativo'
+            ? 'El rol Administrativo todavía no tiene un portal habilitado. Contactá a un administrador para solicitar acceso.'
+            : 'Tu usuario no tiene un rol habilitado. Contactá a un administrador para revisar el acceso.';
           return;
         }
 
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-        this.router.navigateByUrl(returnUrl?.startsWith('/') ? returnUrl : homeForRole(role));
+        const safeReturnUrl = returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
+          ? returnUrl
+          : null;
+        this.router.navigateByUrl(safeReturnUrl ?? homeForRole(role));
       },
       error: (err) => {
         this.isLoading = false;

@@ -12,9 +12,14 @@ function authorize(url: string, allowedRoles?: readonly AppRole[]) {
   }
 
   const role = normalizeRole(auth.getRol());
+  if (!role) {
+    auth.logout();
+    return router.createUrlTree(['/login']);
+  }
+
   // Administrators own every application capability. Route metadata describes
   // the minimum portal role, while admin remains the explicit super-role.
-  if (!role || (role !== 'admin' && allowedRoles && !allowedRoles.includes(role))) {
+  if (role !== 'admin' && allowedRoles && !allowedRoles.includes(role)) {
     return router.createUrlTree(['/acceso-denegado']);
   }
 

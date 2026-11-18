@@ -48,6 +48,9 @@ namespace CACC.API.DTOs
         [JsonPropertyName("tutor")]
         public GuardarTutorDto? Tutor { get; set; }
 
+        [JsonPropertyName("fichaMedica")]
+        public FichaMedicaDto? FichaMedica { get; set; }
+
         [JsonPropertyName("partidos")]
         public List<PartidoUpdateDto> Partidos { get; set; } = new List<PartidoUpdateDto>();
     }

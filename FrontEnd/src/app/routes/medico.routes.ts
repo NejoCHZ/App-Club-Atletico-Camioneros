@@ -26,6 +26,6 @@ export const MEDICO_ROUTES: Routes = [
   ) },
   { path: 'categorias/:id', title: 'Plantel de categoría', loadComponent: responsiveComponent(
     () => import('../features/medico-categoria-jugadores/medico-categoria-jugadores.component').then((m) => m.MedicoCategoriaJugadoresComponent),
-    () => import('../features/admin-lista-jugadores/admin-lista-jugadores').then((m) => m.AdminListaJugadores),
+    () => import('../features/medico-categoria-jugadores/medico-categoria-jugadores.component').then((m) => m.MedicoCategoriaJugadoresComponent),
   ) },
 ];

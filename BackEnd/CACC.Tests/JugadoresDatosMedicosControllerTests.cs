@@ -116,6 +116,7 @@ public sealed class JugadoresDatosMedicosControllerTests
         public Task<bool> ActualizarPerfilAsync(int id, JugadorDetalle jugador) => Task.FromResult(false);
         public Task<bool> ActualizarDatosFisicosAsync(int id, decimal? peso, decimal? altura, string? pieHabil) => Task.FromResult(false);
         public Task<int> CrearAsync(JugadorAlta dto) => Task.FromResult(0);
+        public Task<bool> ExisteDniAsync(string dni, int? idJugadorExcluir = null) => Task.FromResult(false);
         public Task<bool> EliminarAsync(int idJugador) => Task.FromResult(false);
         public Task<TutorDetalle?> BuscarTutorPorDniAsync(string dni) => Task.FromResult<TutorDetalle?>(null);
         public Task<bool> GuardarTutorAsync(int idJugador, string dni, string nombre, string apellido, string parentesco, string telefono, string? email) => Task.FromResult(false);

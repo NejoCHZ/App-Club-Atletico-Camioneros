@@ -8,7 +8,7 @@ describe('authorization guards', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['estaAutenticado', 'getRol']);
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['estaAutenticado', 'getRol', 'logout']);
     router = jasmine.createSpyObj<Router>('Router', ['createUrlTree', 'getCurrentNavigation']);
     router.createUrlTree.and.returnValue({} as UrlTree);
 
@@ -58,5 +58,32 @@ describe('authorization guards', () => {
     ));
 
     expect(router.createUrlTree).toHaveBeenCalledWith(['/acceso-denegado']);
+    expect(auth.logout).not.toHaveBeenCalled();
+  });
+
+  it('clears an authenticated session with an unknown role and returns to login', () => {
+    auth.estaAutenticado.and.returnValue(true);
+    auth.getRol.and.returnValue('rol-inexistente');
+
+    TestBed.runInInjectionContext(() => roleGuard(
+      { data: { roles: ['admin'] } } as any,
+      { url: '/admin/jugadores' } as any
+    ));
+
+    expect(auth.logout).toHaveBeenCalled();
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('clears an authenticated session without a role and returns to login', () => {
+    auth.estaAutenticado.and.returnValue(true);
+    auth.getRol.and.returnValue(null);
+
+    TestBed.runInInjectionContext(() => roleGuard(
+      { data: { roles: ['medico'] } } as any,
+      { url: '/medico' } as any
+    ));
+
+    expect(auth.logout).toHaveBeenCalled();
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
   });
 });

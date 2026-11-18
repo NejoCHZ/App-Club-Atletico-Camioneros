@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
 import { DecodeHintType, NotFoundException } from '@zxing/library';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../shared/services/auth.service';
 import { AsistenciaService, IngresoResult, MetodoRegistro } from '../../shared/services/asistencia.service';
+import { normalizeRole } from '../../core/auth/roles';
 
 type ViewState = 'scanner' | 'loading' | 'result' | 'permission-error' | 'error';
 type CameraCapabilities = MediaTrackCapabilities & { focusMode?: string[]; torch?: boolean };
@@ -16,6 +18,7 @@ export class SemaforoQrComponent implements OnDestroy {
   @ViewChild('resultHeading') resultHeading?: ElementRef<HTMLElement>;
   private readonly api = inject(AsistenciaService);
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   private reader?: BrowserQRCodeReader;
   private controls?: IScannerControls;
   private locked = false;
@@ -29,6 +32,7 @@ export class SemaforoQrComponent implements OnDestroy {
   cameraStarted = false;
   torchAvailable = false;
   torchEnabled = false;
+  readonly isDtPortal = normalizeRole(this.auth.getRol()) === 'dt';
 
   async startCamera(): Promise<void> {
     this.stopCamera();
@@ -84,6 +88,10 @@ export class SemaforoQrComponent implements OnDestroy {
     void this.startCamera();
   }
   logout(): void { this.stopCamera(); this.auth.logout(); location.assign('/login'); }
+  returnToDtPortal(): void {
+    this.stopCamera();
+    void this.router.navigate(['/dt']);
+  }
   ngOnDestroy(): void { this.stopCamera(); }
 
   private handleDetectedPayload(payload: string): void {

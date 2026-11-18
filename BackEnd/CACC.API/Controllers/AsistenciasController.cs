@@ -14,6 +14,7 @@ namespace CACC.API.Controllers
     {
         private readonly IAsistenciaDao _asistenciaDao;
         private readonly IJugadorDao _jugadorDao;
+        private readonly IStaffDao _staffDao;
         private readonly ICurrentUserAccess _access;
         private readonly ICredentialTokenService _tokenService;
         private readonly ICredentialDao _credentialDao;
@@ -21,19 +22,21 @@ namespace CACC.API.Controllers
         public AsistenciasController(
             IAsistenciaDao asistenciaDao,
             IJugadorDao jugadorDao,
+            IStaffDao staffDao,
             ICurrentUserAccess access,
             ICredentialTokenService tokenService,
             ICredentialDao credentialDao)
         {
             _asistenciaDao = asistenciaDao;
             _jugadorDao = jugadorDao;
+            _staffDao = staffDao;
             _access = access;
             _tokenService = tokenService;
             _credentialDao = credentialDao;
         }
 
         [HttpPost("verificar-y-registrar")]
-        [Authorize(Roles = AppRoles.Administradores + "," + AppRoles.DonQr)]
+        [Authorize(Roles = AppRoles.Administradores + "," + AppRoles.DonQr + "," + AppRoles.DirectorTecnico)]
         public async Task<IActionResult> VerificarYRegistrar([FromBody] AsistenciaRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(request.Dni))
@@ -69,26 +72,27 @@ namespace CACC.API.Controllers
             var resultado = await _asistenciaDao.ProcesarIngresoAsync(identificador, metodoRegistro);
             if (!resultado.PersonaEncontrada)
             {
-                return UnprocessableEntity(new { message = resultado.Error ?? "No se pudo identificar un jugador inequívoco." });
+                return UnprocessableEntity(new { message = resultado.Error ?? "No se pudo identificar una persona habilitada de forma inequívoca." });
             }
             var mensaje = resultado.YaRegistrada
-                ? resultado.AccesoPermitido
-                    ? "La asistencia ya estaba registrada para hoy."
-                    : "Acceso denegado. El intento de ingreso ya estaba registrado para hoy."
+                ? "Asistencia ya tomada."
                 : resultado.CuotasVencidas switch {
                     0 => "Asistencia registrada. Acceso permitido.",
                     1 => "Asistencia registrada. El jugador posee un mes de deuda.",
                     _ => $"Acceso denegado. El jugador posee {resultado.CuotasVencidas} cuotas vencidas. El intento de ingreso fue registrado."
                 };
-            return Ok(new
+            return Ok(new IngresoAsistenciaResponseDto
             {
-                accesoPermitido = resultado.AccesoPermitido,
-                estadoAcceso = resultado.EstadoAcceso,
-                asistenciaRegistrada = resultado.AsistenciaRegistrada,
-                yaRegistrada = resultado.YaRegistrada,
-                mensaje,
-                deudaTotal = resultado.DeudaTotal,
-                cuotasVencidas = resultado.CuotasVencidas
+                AccesoPermitido = resultado.AccesoPermitido,
+                EstadoAcceso = resultado.EstadoAcceso,
+                EstadoRegistro = resultado.YaRegistrada
+                    ? EstadosRegistroAsistencia.YaRegistrada
+                    : EstadosRegistroAsistencia.Registrada,
+                AsistenciaRegistrada = resultado.AsistenciaRegistrada,
+                YaRegistrada = resultado.YaRegistrada,
+                Mensaje = mensaje,
+                DeudaTotal = resultado.DeudaTotal,
+                CuotasVencidas = resultado.CuotasVencidas
             });
         }
 
@@ -130,6 +134,47 @@ namespace CACC.API.Controllers
             {
                 IdAsistencia = asistencia.IdAsistencia,
                 IdJugador = asistencia.IdJugador,
+                IdStaff = asistencia.IdStaff,
+                FechaHora = asistencia.FechaHora,
+                EstadoAcceso = asistencia.EstadoAcceso,
+                Observaciones = asistencia.Observaciones
+            }));
+        }
+
+        [HttpGet("staff/{idStaff:int}")]
+        [Authorize(Roles = AppRoles.Administradores)]
+        public async Task<IActionResult> ObtenerHistorialStaff(
+            int idStaff,
+            [FromQuery] DateTime? desde,
+            [FromQuery] DateTime? hasta,
+            [FromQuery] string? estado)
+        {
+            if (idStaff <= 0)
+            {
+                return BadRequest(new { message = "El colaborador solicitado no es válido." });
+            }
+
+            if (desde.HasValue && hasta.HasValue && desde.Value.Date > hasta.Value.Date)
+            {
+                return BadRequest(new { message = "La fecha desde no puede ser posterior a la fecha hasta." });
+            }
+
+            if (await _staffDao.ObtenerPorIdAsync(idStaff) is null)
+            {
+                return NotFound(new { message = "Colaborador no encontrado." });
+            }
+
+            var asistencias = await _asistenciaDao.ObtenerHistorialStaffAsync(
+                idStaff,
+                desde,
+                hasta,
+                string.IsNullOrWhiteSpace(estado) ? null : estado.Trim());
+
+            return Ok(asistencias.Select(asistencia => new AsistenciaResponseDto
+            {
+                IdAsistencia = asistencia.IdAsistencia,
+                IdJugador = asistencia.IdJugador,
+                IdStaff = asistencia.IdStaff,
                 FechaHora = asistencia.FechaHora,
                 EstadoAcceso = asistencia.EstadoAcceso,
                 Observaciones = asistencia.Observaciones

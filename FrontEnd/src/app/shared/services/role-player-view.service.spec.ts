@@ -10,7 +10,7 @@ describe('RolePlayerViewService medical save', () => {
 
   beforeEach(() => {
     api = jasmine.createSpyObj<ClubPortalApiService>('ClubPortalApiService', [
-      'savePlayerMedicalData'
+      'savePlayerMedicalData', 'listRoster', 'getCategory', 'getPlayer', 'getMedicalRecord'
     ]);
     api.savePlayerMedicalData.and.returnValue(of(void 0));
 
@@ -45,5 +45,23 @@ describe('RolePlayerViewService medical save', () => {
     service.saveMedical(8, profile).subscribe();
 
     expect(api.savePlayerMedicalData).toHaveBeenCalledWith(8, jasmine.objectContaining({ altura: 1.78 }));
+  });
+
+  it('uses the requested category as fallback when roster rows omit category data', () => {
+    api.listRoster.and.returnValue(of([{ idJugador: 9, nombreCompleto: 'Jugador', dni: '9', posicionCancha: 'Arquero' }] as any));
+    api.getCategory.and.returnValue(of({ idCategoria: 7, nombreCategoria: 'AFA 20067' } as any));
+
+    service.categoryPlayers(7).subscribe(players => {
+      expect(players[0].categoria).toBe('AFA 20067');
+    });
+  });
+
+  it('normalizes legacy zero-based blood groups when loading a profile', () => {
+    api.getPlayer.and.returnValue(of({ idJugador: 9, nombre: 'Jugador', apellido: 'Prueba' } as any));
+    api.getMedicalRecord.and.returnValue(of({ idFichaMedica: 3, grupoSanguineo: '0+' } as any));
+
+    service.profile(9).subscribe(profile => {
+      expect(profile.grupoSanguineo).toBe('O+');
+    });
   });
 });

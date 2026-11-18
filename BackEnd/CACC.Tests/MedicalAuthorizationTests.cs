@@ -28,8 +28,8 @@ public class MedicalAuthorizationTests
     }
 
     [Fact]
-    public void AdministratorPlayerUpdateContract_DoesNotAcceptMedicalData()
+    public void AdministratorPlayerUpdateContract_AcceptsMedicalDataForAtomicSave()
     {
-        Assert.Null(typeof(JugadorUpdateDto).GetProperty("FichaMedica"));
+        Assert.NotNull(typeof(JugadorUpdateDto).GetProperty("FichaMedica"));
     }
 }

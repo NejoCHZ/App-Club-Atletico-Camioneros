@@ -166,13 +166,29 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "La posición debe ser Arquero, Defensor, Mediocampista o Delantero." });
             }
 
+            var dniNormalizado = NormalizarDni(dto.Dni);
+            if (string.IsNullOrEmpty(dniNormalizado))
+            {
+                return BadRequest(new { message = "El DNI es obligatorio." });
+            }
+
+            if (dto.Tutor != null && DniIdentity.AreSame(dniNormalizado, dto.Tutor.Dni))
+            {
+                return BadRequest(new { message = "El jugador no puede ser su propio tutor o responsable." });
+            }
+
+            if (await _jugadorDao.ExisteDniAsync(dniNormalizado, id))
+            {
+                return Conflict(new { message = "Ya existe una persona registrada con ese DNI." });
+            }
+
             try
             {
                 var jugador = new JugadorDetalle
                 {
                     Nombre = dto.Nombre,
                     Apellido = dto.Apellido,
-                    Dni = dto.Dni,
+                    Dni = dniNormalizado,
                     Genero = dto.Genero,
                     FechaDeNacimiento = dto.FechaDeNacimiento,
                     Domicilio = dto.Domicilio,
@@ -185,12 +201,19 @@ namespace CACC.API.Controllers
                     FichaMedicaLiga = dto.AptoFisico,
                     Tutor = dto.Tutor == null ? null : new TutorDetalle
                     {
-                        Dni = dto.Tutor.Dni,
+                        Dni = DniIdentity.Normalize(dto.Tutor.Dni),
                         Nombre = dto.Tutor.Nombre,
                         Apellido = dto.Tutor.Apellido,
                         Telefono = dto.Tutor.Telefono,
                         Email = dto.Tutor.Email,
                         Parentesco = dto.Tutor.Parentesco
+                    },
+                    FichaMedica = dto.FichaMedica == null ? null : new FichaMedicaDetalle
+                    {
+                        GrupoSanguineo = dto.FichaMedica.GrupoSanguineo,
+                        Patologias = dto.FichaMedica.Patologias,
+                        HistorialLesiones = dto.FichaMedica.HistorialLesiones,
+                        Observaciones = dto.FichaMedica.Observaciones
                     },
                     Partidos = dto.Partidos?.Select(p => new PartidoDetalle
                     {
@@ -207,6 +230,14 @@ namespace CACC.API.Controllers
                 }
 
                 return Ok(new { message = "Perfil actualizado correctamente." });
+            }
+            catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+            {
+                return Conflict(new { message = "Ya existe una persona registrada con ese DNI." });
+            }
+            catch (TutorSelfReferenceException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -278,11 +309,27 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "La posición debe ser Arquero, Defensor, Mediocampista o Delantero." });
             }
 
+            var dniNormalizado = NormalizarDni(dto.Dni);
+            if (string.IsNullOrEmpty(dniNormalizado))
+            {
+                return BadRequest(new { message = "El DNI es obligatorio." });
+            }
+
+            if (dto.Tutor != null && DniIdentity.AreSame(dniNormalizado, dto.Tutor.Dni))
+            {
+                return BadRequest(new { message = "El jugador no puede ser su propio tutor o responsable." });
+            }
+
+            if (await _jugadorDao.ExisteDniAsync(dniNormalizado))
+            {
+                return Conflict(new { message = "Ya existe una persona registrada con ese DNI." });
+            }
+
             try
             {
                 var jugadorAlta = new JugadorAlta
                 {
-                    Dni = dto.Dni,
+                    Dni = dniNormalizado,
                     Nombre = dto.Nombre,
                     Apellido = dto.Apellido,
                     FechaNacimiento = dto.FechaNacimiento,
@@ -292,7 +339,7 @@ namespace CACC.API.Controllers
                     AptoFisico = dto.AptoFisico,
                     Tutor = dto.Tutor == null ? null : new TutorAlta
                     {
-                        Dni = dto.Tutor.Dni,
+                        Dni = DniIdentity.Normalize(dto.Tutor.Dni),
                         Nombre = dto.Tutor.Nombre,
                         Apellido = dto.Tutor.Apellido,
                         Telefono = dto.Tutor.Telefono,
@@ -307,7 +354,7 @@ namespace CACC.API.Controllers
                 {
                     message = "Jugador creado con éxito.",
                     idJugador = nuevoId,
-                    dni = dto.Dni,
+                    dni = dniNormalizado,
                     nombre = dto.Nombre,
                     apellido = dto.Apellido
                 });
@@ -316,11 +363,17 @@ namespace CACC.API.Controllers
             {
                 return StatusCode(409, new { message = "Ya existe un jugador con ese DNI." });
             }
+            catch (TutorSelfReferenceException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error interno al crear el jugador.", details = ex.Message });
             }
         }
+
+        private static string NormalizarDni(string? dni) => dni?.Trim() ?? string.Empty;
 
         [HttpDelete("{id}")]
         [Authorize(Roles = AppRoles.Administradores)]
@@ -351,15 +404,34 @@ namespace CACC.API.Controllers
                 return BadRequest(new { message = "DNI, nombre, apellido y teléfono del tutor son obligatorios." });
             }
 
-            bool ok = await _jugadorDao.GuardarTutorAsync(
-                id,
-                dto.Dni.Trim(),
-                dto.Nombre.Trim(),
-                dto.Apellido.Trim(),
-                string.IsNullOrWhiteSpace(dto.Parentesco) ? "Padre" : dto.Parentesco.Trim(),
-                dto.Telefono.Trim(),
-                dto.Email?.Trim()
-            );
+            var jugador = await _jugadorDao.ObtenerPorIdAsync(id);
+            if (jugador == null)
+            {
+                return NotFound(new { message = $"Jugador con ID {id} no encontrado." });
+            }
+
+            if (DniIdentity.AreSame(jugador.Dni, dto.Dni))
+            {
+                return BadRequest(new { message = "El jugador no puede ser su propio tutor o responsable." });
+            }
+
+            bool ok;
+            try
+            {
+                ok = await _jugadorDao.GuardarTutorAsync(
+                    id,
+                    DniIdentity.Normalize(dto.Dni),
+                    dto.Nombre.Trim(),
+                    dto.Apellido.Trim(),
+                    string.IsNullOrWhiteSpace(dto.Parentesco) ? "Padre" : dto.Parentesco.Trim(),
+                    dto.Telefono.Trim(),
+                    dto.Email?.Trim()
+                );
+            }
+            catch (TutorSelfReferenceException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
 
             if (!ok)
             {

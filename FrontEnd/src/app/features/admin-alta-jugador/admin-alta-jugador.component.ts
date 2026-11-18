@@ -8,6 +8,7 @@ import { JugadorService } from '../../shared/services/jugador.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminPopupCredencial } from '../admin-popup-credencial/admin-popup-credencial';
 import { credentialFileName, downloadBlob } from '../../shared/utils/file-download';
+import { isSameDni } from '../../shared/utils/dni-identity';
 
 export interface CategoriaSelectOption {
   id: number;
@@ -78,6 +79,7 @@ export class AdminAltaJugadorComponent implements OnInit {
   mensajeExito = false;
   formularioEnviado = false;
   guardando = false;
+  descargaCredencialEnCurso = false;
   errorGuardado = '';
 
   mostrarPopupCredencial = false;
@@ -213,7 +215,7 @@ export class AdminAltaJugadorComponent implements OnInit {
   }
 
   guardarYGenerarQR(): void {
-    if (this.guardando) return;
+    if (this.guardando || this.mensajeExito) return;
     this.formularioEnviado = true;
     this.errorGuardado = '';
 
@@ -235,6 +237,10 @@ export class AdminAltaJugadorComponent implements OnInit {
       }
       if (this.tutorParentesco === 'OTRO' && !this.tutorParentescoOtro.trim()) {
         alert('Por favor especifique el parentesco del tutor.');
+        return;
+      }
+      if (isSameDni(this.dni, this.tutorDni)) {
+        this.errorGuardado = 'El jugador no puede ser su propio tutor o responsable.';
         return;
       }
     }
@@ -286,18 +292,31 @@ export class AdminAltaJugadorComponent implements OnInit {
       return;
     }
 
+    this.descargaCredencialEnCurso = true;
     this.http.get(`/api/credenciales/jugador/${this.nuevoJugadorId}/pdf`, {
       responseType: 'blob'
     }).subscribe({
       next: (blob) => {
         downloadBlob(blob, credentialFileName('jugador', this.nombre, this.apellido));
         this.mostrarPopupCredencial = false;
+        void this.router.navigate(['/admin/jugadores', this.nuevoJugadorId]);
       },
       error: (err) => {
+        this.descargaCredencialEnCurso = false;
         console.error('Error al generar la credencial del jugador:', err);
         alert('No se pudo generar la credencial. Verificá la configuración del servidor.');
       }
     });
+  }
+
+  cerrarCredencial(): void {
+    if (this.descargaCredencialEnCurso) return;
+    this.mostrarPopupCredencial = false;
+    if (this.nuevoJugadorId !== null) {
+      void this.router.navigate(['/admin/jugadores', this.nuevoJugadorId]);
+    } else {
+      void this.router.navigate(['/admin/jugadores']);
+    }
   }
 
   volver(): void {

@@ -1,7 +1,11 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { MainLayout } from './main-layout';
+
+@Component({ standalone: true, template: '<p>Contenido de prueba</p>' })
+class RouteContentStub {}
 
 class AuthServiceStub {
   role = 'Administrador (Tesorero)';
@@ -22,7 +26,13 @@ describe('MainLayout', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MainLayout],
-      providers: [provideRouter([]), { provide: AuthService, useClass: AuthServiceStub }],
+      providers: [
+        provideRouter([
+          { path: 'normal', component: RouteContentStub },
+          { path: 'pantalla-completa', component: RouteContentStub, data: { fullScreen: true } },
+        ]),
+        { provide: AuthService, useClass: AuthServiceStub },
+      ],
     }).compileComponents();
 
     auth = TestBed.inject(AuthService) as unknown as AuthServiceStub;
@@ -59,9 +69,9 @@ describe('MainLayout', () => {
     create('Coordinador');
 
     expect(component.navItems.map((item) => item.path)).toEqual([
-      '/coordinador', '/coordinador/jugadores', '/coordinador/categorias',
+      '/coordinador', '/coordinador/jugadores', '/coordinador/staff', '/coordinador/categorias',
     ]);
-    expect(component.navItems.some((item) => item.label === 'Staff')).toBeFalse();
+    expect(component.navItems.some((item) => item.label === 'Staff')).toBeTrue();
     expect(fixture.nativeElement.querySelector('.portal-btn')).toBeNull();
   });
 
@@ -73,6 +83,16 @@ describe('MainLayout', () => {
     expect(component.navItems.map((item) => item.path)).toEqual([
       '/preparador-fisico', '/preparador-fisico/jugadores', '/preparador-fisico/categorias',
     ]);
+    expect(component.navItems.some((item) => item.label === 'Tomar asistencia')).toBeFalse();
+  });
+
+  it('exposes attendance taking only in the DT navigation', () => {
+    create('Director Técnico');
+
+    expect(component.navItems.map((item) => item.path)).toEqual([
+      '/dt', '/dt/jugadores', '/dt/categorias', '/dt/tomar-asistencia',
+    ]);
+    expect(fixture.nativeElement.querySelector('a[href="/dt/tomar-asistencia"]')?.textContent).toContain('Tomar asistencia');
   });
 
   it('collapses the sidebar on desktop', () => {
@@ -108,5 +128,25 @@ describe('MainLayout', () => {
 
     expect(auth.logout).toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledOnceWith(['/login']);
+  });
+
+  it('omits the complete portal shell for a full-screen child and restores it after navigation', async () => {
+    await router.navigateByUrl('/pantalla-completa');
+    create('Director Técnico');
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(component.fullScreenChild).toBeTrue();
+    expect(element.querySelector('.sidebar')).toBeNull();
+    expect(element.querySelector('.top-header')).toBeNull();
+    expect(element.querySelector('.sidebar-overlay')).toBeNull();
+    expect(element.querySelector('.mobile-bottom-nav')).toBeNull();
+    expect(element.querySelector('router-outlet')).not.toBeNull();
+
+    await router.navigateByUrl('/normal');
+    fixture.detectChanges();
+
+    expect(component.fullScreenChild).toBeFalse();
+    expect(element.querySelector('.sidebar')).not.toBeNull();
+    expect(element.querySelector('.top-header')).not.toBeNull();
   });
 });

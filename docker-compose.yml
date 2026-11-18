@@ -10,7 +10,7 @@ services:
       - "1433:1433"
     volumes:
       - sql_data:/var/opt/mssql
-      - ./Bbdd CACC.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./BaseDatos-ClubCamioneros.sql:/docker-entrypoint-initdb.d/init.sql
 
   backend:
     build:
@@ -18,7 +18,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Server=db;Database=CACC;User=sa;Password=TuPasswordSeguro123!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=db;Database=ClubCamioneros;User=sa;Password=TuPasswordSeguro123!;TrustServerCertificate=True;
     depends_on:
       - db
 

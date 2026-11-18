@@ -1,12 +1,12 @@
 <section class="attendance-page">
   <header class="page-heading">
     <div>
-      <p class="eyebrow">Seguimiento del jugador</p>
+      <p class="eyebrow">Seguimiento del {{ esStaff ? 'colaborador' : 'jugador' }}</p>
       <h1>Historial de asistencia</h1>
-      <p *ngIf="jugador as player" class="player-summary">
-        <strong>{{ player.nombre }} {{ player.apellido }}</strong>
-        <span>DNI: {{ player.dni }}</span>
-        <span>{{ player.categoria }}</span>
+      <p *ngIf="persona as person" class="player-summary">
+        <strong>{{ person.nombre }} {{ person.apellido }}</strong>
+        <span>DNI: {{ person.dni }}</span>
+        <span>{{ person.categoria }}</span>
       </p>
     </div>
     <button type="button" class="button secondary" (click)="volverAlPerfil()">← Volver al perfil</button>

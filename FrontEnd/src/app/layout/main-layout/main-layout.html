@@ -1,7 +1,7 @@
-<div class="cacc-layout" [class.sidebar-collapsed]="sidebarCollapsed" [class.mobile-sidebar-open]="mobileSidebarOpen" [class.desktop-child-shell]="desktopChildOwnsShell">
-  <button *ngIf="mobileSidebarOpen" type="button" class="sidebar-overlay" aria-label="Cerrar menú de navegación" (click)="closeMobileSidebar()"></button>
+<div class="cacc-layout" [class.sidebar-collapsed]="sidebarCollapsed" [class.mobile-sidebar-open]="mobileSidebarOpen" [class.desktop-child-shell]="desktopChildOwnsShell" [class.full-screen-child]="fullScreenChild">
+  <button *ngIf="!fullScreenChild && mobileSidebarOpen" type="button" class="sidebar-overlay" aria-label="Cerrar menú de navegación" (click)="closeMobileSidebar()"></button>
 
-  <aside id="portal-navigation" class="sidebar" aria-label="Navegación principal">
+  <aside *ngIf="!fullScreenChild" id="portal-navigation" class="sidebar" aria-label="Navegación principal">
     <div class="sidebar-header">
       <div class="logo-wrapper"><img src="cacc-logo.png" alt="Escudo CACC" class="cacc-shield-img" /></div>
       <h2 class="club-title">CLUB ATLETICO SOCIAL Y DEPORTIVO CAMIONEROS</h2>
@@ -15,6 +15,7 @@
           <svg *ngSwitchCase="'group'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           <svg *ngSwitchCase="'badge'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
           <span *ngSwitchCase="'category'" class="cacc-icon cacc-icon-category" aria-hidden="true"></span>
+          <svg *ngSwitchCase="'qr'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="6" height="6" rx="1"></rect><rect x="15" y="3" width="6" height="6" rx="1"></rect><rect x="3" y="15" width="6" height="6" rx="1"></rect><path d="M15 15h2v2h-2zM19 15h2v6h-2M15 19h2v2h-2"></path></svg>
         </span>
         <span class="nav-label">{{ item.label }}</span>
       </a>
@@ -33,7 +34,7 @@
   </aside>
 
   <div class="main-wrapper">
-    <header class="top-header">
+    <header *ngIf="!fullScreenChild" class="top-header">
       <div class="mobile-brand" aria-label="Club Atlético Social y Deportivo Camioneros">
         <img src="cacc-logo.png" alt="" aria-hidden="true" />
         <span><strong>CLUB ATLÉTICO SOCIAL Y<br />DEPORTIVO CAMIONEROS</strong><small>SISTEMA DE GESTIÓN INTEGRAL</small></span>
@@ -59,9 +60,9 @@
       </div>
     </header>
 
-    <main class="content-body portal-content" tabindex="-1"><router-outlet /></main>
+    <main class="content-body" [class.portal-content]="!fullScreenChild" [class.full-screen-content]="fullScreenChild" tabindex="-1"><router-outlet /></main>
 
-    <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+    <nav *ngIf="!fullScreenChild" class="mobile-bottom-nav" aria-label="Navegación móvil">
       <a [routerLink]="shell.homePath" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-7H9v7H3z" /></svg>
         <span>Inicio</span>
